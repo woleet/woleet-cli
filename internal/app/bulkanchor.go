@@ -26,6 +26,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 
 	mapPathFileinfo, pending, receipt := helpers.Separate(mapPathFileinfo, strict)
 
+	// In this loop only pending files are used
 	for path, fileinfo := range pending {
 		anchorID, errAnchorID := helpers.GetAnchorIDFromName(fileinfo)
 		if errAnchorID != nil {
@@ -41,7 +42,10 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					os.Exit(1)
 				}
 			} else {
+				// Extracting the file's original path by the name of the pending file
 				originalFilePath := strings.TrimSuffix(path, "-"+anchorID+".pending.json")
+				// If strict mode is actived, we check that the hash of the file
+				// is the same as the one in the pending file
 				if strict {
 					_, exists := mapPathFileinfo[originalFilePath]
 					if exists {
@@ -52,19 +56,26 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 								os.Exit(1)
 							}
 						} else {
+							// If the hashes corresponds, we removes the original file from the filelist
+							// Doing so it will not be reanchored
 							if strings.EqualFold(actualHash, anchorGet.Hash) {
 								delete(mapPathFileinfo, originalFilePath)
 							} else if prune {
+								// If prune is specified, we remove the old pending file that
+								// does not correspond anymore to the original file
 								os.Remove(path)
 							}
 						}
 					}
 				} else {
+					// if strict mode is not enable we do not want to rescan
+					// the file so we remove the original file from the filelist
 					delete(mapPathFileinfo, originalFilePath)
 				}
 				if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
 					stdLogger.Printf("WARN : anchorID: %s not availaible yet\n", path)
 				} else {
+					// If the anchor is confirmed, we get its receipt and we delets the old pending file
 					errReceipt := client.GetReceiptToFile(anchorID, strings.TrimSuffix(path, ".pending.json")+".receipt.json")
 					if errReceipt != nil {
 						errLogger.Printf("ERROR :%v\n", errReceipt)
@@ -85,7 +96,9 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 		}
 	}
 
+	// In this loop only receipt files are used
 	for path, fileinfo := range receipt {
+		// Extracting the file's original path by the name of the pending file
 		anchorID, errAnchorID := helpers.GetAnchorIDFromName(fileinfo)
 		if errAnchorID != nil {
 			errLogger.Printf("ERROR :%v\n", errAnchorID)
@@ -93,12 +106,17 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 				os.Exit(1)
 			}
 		} else {
+			// Extracting the file's original path by the name of the receipt file
 			originalFilePath := strings.TrimSuffix(path, "-"+anchorID+".receipt.json")
+			// if strict mode is not enable we do not want to rescan
+			// the file so we remove the original file from the filelist
 			if !strict {
 				delete(mapPathFileinfo, originalFilePath)
 			} else {
 				_, exists := mapPathFileinfo[originalFilePath]
 				if exists {
+					// If strict mode is actived, we check that the hash of the file
+					// is the same as the one in the receipt file
 					hash, errHash := helpers.HashFile(originalFilePath)
 					if errHash != nil {
 						errLogger.Printf("ERROR :%v\n", errHash)
@@ -117,8 +135,12 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 						var receiptUnmarshalled models.Receipt
 						json.Unmarshal(receiptJSON, &receiptUnmarshalled)
 						if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
+							// If the hashes corresponds, we removes the original file from the filelist
+							// Doing so it will not be reanchored
 							delete(mapPathFileinfo, originalFilePath)
 						} else if prune {
+							// If prune is defined and the hashes does not correspond
+							// we remove the file as it does not correspond with the current hash
 							os.Remove(path)
 						}
 					}
@@ -127,6 +149,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 		}
 	}
 
+	// In this loop only the standard files are used (not receipt or pending files)
 	for path, fileinfo := range mapPathFileinfo {
 		anchor := new(models.Anchor)
 		hash, errHash := helpers.HashFile(path)
