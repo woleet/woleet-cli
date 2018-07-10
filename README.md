@@ -58,8 +58,8 @@ swagger-codegen generate -i api/swagger.json -l go -o pkg/models -Dmodels -Dmode
 # You will need 2 go libraries:
 go get -u github.com/spf13/cobra
 go get -u gopkg.in/resty.v1
-go get -u github.com/woleet/woleet-cli
 
-go install github.com/woleet/woleet-cli
+# Then get the actual project:
+go get -u github.com/woleet/woleet-cli
 # After this step the created binary will be in your $GOBIN folder, traditionnaly $GOPATH/bin
 ```
