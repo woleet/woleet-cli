@@ -13,8 +13,9 @@ var Token string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "woleet-cli",
-	Short: "Woleet command line interface (for now only anchor is available)",
+	Use:     "woleet-cli",
+	Version: "0.1.0",
+	Short:   "Woleet command line interface (for now only anchor is available)",
 	Long: `woleet-cli is a command line interface allowing to interact with
 woleet API (https://api.woleet.io). For now, this tool
 just support folder anchoring.`,
