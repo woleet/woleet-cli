@@ -49,6 +49,10 @@ just support folder anchoring.`,
 		if errExitOnErr != nil {
 			log.Fatalln("Unable to parse --exitonerror flag")
 		}
+		private, privateErr := cmd.Flags().GetBool("private")
+		if privateErr != nil {
+			log.Fatalln("Unable to parse --private flag")
+		}
 		strict, errStrict := cmd.Flags().GetBool("strict")
 		if errStrict != nil {
 			log.Fatalln("Unable to parse --strict flag")
@@ -60,7 +64,7 @@ just support folder anchoring.`,
 		if strictPrune {
 			strict = true
 		}
-		app.BulkAnchor(BaseURL, Token, absDirectory, exitOnErr, strict, strictPrune)
+		app.BulkAnchor(BaseURL, Token, absDirectory, exitOnErr, private, strict, strictPrune)
 	},
 }
 
@@ -71,4 +75,5 @@ func init() {
 	anchorCmd.Flags().BoolP("strict", "", false, "re-anchor any file that has changed since last anchoring")
 	anchorCmd.Flags().BoolP("strict-prune", "", false, "same as --strict, plus delete the previous anchoring receipt")
 	anchorCmd.Flags().BoolP("exitonerror", "e", false, "exit the app with an error code if something goes wrong")
+	anchorCmd.Flags().BoolP("private", "p", false, "create anchors with non-public access")
 }

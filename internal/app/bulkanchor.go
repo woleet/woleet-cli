@@ -13,7 +13,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func BulkAnchor(baseURL string, token string, directory string, exitOnError bool, strict bool, prune bool) {
+func BulkAnchor(baseURL string, token string, directory string, exitOnError bool, private bool, strict bool, prune bool) {
 	stdLogger := log.New(os.Stdout, "woleet-cli ", log.LstdFlags)
 	errLogger := log.New(os.Stderr, "woleet-cli ", log.LstdFlags)
 	client := api.GetNewClient(baseURL, token)
@@ -178,6 +178,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 			anchor.Name = fileinfo.Name()
 			anchor.Hash = hash
 			anchor.Tags = tagsSlice
+			anchor.Public = !private
 
 			anchorPost, errAnchorPost := client.PostAnchor(anchor)
 			if errAnchorPost != nil {

@@ -33,15 +33,18 @@ By default the tool will use your current folder if you do not specify any folde
 ```
 Usage:
   woleet-cli anchor [flags]
+
 Flags:
-  -d, --directory string   Source directory to read from (default "/home/mastertheif/go/src/github.com/woleet/woleet-cli")
-  -e, --exitonerror        Exit the app with an error code if something goes wrong
+  -d, --directory string   source directory containing files to anchor
+  -e, --exitonerror        exit the app with an error code if something goes wrong
   -h, --help               help for anchor
-      --strict             Rescan the directory for file changes
-      --strict-prune       Rescan the directory for file changes and delete old receipts
+  -p, --private            create anchor with non-public access
+      --strict             re-anchor any file that has changed since last anchoring
+      --strict-prune       same as --strict, plus delete the previous anchoring receipt
+
 Global Flags:
-  -t, --token string    JWT token (required)
-  -u, --url string      Custom api url (default "https://api.woleet.io/v1")
+  -t, --token string   JWT token (required)
+  -u, --url string     custom API url (default "https://api.woleet.io/v1")
 ```
 
 ## Update models
