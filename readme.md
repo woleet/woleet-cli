@@ -44,7 +44,7 @@ Global Flags:
   -u, --url string      Custom api url (default "https://api.woleet.io/v1")
 ```
 
-## Update
+## Update models
 
 ```bash
 # Update definition file

@@ -15,9 +15,9 @@ var Token string
 var rootCmd = &cobra.Command{
 	Use:   "woleet-cli",
 	Short: "Woleet command line interface (for now only anchor is available)",
-	Long: `woleet-cli is a command line interface created to interact with
-woleet api available at: https://api.woleet.io for now, this tool
-just support folder anchoring`,
+	Long: `woleet-cli is a command line interface allowing to interact with
+woleet API (https://api.woleet.io). For now, this tool
+just support folder anchoring.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,7 +33,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	//rootCmd.PersistentFlags().StringVar(&cfgFile, "Config", "", "config file (default is $HOME/.woleet-cli.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&BaseURL, "url", "u", "https://api.woleet.io/v1", "Custom api url")
+	rootCmd.PersistentFlags().StringVarP(&BaseURL, "url", "u", "https://api.woleet.io/v1", "custom API url")
 	rootCmd.PersistentFlags().StringVarP(&Token, "token", "t", "", "JWT token (required)")
 }
 

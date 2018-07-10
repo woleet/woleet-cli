@@ -8,8 +8,11 @@ builds:
       - linux
     goarch:
       - amd64
+
 # Archive customization
 archive:
   format: tar.gz
   replacements:
     amd64: x86_64
+  files:
+    - none*

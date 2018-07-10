@@ -13,10 +13,10 @@ import (
 // anchorCmd represents the anchor command
 var anchorCmd = &cobra.Command{
 	Use:   "anchor",
-	Short: "Pass a directory and a token and start anchoring!",
-	Long: `woleet-cli is a command line interface created to interact with
-woleet api available at: https://api.woleet.io for now, this tool
-just support folder anchoring`,
+	Short: "Recursively anchor all files in a directory to create timestamped proofs of existence",
+	Long: `woleet-cli is a command line interface allowing to interact with
+woleet API (https://api.woleet.io). For now, this tool
+just support folder anchoring.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if strings.EqualFold(Token, "") {
 			cmd.Help()
@@ -26,10 +26,25 @@ just support folder anchoring`,
 		if errDir != nil {
 			log.Fatalln("Unable to parse --directory flag")
 		}
+
+		if strings.EqualFold(directory, "") {
+			log.Fatalln("Please set a directory")
+		}
+
 		absDirectory, errAbs := filepath.Abs(directory)
 		if errAbs != nil {
 			log.Fatalln("Unable to get Absolute directory from --directory")
 		}
+
+		info, err := os.Stat(absDirectory)
+		if err != nil {
+			log.Fatalln("The provided directory does not exists")
+		} else {
+			if !info.IsDir() {
+				log.Fatalln("The provided path is not a directory")
+			}
+		}
+
 		exitOnErr, errExitOnErr := cmd.Flags().GetBool("exitonerror")
 		if errExitOnErr != nil {
 			log.Fatalln("Unable to parse --exitonerror flag")
@@ -52,13 +67,8 @@ just support folder anchoring`,
 func init() {
 	rootCmd.AddCommand(anchorCmd)
 
-	pwd, errPath := os.Getwd()
-	if errPath != nil {
-		log.Fatalln("Unable to get the path of the current directory")
-	}
-
-	anchorCmd.Flags().StringP("directory", "d", pwd, "Source directory to read from")
-	anchorCmd.Flags().BoolP("strict", "", false, "Rescan the directory for file changes")
-	anchorCmd.Flags().BoolP("strict-prune", "", false, "Rescan the directory for file changes and delete old receipts and pending file that does not have the same hash")
-	anchorCmd.Flags().BoolP("exitonerror", "e", false, "Exit the app with an error code if something goes wrong")
+	anchorCmd.Flags().StringP("directory", "d", "", "source directory containing files to anchor")
+	anchorCmd.Flags().BoolP("strict", "", false, "re-anchor any file that has changed since last anchoring")
+	anchorCmd.Flags().BoolP("strict-prune", "", false, "same as --strict, plus delete the previous anchoring receipt")
+	anchorCmd.Flags().BoolP("exitonerror", "e", false, "exit the app with an error code if something goes wrong")
 }

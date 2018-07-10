@@ -23,7 +23,7 @@ func Explore(directory string) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
-			pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), "/", "", -1))
+			pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), string(os.PathSeparator), "", -1))
 			if strings.HasPrefix(info.Name(), ".") {
 				return filepath.SkipDir
 			} else if pathlenght > 128 {

@@ -73,7 +73,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					delete(mapPathFileinfo, originalFilePath)
 				}
 				if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
-					stdLogger.Printf("WARN : anchorID: %s not availaible yet\n", path)
+					stdLogger.Printf("INFO : anchorID: %s not availaible yet\n", path)
 				} else {
 					// If the anchor is confirmed, we get its receipt and we delets the old pending file
 					errReceipt := client.GetReceiptToFile(anchorID, strings.TrimSuffix(path, ".pending.json")+".receipt.json")
@@ -167,7 +167,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					os.Exit(1)
 				}
 			} else {
-				tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, directory), fileinfo.Name()), "/")
+				tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, directory), fileinfo.Name()), string(os.PathSeparator))
 				for i := range tags {
 					if !(strings.Contains(tags[i], " ") || strings.EqualFold(tags[i], "")) {
 						tagsSlice = append(tagsSlice, tags[i])
