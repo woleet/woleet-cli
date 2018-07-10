@@ -55,3 +55,12 @@ swagger-codegen generate -i api/swagger.json -l go -o pkg/models -Dmodels -Dmode
 ```
 
 ## Build from sources
+
+```bash
+# You will need 2 go libraries:
+go get -u github.com/spf13/cobra
+go get -u gopkg.in/resty.v1
+
+# Once done at the root of this folder type:
+go install
+```
