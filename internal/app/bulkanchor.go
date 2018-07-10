@@ -20,7 +20,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 
 	mapPathFileinfo, errFiles := helpers.Explore(directory)
 	if errFiles != nil {
-		errLogger.Printf("ERROR :%v\n", errFiles)
+		errLogger.Printf("ERROR: %v\n", errFiles)
 		os.Exit(1)
 	}
 
@@ -30,14 +30,14 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 	for path, fileinfo := range pending {
 		anchorID, errAnchorID := helpers.GetAnchorIDFromName(fileinfo)
 		if errAnchorID != nil {
-			errLogger.Printf("ERROR :%v\n", errAnchorID)
+			errLogger.Printf("ERROR: %v\n", errAnchorID)
 			if exitOnError {
 				os.Exit(1)
 			}
 		} else {
 			anchorGet, errAnchorGet := client.GetAnchor(anchorID)
 			if errAnchorGet != nil {
-				errLogger.Printf("ERROR :%v\n", errAnchorGet)
+				errLogger.Printf("ERROR: %v\n", errAnchorGet)
 				if exitOnError {
 					os.Exit(1)
 				}
@@ -51,7 +51,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					if exists {
 						actualHash, erractualHash := helpers.HashFile(originalFilePath)
 						if erractualHash != nil {
-							errLogger.Printf("ERROR :%v\n", erractualHash)
+							errLogger.Printf("ERROR: %v\n", erractualHash)
 							if exitOnError {
 								os.Exit(1)
 							}
@@ -73,19 +73,19 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					delete(mapPathFileinfo, originalFilePath)
 				}
 				if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
-					stdLogger.Printf("INFO : anchorID: %s not availaible yet\n", path)
+					stdLogger.Printf("INFO: %s not yet available\n", path)
 				} else {
 					// If the anchor is confirmed, we get its receipt and we delets the old pending file
 					errReceipt := client.GetReceiptToFile(anchorID, strings.TrimSuffix(path, ".pending.json")+".receipt.json")
 					if errReceipt != nil {
-						errLogger.Printf("ERROR :%v\n", errReceipt)
+						errLogger.Printf("ERROR: %v\n", errReceipt)
 						if exitOnError {
 							os.Exit(1)
 						}
 					} else {
 						errRemoval := os.Remove(path)
 						if errRemoval != nil {
-							errLogger.Printf("ERROR :%v\n", errRemoval)
+							errLogger.Printf("ERROR: %v\n", errRemoval)
 							if exitOnError {
 								os.Exit(1)
 							}
@@ -101,7 +101,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 		// Extracting the file's original path by the name of the pending file
 		anchorID, errAnchorID := helpers.GetAnchorIDFromName(fileinfo)
 		if errAnchorID != nil {
-			errLogger.Printf("ERROR :%v\n", errAnchorID)
+			errLogger.Printf("ERROR: %v\n", errAnchorID)
 			if exitOnError {
 				os.Exit(1)
 			}
@@ -119,7 +119,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					// is the same as the one in the receipt file
 					hash, errHash := helpers.HashFile(originalFilePath)
 					if errHash != nil {
-						errLogger.Printf("ERROR :%v\n", errHash)
+						errLogger.Printf("ERROR: %v\n", errHash)
 						if exitOnError {
 							os.Exit(1)
 						}
@@ -127,7 +127,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 					// Get hash from receipt
 					receiptJSON, errFile := ioutil.ReadFile(path)
 					if errFile != nil {
-						errLogger.Printf("ERROR :%v\n", errFile)
+						errLogger.Printf("ERROR: %v\n", errFile)
 						if exitOnError {
 							os.Exit(1)
 						}
@@ -154,7 +154,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 		anchor := new(models.Anchor)
 		hash, errHash := helpers.HashFile(path)
 		if errHash != nil {
-			errLogger.Printf("ERROR :%v\n", errHash)
+			errLogger.Printf("ERROR: %v\n", errHash)
 			if exitOnError {
 				os.Exit(1)
 			}
@@ -162,7 +162,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 			tagsSlice := make([]string, 0)
 			var tags []string
 			if !(strings.HasPrefix(path, directory) && strings.HasSuffix(path, fileinfo.Name())) {
-				errLogger.Printf("ERROR : Unable to extract tags form the path: %s\n", path)
+				errLogger.Printf("ERROR: Unable to extract tags form the path: %s\n", path)
 				if exitOnError {
 					os.Exit(1)
 				}
@@ -182,7 +182,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 
 			anchorPost, errAnchorPost := client.PostAnchor(anchor)
 			if errAnchorPost != nil {
-				errLogger.Printf("ERROR :%v\n", errAnchorPost)
+				errLogger.Printf("ERROR: %v\n", errAnchorPost)
 				if exitOnError {
 					os.Exit(1)
 				}
@@ -191,14 +191,14 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 				pendingReceipt.TargetHash = anchorPost.Hash
 				pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 				if errPendingJSON != nil {
-					errLogger.Printf("ERROR :%v\n", errPendingJSON)
+					errLogger.Printf("ERROR: %v\n", errPendingJSON)
 					if exitOnError {
 						os.Exit(1)
 					}
 				} else {
 					errWrite := ioutil.WriteFile(path+"-"+anchorPost.Id+".pending.json", pendingJSON, 0644)
 					if errWrite != nil {
-						errLogger.Printf("ERROR :%v\n", errWrite)
+						errLogger.Printf("ERROR: %v\n", errWrite)
 						if exitOnError {
 							os.Exit(1)
 						}
