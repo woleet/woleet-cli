@@ -16,10 +16,10 @@ type AnchorIds struct {
 	Content []string `json:"content,omitempty"`
 
 	// `true` if this is the first page. 
-	First bool `json:"first,omitempty"`
+	First *bool `json:"first,omitempty"`
 
 	// `true` if this is the last page. 
-	Last bool `json:"last,omitempty"`
+	Last *bool `json:"last,omitempty"`
 
 	// Total number of pages available.
 	TotalPages int32 `json:"totalPages,omitempty"`

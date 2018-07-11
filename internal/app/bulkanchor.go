@@ -14,6 +14,7 @@ import (
 )
 
 func BulkAnchor(baseURL string, token string, directory string, exitOnError bool, private bool, strict bool, prune bool) {
+	invertPrivate := !private
 	stdLogger := log.New(os.Stdout, "woleet-cli ", log.LstdFlags)
 	errLogger := log.New(os.Stderr, "woleet-cli ", log.LstdFlags)
 	client := api.GetNewClient(baseURL, token)
@@ -178,7 +179,7 @@ func BulkAnchor(baseURL string, token string, directory string, exitOnError bool
 			anchor.Name = fileinfo.Name()
 			anchor.Hash = hash
 			anchor.Tags = tagsSlice
-			anchor.Public = !private
+			anchor.Public = &invertPrivate
 
 			anchorPost, errAnchorPost := client.PostAnchor(anchor)
 			if errAnchorPost != nil {

@@ -48,7 +48,7 @@ Global Flags:
 curl -s https://api.woleet.io/swagger.json > api/swagger.json
 
 # Update models
-swagger-codegen generate -i api/swagger.json -l go -o pkg/models -Dmodels -DmodelDocs=false -DpackageName=models
+swagger-codegen generate -i api/swagger.json -l go -o pkg/models -Dmodels -DmodelDocs=false -DpackageName=models --type-mappings boolean=*bool
 ```
 
 ## Build from sources

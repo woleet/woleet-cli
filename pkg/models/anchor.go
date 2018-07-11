@@ -40,10 +40,10 @@ type Anchor struct {
 	IdentityURL string `json:"identityURL,omitempty"`
 
 	// `true` (or unset) if the anchor is public. `false` if the anchor is private.<br> **If this field is not set at creation time, the anchor is public by default.** 
-	Public bool `json:"public,omitempty"`
+	Public *bool `json:"public,omitempty"`
 
 	// `true` if the proof receipt must be sent by email once available, or `false` (or unset) if not. 
-	NotifyByEmail bool `json:"notifyByEmail,omitempty"`
+	NotifyByEmail *bool `json:"notifyByEmail,omitempty"`
 
 	// Set of tags associated to the anchor. There is no restriction on tag names, except they cannot contain spaces.<br> Tags are aimed at classifying and searching anchors. 
 	Tags []string `json:"tags,omitempty"`

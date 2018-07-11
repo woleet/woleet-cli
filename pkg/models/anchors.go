@@ -16,10 +16,10 @@ type Anchors struct {
 	Content []Anchor `json:"content,omitempty"`
 
 	// `true` if this is the first page. 
-	First bool `json:"first,omitempty"`
+	First *bool `json:"first,omitempty"`
 
 	// `true` if this is the last page. 
-	Last bool `json:"last,omitempty"`
+	Last *bool `json:"last,omitempty"`
 
 	// Number of anchors in the retrieved page.
 	NumberOfElements int32 `json:"numberOfElements,omitempty"`

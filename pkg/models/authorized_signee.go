@@ -16,5 +16,5 @@ type AuthorizedSignee struct {
 	PubKey string `json:"pubKey,omitempty"`
 
 	// `true` if this signee's signature is mandatory.<br> This property is informative, it is not used by the platform. 
-	Required bool `json:"required,omitempty"`
+	Required *bool `json:"required,omitempty"`
 }

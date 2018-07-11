@@ -25,7 +25,7 @@ type SignatureRequest struct {
 	Name string `json:"name"`
 
 	// `true` if the signature request is suspended, or `false` (or unset) if not.<br> When suspended, no more signature can be registered before the request is resumed. 
-	Suspended bool `json:"suspended,omitempty"`
+	Suspended *bool `json:"suspended,omitempty"`
 
 	// SHA256 hash (ie. the fingerprint) of the original data to sign. 
 	HashToSign string `json:"hashToSign"`
