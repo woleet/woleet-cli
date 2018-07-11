@@ -1,18 +1,17 @@
 # woleet-cli
 
 Woleet command line interface.
-Currently, the tool only supports the 'anchor' command, which allows anchoring all files of a given directory recursively.
+Currently, the tool only supports the 'anchor' command, which allows to recursively anchor all files in a given directory.
 
 ## Fonctionnalities
 
-The tool scans a folder recursively and anchors all files available. It also gathers proof receipts and store them beside anchored files (in Chainpoint files named 'filename'-'anchorID'.receipt.json).
+The tool scans a folder recursively and anchors all files found. It also gathers proof receipts and store them beside anchored files (in Chainpoint files named 'filename'-'anchorID'.receipt.json).
 
-Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least until all proof receipts are ready to download). Obviously, the 
- files that were already anchored are not re-anchored.
+Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
 If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --strict--prune is used instead.
 
-To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files of a given directory.
+To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
 Note: tags are added to the anchors according to the name of subfolders  
 
