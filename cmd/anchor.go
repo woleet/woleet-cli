@@ -7,31 +7,27 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/woleet/woleet-cli/internal/app"
 )
 
 // anchorCmd represents the anchor command
 var anchorCmd = &cobra.Command{
 	Use:   "anchor",
-	Short: "Recursively anchor all files in a directory to create timestamped proofs of existence",
-	Long: `woleet-cli is a command line interface allowing to interact with
-woleet API (https://api.woleet.io). For now, this tool
-just support folder anchoring.`,
+	Short: "Recursively anchor all files in a given directory and retrieve timestamped proofs of existence",
+	Long:  "Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.",
 	Run: func(cmd *cobra.Command, args []string) {
-		if strings.EqualFold(Token, "") {
+		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
 			cmd.Help()
 			log.Fatalln("Please set a token")
 		}
-		directory, errDir := cmd.Flags().GetString("directory")
-		if errDir != nil {
-			log.Fatalln("Unable to parse --directory flag")
-		}
 
-		if strings.EqualFold(directory, "") {
+		if !viper.IsSet("app.directory") || strings.EqualFold(viper.GetString("app.directory"), "") {
+			cmd.Help()
 			log.Fatalln("Please set a directory")
 		}
 
-		absDirectory, errAbs := filepath.Abs(directory)
+		absDirectory, errAbs := filepath.Abs(viper.GetString("app.directory"))
 		if errAbs != nil {
 			log.Fatalln("Unable to get Absolute directory from --directory")
 		}
@@ -45,35 +41,45 @@ just support folder anchoring.`,
 			}
 		}
 
-		exitOnErr, errExitOnErr := cmd.Flags().GetBool("exitonerror")
-		if errExitOnErr != nil {
-			log.Fatalln("Unable to parse --exitonerror flag")
+		runParameters := new(app.RunParameters)
+
+		runParameters.Signature = false
+
+		runParameters.BaseURL = viper.GetString("api.url")
+		runParameters.Token = viper.GetString("api.token")
+		runParameters.InvertPrivate = !viper.GetBool("api.private")
+
+		runParameters.Directory = absDirectory
+		runParameters.Prune = viper.GetBool("app.strict-prune")
+		runParameters.ExitOnError = viper.GetBool("app.exitonerror")
+		if runParameters.Prune || viper.GetBool("app.strict") {
+			runParameters.Strict = true
+		} else {
+			runParameters.Strict = false
 		}
-		private, privateErr := cmd.Flags().GetBool("private")
-		if privateErr != nil {
-			log.Fatalln("Unable to parse --private flag")
-		}
-		strict, errStrict := cmd.Flags().GetBool("strict")
-		if errStrict != nil {
-			log.Fatalln("Unable to parse --strict flag")
-		}
-		strictPrune, errStrictPrune := cmd.Flags().GetBool("strict-prune")
-		if errStrictPrune != nil {
-			log.Fatalln("Unable to parse --strict-prune flag")
-		}
-		if strictPrune {
-			strict = true
-		}
-		app.BulkAnchor(BaseURL, Token, absDirectory, exitOnErr, private, strict, strictPrune)
+
+		app.BulkAnchor(runParameters)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(anchorCmd)
 
-	anchorCmd.Flags().StringP("directory", "d", "", "source directory containing files to anchor")
-	anchorCmd.Flags().BoolP("strict", "", false, "re-anchor any file that has changed since last anchoring")
-	anchorCmd.Flags().BoolP("strict-prune", "", false, "same as --strict, plus delete the previous anchoring receipt")
-	anchorCmd.Flags().BoolP("exitonerror", "e", false, "exit the app with an error code if something goes wrong")
-	anchorCmd.Flags().BoolP("private", "p", false, "create anchors with non-public access")
+	anchorCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to anchor (required)")
+	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
+	anchorCmd.Flags().BoolVarP(&strictPrune, "strict-prune", "", false, "same as --strict, plus delete the previous anchoring receipt")
+	anchorCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit the app with an error code if something goes wrong")
+	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create anchors with non-public access")
+
+	viper.BindPFlag("app.directory", anchorCmd.Flags().Lookup("directory"))
+	viper.BindPFlag("app.strict", anchorCmd.Flags().Lookup("strict"))
+	viper.BindPFlag("app.strict-prune", anchorCmd.Flags().Lookup("strict-prune"))
+	viper.BindPFlag("app.exitonerror", anchorCmd.Flags().Lookup("exitonerror"))
+	viper.BindPFlag("api.private", anchorCmd.Flags().Lookup("private"))
+
+	viper.BindEnv("app.directory")
+	viper.BindEnv("app.strict")
+	viper.BindEnv("app.strict-prune")
+	viper.BindEnv("app.exitonerror")
+	viper.BindEnv("api.private")
 }

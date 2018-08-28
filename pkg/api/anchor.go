@@ -6,12 +6,12 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models"
 )
 
-func (client *client) PostAnchor(anchor *models.Anchor) (*models.Anchor, error) {
+func (client *Client) PostAnchor(anchor *models.Anchor) (*models.Anchor, error) {
 	resp, err := client.RestyClient.
 		R().
-		SetResult(&models.Anchor{}).
 		SetBody(anchor).
-		Post(client.BaseURL + "anchor")
+		SetResult(&models.Anchor{}).
+		Post(client.BaseURL + "/anchor")
 
 	anchorRet := resp.Result().(*models.Anchor)
 
@@ -21,11 +21,11 @@ func (client *client) PostAnchor(anchor *models.Anchor) (*models.Anchor, error) 
 	return anchorRet, err
 }
 
-func (client *client) GetAnchor(anchorID string) (*models.Anchor, error) {
+func (client *Client) GetAnchor(anchorID string) (*models.Anchor, error) {
 	resp, err := client.RestyClient.
 		R().
 		SetResult(&models.Anchor{}).
-		Get(client.BaseURL + "anchor/" + anchorID)
+		Get(client.BaseURL + "/anchor/" + anchorID)
 
 	anchorRet := resp.Result().(*models.Anchor)
 

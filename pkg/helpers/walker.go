@@ -9,6 +9,17 @@ import (
 	"strings"
 )
 
+const SuffixAnchorPending string = ".pending.json"
+const SuffixAnchorReceipt string = ".receipt.json"
+const SuffixSignaturePending string = ".signature-pending.json"
+const SuffixSignatureReceipt string = ".signature-receipt.json"
+
+type RegexExtracted struct {
+	Filename string
+	AnchorID string
+	Suffix   string
+}
+
 func checkFilename(fileInfo os.FileInfo) bool {
 	if !fileInfo.Mode().IsRegular() {
 		return false
@@ -42,27 +53,45 @@ func Explore(directory string) (map[string]os.FileInfo, error) {
 	return mapPathFileinfo, errWalk
 }
 
-func Separate(mapPathFileinfo map[string]os.FileInfo, strict bool) (map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo) {
+func Separate(mapPathFileinfo map[string]os.FileInfo, signature bool, strict bool) (map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo) {
 	pendingFiles := make(map[string]os.FileInfo)
 	receiptedFiles := make(map[string]os.FileInfo)
 	for path, fileinfo := range mapPathFileinfo {
-		if strings.HasSuffix(fileinfo.Name(), ".pending.json") {
-			pendingFiles[path] = fileinfo
+		if strings.HasSuffix(fileinfo.Name(), SuffixAnchorPending) {
+			if !signature {
+				pendingFiles[path] = fileinfo
+			}
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), ".receipt.json") {
-			receiptedFiles[path] = fileinfo
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixAnchorReceipt) {
+			if !signature {
+				receiptedFiles[path] = fileinfo
+			}
+			delete(mapPathFileinfo, path)
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignaturePending) {
+			if signature {
+				pendingFiles[path] = fileinfo
+			}
+			delete(mapPathFileinfo, path)
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignatureReceipt) {
+			if signature {
+				receiptedFiles[path] = fileinfo
+			}
 			delete(mapPathFileinfo, path)
 		}
 	}
 	return mapPathFileinfo, pendingFiles, receiptedFiles
 }
 
-func GetAnchorIDFromName(fileInfo os.FileInfo) (string, error) {
-	re := regexp.MustCompile(".*?-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})\\.(receipt|pending)\\.json")
+func GetAnchorIDFromName(fileInfo os.FileInfo) (*RegexExtracted, error) {
+	re := regexp.MustCompile(".*?-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixAnchorPending+"|"+SuffixAnchorReceipt+"|"+SuffixSignaturePending+"|"+SuffixSignatureReceipt, ".", "\\.", -1) + ")")
 	match := re.FindStringSubmatch(fileInfo.Name())
 	if len(match) != 3 {
 		err := errors.New("Unable to extract anchorID form the filename:" + fileInfo.Name())
-		return "", err
+		return nil, err
 	}
-	return match[1], nil
+	out := new(RegexExtracted)
+	out.Filename = match[0]
+	out.AnchorID = match[1]
+	out.Suffix = match[2]
+	return out, nil
 }

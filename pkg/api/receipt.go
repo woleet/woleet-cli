@@ -6,11 +6,11 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models"
 )
 
-func (client *client) GetReceipt(anchorID string) (*models.Receipt, error) {
+func (client *Client) GetReceipt(anchorID string) (*models.Receipt, error) {
 	resp, err := client.RestyClient.
 		R().
 		SetResult(&models.Receipt{}).
-		Get(client.BaseURL + "receipt/" + anchorID)
+		Get(client.BaseURL + "/receipt/" + anchorID)
 
 	receiptRet := resp.Result().(*models.Receipt)
 
@@ -20,11 +20,11 @@ func (client *client) GetReceipt(anchorID string) (*models.Receipt, error) {
 	return receiptRet, err
 }
 
-func (client *client) GetReceiptToFile(anchorID string, path string) error {
+func (client *Client) GetReceiptToFile(anchorID string, path string) error {
 	resp, err := client.RestyClient.
 		R().
 		SetOutput(path).
-		Get(client.BaseURL + "receipt/" + anchorID)
+		Get(client.BaseURL + "/receipt/" + anchorID)
 
 	if resp.StatusCode() != 200 {
 		err = errors.New(string(resp.Body()[:]))

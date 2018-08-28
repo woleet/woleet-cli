@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/tls"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -8,19 +10,15 @@ import (
 	"gopkg.in/resty.v1"
 )
 
-type client struct {
+type Client struct {
 	BaseURL     string
 	RestyClient *resty.Client
 }
 
-func GetNewClient(baseURL string, token string) *client {
-	client := new(client)
+func GetNewClient(baseURL string, token string) *Client {
+	client := new(Client)
 
-	if strings.HasSuffix(baseURL, "/") {
-		client.BaseURL = baseURL
-	} else {
-		client.BaseURL = baseURL + "/"
-	}
+	client.BaseURL = strings.TrimSuffix(baseURL, "/")
 
 	client.RestyClient = resty.New()
 	client.RestyClient.SetAuthToken(token)
@@ -32,6 +30,13 @@ func GetNewClient(baseURL string, token string) *client {
 			return r.StatusCode() == http.StatusTooManyRequests, nil
 		},
 	)
-
 	return client
+}
+
+func (client *Client) SetCustomLogger(customLogger *log.Logger) {
+	client.RestyClient.Log = customLogger
+}
+
+func (client *Client) DisableSSLVerification() {
+	client.RestyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 }
