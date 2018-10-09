@@ -38,7 +38,7 @@ The tool behavior can be configured using command line arguments, environment va
 Usage:
 woleet-cli anchor [flags]
   -d, --directory string   source directory containing files to anchor (required)
-  -e, --exitonerror        exit the app with an error code if something goes wrong
+  -e, --exitonerror        exit the app with an error code if anything goes wrong
   -h, --help               help for anchor
   -p, --private            create anchors with non-public access
       --strict             re-anchor any file that has changed since last anchoring
@@ -49,7 +49,7 @@ woleet-cli sign [flags]
       --backendkitSignURL string   backendkit sign url ex: "https://backendkit.com:4443/signature" (required)
       --backendkitToken string     backendkit token (required)
   -d, --directory string           source directory containing files to sign (required)
-  -e, --exitonerror                exit the app with an error code if something goes wrong
+  -e, --exitonerror                exit the app with an error code if anything goes wrong
   -h, --help                       help for sign
   -p, --private                    create signatues with non-public access
       --strict                     re-sign any file that has changed since last signature

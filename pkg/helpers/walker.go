@@ -30,7 +30,7 @@ func checkFilename(fileInfo os.FileInfo) bool {
 	}
 }
 
-func Explore(directory string) (map[string]os.FileInfo, error) {
+func ExploreDirectory(directory string) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {

@@ -68,7 +68,7 @@ func init() {
 	anchorCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to anchor (required)")
 	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
 	anchorCmd.Flags().BoolVarP(&strictPrune, "strict-prune", "", false, "same as --strict, plus delete the previous anchoring receipt")
-	anchorCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit the app with an error code if something goes wrong")
+	anchorCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit the app with an error code if anything goes wrong")
 	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create anchors with non-public access")
 
 	viper.BindPFlag("app.directory", anchorCmd.Flags().Lookup("directory"))

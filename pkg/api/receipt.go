@@ -20,10 +20,10 @@ func (client *Client) GetReceipt(anchorID string) (*models.Receipt, error) {
 	return receiptRet, err
 }
 
-func (client *Client) GetReceiptToFile(anchorID string, path string) error {
+func (client *Client) GetReceiptToFile(anchorID string, outputPath string) error {
 	resp, err := client.RestyClient.
 		R().
-		SetOutput(path).
+		SetOutput(outputPath).
 		Get(client.BaseURL + "/receipt/" + anchorID)
 
 	if resp.StatusCode() != 200 {

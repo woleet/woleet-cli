@@ -88,7 +88,7 @@ func init() {
 	signCmd.Flags().StringVarP(&backendkitPubKey, "backendkitPubKey", "", "", "backendkit pubkey")
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature")
 	signCmd.Flags().BoolVarP(&strictPrune, "strict-prune", "", false, "same as --strict, plus delete the previous signature receipt")
-	signCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit the app with an error code if something goes wrong")
+	signCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit the app with an error code if anything goes wrong")
 	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create signatues with non-public access")
 	signCmd.Flags().BoolVarP(&unsecureSSL, "unsecureSSL", "", false, "Do not check the ssl certificate validity for the backendkit (only use in developpement)")
 

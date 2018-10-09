@@ -12,3 +12,7 @@ var strictPrune bool
 var exitonerror bool
 var private bool
 var unsecureSSL bool
+
+var exportDirectory string
+var exportLimitDate string
+var exportExitonerror bool

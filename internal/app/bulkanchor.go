@@ -39,15 +39,6 @@ type commonInfos struct {
 	runParameters    RunParameters
 }
 
-func (commonInfos *commonInfos) errHandlerExitOnError(err error) {
-	if err != nil {
-		commonInfos.errLogger.Printf("ERROR: %v\n", err)
-		if commonInfos.runParameters.ExitOnError {
-			os.Exit(1)
-		}
-	}
-}
-
 func BulkAnchor(runParameters *RunParameters) {
 	commonInfos := new(commonInfos)
 	commonInfos.runParameters = *runParameters
@@ -58,7 +49,7 @@ func BulkAnchor(runParameters *RunParameters) {
 	commonInfos.client.SetCustomLogger(commonInfos.errLogger)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.Explore(runParameters.Directory)
+	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory)
 	if err != nil {
 		commonInfos.errLogger.Printf("ERROR: %v\n", err)
 		os.Exit(1)
@@ -86,12 +77,12 @@ func (commonInfos *commonInfos) checkPendings() {
 	for path, fileinfo := range commonInfos.pending {
 		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
 		if erranchorNameInfo != nil {
-			commonInfos.errHandlerExitOnError(erranchorNameInfo)
+			errHandlerExitOnError(erranchorNameInfo, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		anchorGet, errAnchorGet := commonInfos.client.GetAnchor(anchorNameInfo.AnchorID)
 		if errAnchorGet != nil {
-			commonInfos.errHandlerExitOnError(errAnchorGet)
+			errHandlerExitOnError(errAnchorGet, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 
@@ -107,7 +98,7 @@ func (commonInfos *commonInfos) checkPendings() {
 			}
 			hash, errhash := helpers.HashFile(originalFilePath)
 			if errhash != nil {
-				commonInfos.errHandlerExitOnError(errhash)
+				errHandlerExitOnError(errhash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			// If the hashes corresponds, we removes the original file from the filelist
@@ -136,12 +127,12 @@ func (commonInfos *commonInfos) checkPendings() {
 			}
 			errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, strings.TrimSuffix(path, anchorNameInfo.Suffix)+currentSuffix)
 			if errGetReceipt != nil {
-				commonInfos.errHandlerExitOnError(errGetReceipt)
+				errHandlerExitOnError(errGetReceipt, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			errRemove := os.Remove(path)
 			if errRemove != nil {
-				commonInfos.errHandlerExitOnError(errRemove)
+				errHandlerExitOnError(errRemove, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			}
 			commonInfos.stdLogger.Printf("INFO: Done\n")
 		}
@@ -154,7 +145,7 @@ func (commonInfos *commonInfos) checkReceipts() {
 		// Extracting the file's original path by the name of the pending file
 		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
 		if erranchorNameInfo != nil {
-			commonInfos.errHandlerExitOnError(erranchorNameInfo)
+			errHandlerExitOnError(erranchorNameInfo, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		// Extracting the file's original path by the name of the receipt file
@@ -173,13 +164,13 @@ func (commonInfos *commonInfos) checkReceipts() {
 		// is the same as the one in the receipt file
 		hash, errHash := helpers.HashFile(originalFilePath)
 		if errHash != nil {
-			commonInfos.errHandlerExitOnError(errHash)
+			errHandlerExitOnError(errHash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		// Get hash from receipt
 		receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
 		if errReceiptJSON != nil {
-			commonInfos.errHandlerExitOnError(errReceiptJSON)
+			errHandlerExitOnError(errReceiptJSON, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		var receiptUnmarshalled models.Receipt
@@ -203,7 +194,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		anchor := new(models.Anchor)
 		hash, errHash := helpers.HashFile(path)
 		if errHash != nil {
-			commonInfos.errHandlerExitOnError(errHash)
+			errHandlerExitOnError(errHash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		tagsSlice := make([]string, 0)
@@ -230,7 +221,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		} else {
 			signatureGet, errSignatureGet := commonInfos.backendkitClient.GetSignature(hash, commonInfos.runParameters.BackendkitPubKey)
 			if errSignatureGet != nil {
-				commonInfos.errHandlerExitOnError(errSignatureGet)
+				errHandlerExitOnError(errSignatureGet, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			anchor.Name = fileinfo.Name()
@@ -248,7 +239,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *models.Anchor, path string) {
 	anchorPost, errAnchorPost := commonInfos.client.PostAnchor(anchor)
 	if errAnchorPost != nil {
-		commonInfos.errHandlerExitOnError(errAnchorPost)
+		errHandlerExitOnError(errAnchorPost, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	pendingReceipt := new(models.Receipt)
@@ -259,7 +250,7 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *models.Ancho
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
-		commonInfos.errHandlerExitOnError(errPendingJSON)
+		errHandlerExitOnError(errPendingJSON, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	currentSuffix := helpers.SuffixAnchorPending
@@ -268,7 +259,7 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *models.Ancho
 	}
 	errWriteFile := ioutil.WriteFile(path+"-"+anchorPost.Id+currentSuffix, pendingJSON, 0644)
 	if errWriteFile != nil {
-		commonInfos.errHandlerExitOnError(errWriteFile)
+		errHandlerExitOnError(errWriteFile, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	if !commonInfos.runParameters.Signature {
