@@ -83,14 +83,14 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 
 	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "source directory containing files to anchor (required)")
-	exportCmd.Flags().StringVarP(&exportLimitDate, "limitDate", "l", "", "get all receipts generated from the provided date format:yyyy-MM-dd")
+	exportCmd.Flags().StringVarP(&exportLimitDate, "limitdate", "l", "", "get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)")
 	exportCmd.Flags().BoolVarP(&exportExitonerror, "exitonerror", "e", false, "exit the app with an error code if anything goes wrong")
 
 	viper.BindPFlag("export.directory", exportCmd.Flags().Lookup("directory"))
-	viper.BindPFlag("export.limitDate", exportCmd.Flags().Lookup("limitDate"))
+	viper.BindPFlag("export.limitdate", exportCmd.Flags().Lookup("limitdate"))
 	viper.BindPFlag("export.exitonerror", exportCmd.Flags().Lookup("exitonerror"))
 
 	viper.BindEnv("export.directory")
-	viper.BindEnv("export.limitDate")
+	viper.BindEnv("export.limitdate")
 	viper.BindEnv("export.exitonerror")
 }

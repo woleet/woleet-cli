@@ -6,8 +6,11 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 Currently, the tool only supports:
  * the `anchor` command, allowing to recursively anchor all files in a given directory
  * the `sign` command, allowing to recursively sign all files in a given directory (using the backend kit: <https://github.com/woleet/woleet-backendkit>)
+ * the `export` command, allowing to download all your receipts
 
-## Functionalities
+## Anchor / Sign
+
+### Functionalities
 
 The tool scans a folder recursively and anchors or sign all files found. It also gathers proof receipts and stores them beside anchored or signed files (in a Chainpoint file named 'filename'-'anchorID'.(signature-)?receipt.json).
 
@@ -19,20 +22,33 @@ To sum up, this tool can be used to generate and maintain the set of timestamped
 
 Note: tags are added to the anchors according to the name of sub-folders  
 
+### Limitations
+
+* All files and folders beginning by '.' or finished by '.(signature-)?receipt|pending.json' are ignored
+* Symlinks are not followed
+* Scanned sub-folders cannot have a space in their name
+* The maximum length of the subfolder path (without delimiters) is 128 characters
+
+## Export
+
+The tool dumps all your receipts into a folder.
+
+### Functionalities
+
+### Limitations
+
+* Each receipt will be named: 'anchor name'-'anchor ID'.(signature-)?receipt.json
+
+## Configuration
+
 The tool behavior can be configured using command line arguments, environment variables or a configuration file. When several configuration means are used, the following priorities are applied:
+
 - command line arguments
 - environment variables
 - config file
 - default value (if any)
 
-## Limitations
-
-- All files and folders beginning by '.' or finished by '.(signature-)?receipt|pending.json' are ignored
-- Symlinks are not followed  
-- Scanned sub-folders cannot have a space in their name  
-- The maximum length of the subfolder path (without delimiters) is 128 characters  
-
-## Usage
+### Usage
 
 ```
 Usage:
@@ -56,13 +72,19 @@ woleet-cli sign [flags]
       --strict-prune               same as --strict, plus delete the previous signature receipt
       --unsecureSSL                Do not check the ssl certificate validity for the backendkit (only use in developpement)
 
+woleet-cli export [flags]
+  -d, --directory string   source directory containing files to anchor (required)
+  -e, --exitonerror        exit the app with an error code if anything goes wrong
+  -h, --help               help for export
+  -l, --limitdate string   get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)
+
 Global Flags:
   -c, --config string   config file (default is $HOME/.woleet-cli.yaml)
   -t, --token string    JWT token (required)
   -u, --url string      custom API url (default "https://api.woleet.io/v1")
 ```
 
-## Configuration file format
+### Configuration file format
 
 YAML:
 
@@ -80,6 +102,10 @@ sign:
   backendkitSignURL: https://backendkit.com:4443/signature
   backendkitToken: insert-your-backendkit-token-here
   unsecureSSL: false
+export:
+  directory: /home/folder/to/anchor
+  limitdate: 2018-01-21
+  exitonerror: true
 ```
 
 JSON:
@@ -101,6 +127,11 @@ JSON:
     "backendkitSignURL": "https://backendkit.com:4443/signature",
     "backendkitToken": "insert-your-backendkit-token-here",
     "unsecureSSL": false
+  },
+  "export": {
+  "directory": "/home/folder/to/anchor",
+  "limitdate": "2018-01-21",
+  "exitonerror": true
   }
 }
 ```
@@ -119,6 +150,9 @@ export WLT_APP_STRICT_PRUNE="true"
 export WLT_SIGN_BACKENDKITSIGNURL="https://backendkit.com:4443/signature"
 export WLT_SIGN_BACKENDKITTOKEN="insert-your-backendkit-token-here"
 export WLT_SIGN_UNSECURESSL="false"
+export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
+export WLT_EXPORT_LIMITDATE="2018-01-21"
+export WLT_EXPORT_EXITONERROR="true"
 ```
 
 ## Generate models from OpenAPI/Swagger specifications
