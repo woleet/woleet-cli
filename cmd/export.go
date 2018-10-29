@@ -17,7 +17,8 @@ import (
 var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Download all receipts for your anchors in a given directory",
-	Long:  "Download all receipts for your anchors in a given directory",
+	Long: `Download all receipts for your anchors in a given directory
+You can specify a date to get all receipts created from this date`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
 			cmd.Help()
@@ -82,7 +83,7 @@ var exportCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(exportCmd)
 
-	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "source directory containing files to anchor (required)")
+	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where the receipts will be downloaded (required)")
 	exportCmd.Flags().StringVarP(&exportLimitDate, "limitdate", "l", "", "get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)")
 	exportCmd.Flags().BoolVarP(&exportExitonerror, "exitonerror", "e", false, "exit the app with an error code if anything goes wrong")
 

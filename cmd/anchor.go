@@ -15,7 +15,8 @@ import (
 var anchorCmd = &cobra.Command{
 	Use:   "anchor",
 	Short: "Recursively anchor all files in a given directory and retrieve timestamped proofs of existence",
-	Long:  "Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.",
+	Long:  `Recursively anchor all files in a given directory and retrieve timestamped proofs of existence
+Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
 			cmd.Help()

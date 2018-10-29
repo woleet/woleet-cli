@@ -15,7 +15,8 @@ import (
 var signCmd = &cobra.Command{
 	Use:   "sign",
 	Short: "Recursively sign all files in a given directory and retrieve timestamped proofs of signature",
-	Long:  "Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.",
+	Long: `Recursively sign all files in a given directory and retrieve timestamped proofs of signature
+Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
 			cmd.Help()

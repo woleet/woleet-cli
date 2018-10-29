@@ -7,10 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/woleet/woleet-cli/pkg/models"
-
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/helpers"
+	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
 type RunParameters struct {
@@ -173,7 +172,7 @@ func (commonInfos *commonInfos) checkReceipts() {
 			errHandlerExitOnError(errReceiptJSON, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 			continue
 		}
-		var receiptUnmarshalled models.Receipt
+		var receiptUnmarshalled woleetapi.Receipt
 		json.Unmarshal(receiptJSON, &receiptUnmarshalled)
 		if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.TargetHash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash)) {
 			// If the hashes corresponds, we removes the original file from the filelist
@@ -191,7 +190,7 @@ func (commonInfos *commonInfos) checkReceipts() {
 func (commonInfos *commonInfos) checkStandardFiles() {
 	// In this loop only the standard files are used (not receipt or pending files)
 	for path, fileinfo := range commonInfos.mapPathFileinfo {
-		anchor := new(models.Anchor)
+		anchor := new(woleetapi.Anchor)
 		hash, errHash := helpers.HashFile(path)
 		if errHash != nil {
 			errHandlerExitOnError(errHash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
@@ -236,13 +235,13 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 	}
 }
 
-func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *models.Anchor, path string) {
+func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.Anchor, path string) {
 	anchorPost, errAnchorPost := commonInfos.client.PostAnchor(anchor)
 	if errAnchorPost != nil {
 		errHandlerExitOnError(errAnchorPost, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
 		return
 	}
-	pendingReceipt := new(models.Receipt)
+	pendingReceipt := new(woleetapi.Receipt)
 	if !commonInfos.runParameters.Signature {
 		pendingReceipt.TargetHash = anchorPost.Hash
 	} else {

@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/woleet/woleet-cli/pkg/models"
+	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
-func (client *Client) GetAnchors(page int, size int, direction string, sort string) (*models.Anchors, error) {
+func (client *Client) GetAnchors(page int, size int, direction string, sort string) (*woleetapi.Anchors, error) {
 	resp, err := client.RestyClient.
 		R().
 		SetQueryParams(map[string]string{
@@ -15,10 +15,10 @@ func (client *Client) GetAnchors(page int, size int, direction string, sort stri
 			"size":      strconv.Itoa(size),
 			"direction": direction,
 			"sort":      sort,
-		}).SetResult(&models.Anchors{}).
+		}).SetResult(&woleetapi.Anchors{}).
 		Get(client.BaseURL + "/anchors")
 
-	anchorsRet := resp.Result().(*models.Anchors)
+	anchorsRet := resp.Result().(*woleetapi.Anchors)
 
 	if resp.StatusCode() != 200 {
 		err = errors.New(string(resp.Body()[:]))

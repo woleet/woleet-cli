@@ -3,17 +3,17 @@ package api
 import (
 	"errors"
 
-	"github.com/woleet/woleet-cli/pkg/models"
+	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
-func (client *Client) PostAnchor(anchor *models.Anchor) (*models.Anchor, error) {
+func (client *Client) PostAnchor(anchor *woleetapi.Anchor) (*woleetapi.Anchor, error) {
 	resp, err := client.RestyClient.
 		R().
 		SetBody(anchor).
-		SetResult(&models.Anchor{}).
+		SetResult(&woleetapi.Anchor{}).
 		Post(client.BaseURL + "/anchor")
 
-	anchorRet := resp.Result().(*models.Anchor)
+	anchorRet := resp.Result().(*woleetapi.Anchor)
 
 	if resp.StatusCode() != 200 {
 		err = errors.New(string(resp.Body()[:]))
@@ -21,13 +21,13 @@ func (client *Client) PostAnchor(anchor *models.Anchor) (*models.Anchor, error) 
 	return anchorRet, err
 }
 
-func (client *Client) GetAnchor(anchorID string) (*models.Anchor, error) {
+func (client *Client) GetAnchor(anchorID string) (*woleetapi.Anchor, error) {
 	resp, err := client.RestyClient.
 		R().
-		SetResult(&models.Anchor{}).
+		SetResult(&woleetapi.Anchor{}).
 		Get(client.BaseURL + "/anchor/" + anchorID)
 
-	anchorRet := resp.Result().(*models.Anchor)
+	anchorRet := resp.Result().(*woleetapi.Anchor)
 
 	if !(resp.StatusCode() == 200 || resp.StatusCode() == 202) {
 		err = errors.New(string(resp.Body()[:]))

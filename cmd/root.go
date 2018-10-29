@@ -15,7 +15,8 @@ var rootCmd = &cobra.Command{
 	Use:     "woleet-cli",
 	Version: "0.1.1",
 	Short:   "Woleet command line interface",
-	Long:    "woleet-cli is a command line interface allowing to interact with Woleet API (https://api.woleet.io). For now, this tool only supports anchoring and signing all files of a given folder.",
+	Long: `woleet-cli is a command line interface allowing to interact with Woleet API (https://api.woleet.io). 
+For now, this tool only supports anchoring and signing all files of a given folder as well as exporting all your receipts on a folder`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -43,10 +44,12 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
+	if (cfgFile == "DISABLED") || (os.Getenv("WLT_CONFIG") != "DISABLED") {
+		return
+	} else if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
-	} else if (os.Getenv("WLT_CONFIG")) != "" {
+	} else if os.Getenv("WLT_CONFIG") != "" {
 		// Use config file from env
 		viper.SetConfigFile(os.Getenv("WLT_CONFIG"))
 	} else {

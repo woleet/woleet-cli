@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-const SuffixAnchorPending string = ".pending.json"
-const SuffixAnchorReceipt string = ".receipt.json"
+const SuffixAnchorPending string = ".anchor-pending.json"
+const SuffixAnchorReceipt string = ".anchor-receipt.json"
 const SuffixSignaturePending string = ".signature-pending.json"
 const SuffixSignatureReceipt string = ".signature-receipt.json"
 

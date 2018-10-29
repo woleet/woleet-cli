@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/woleet/woleet-cli/pkg/modelsBackendkit"
+	"github.com/woleet/woleet-cli/pkg/models/backendkit"
 )
 
-func (client *Client) GetSignature(hashToSign string, pubKey string) (*modelsBackendkit.SignatureResult, error) {
+func (client *Client) GetSignature(hashToSign string, pubKey string) (*backendkit.SignatureResult, error) {
 
 	queryMap := map[string]string{
 		"hashToSign": hashToSign,
@@ -21,10 +21,10 @@ func (client *Client) GetSignature(hashToSign string, pubKey string) (*modelsBac
 	resp, err := client.RestyClient.
 		R().
 		SetQueryParams(queryMap).
-		SetResult(&modelsBackendkit.SignatureResult{}).
+		SetResult(&backendkit.SignatureResult{}).
 		Get(client.BaseURL)
 
-	signatureRet := resp.Result().(*modelsBackendkit.SignatureResult)
+	signatureRet := resp.Result().(*backendkit.SignatureResult)
 
 	if !(resp.StatusCode() == 200) {
 		err = errors.New(string(resp.Body()[:]))
@@ -36,7 +36,7 @@ func (client *Client) CheckBackendkitConnection(errLogger *log.Logger) {
 
 	resp, _ := client.RestyClient.
 		R().
-		SetResult(&modelsBackendkit.SignatureResult{}).
+		SetResult(&backendkit.SignatureResult{}).
 		Get(client.BaseURL)
 
 	if resp.StatusCode() != 400 {

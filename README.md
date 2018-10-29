@@ -4,15 +4,16 @@ woleet-cli is an open source command line tool on top of the Woleet API.
 The tool is written in Go and has been tested on Windows, macOS and Linux.
 
 Currently, the tool only supports:
- * the `anchor` command, allowing to recursively anchor all files in a given directory
- * the `sign` command, allowing to recursively sign all files in a given directory (using the backend kit: <https://github.com/woleet/woleet-backendkit>)
- * the `export` command, allowing to download all your receipts
+
+* the `anchor` command, allowing to recursively anchor all files in a given directory
+* the `sign` command, allowing to recursively sign all files in a given directory (using the backend kit: <https://github.com/woleet/woleet-backendkit>)
+* the `export` command, allowing to download all your receipts in a given directory
 
 ## Anchor / Sign
 
 ### Functionalities
 
-The tool scans a folder recursively and anchors or sign all files found. It also gathers proof receipts and stores them beside anchored or signed files (in a Chainpoint file named 'filename'-'anchorID'.(signature-)?receipt.json).
+The tool scans a folder recursively and anchors or sign all files found. It also gathers proof receipts and stores them beside anchored or signed files (in a Chainpoint file named 'filename'-'anchorID'.(anchor|signature)-receipt.json).
 
 Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
@@ -24,20 +25,22 @@ Note: tags are added to the anchors according to the name of sub-folders
 
 ### Limitations
 
-* All files and folders beginning by '.' or finished by '.(signature-)?receipt|pending.json' are ignored
+* All files and folders beginning by '.' or finished by '.(anchor|signature)-(receipt|pending).json' are ignored
 * Symlinks are not followed
 * Scanned sub-folders cannot have a space in their name
 * The maximum length of the subfolder path (without delimiters) is 128 characters
 
 ## Export
 
-The tool dumps all your receipts into a folder.
-
 ### Functionalities
+
+The tool dumps all your receipts into a folder.  
+You can specify a limit date to get all receipt created from this date.  
 
 ### Limitations
 
-* Each receipt will be named: 'anchor name'-'anchor ID'.(signature-)?receipt.json
+* Each receipt will be named: 'anchor name'-'anchor ID'.(anchor|signature)-receipt.json
+* Exporting can be quite long, as each recepit is downloaded individually
 
 ## Configuration
 
@@ -73,7 +76,7 @@ woleet-cli sign [flags]
       --unsecureSSL                Do not check the ssl certificate validity for the backendkit (only use in developpement)
 
 woleet-cli export [flags]
-  -d, --directory string   source directory containing files to anchor (required)
+  -d, --directory string   directory where the receipts will be downloaded (required)
   -e, --exitonerror        exit the app with an error code if anything goes wrong
   -h, --help               help for export
   -l, --limitdate string   get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)
@@ -166,14 +169,14 @@ curl -s https://api.woleet.io/swagger.json > api/swagger.json
 curl -s https://raw.githubusercontent.com/woleet/woleet-backendkit/master/swagger.yaml > api/swaggerBackendkit.yaml
 
 # Update models
-swagger-codegen generate -i api/swagger.json -l go -o pkg/models -Dmodels -DmodelDocs=false -DpackageName=models --type-mappings boolean=*bool && \
-ANCHOR_FILE=$(cat pkg/models/anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/anchor.go
-swagger-codegen generate -i api/swaggerBackendkit.yaml -l go -o pkg/modelsBackendkit -Dmodels -DmodelDocs=false -DpackageName=modelsBackendkit --type-mappings boolean=*bool
+openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -Dmodels -DmodelDocs=false -DpackageName=woleetapi --type-mappings boolean=*bool && \
+ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
+openapi-generator generate -i api/swaggerBackendkit.yaml -g go -o pkg/models/backendkit -Dmodels -DmodelDocs=false -DpackageName=backendkit --type-mappings boolean=*bool
 ```
 
 ## Build the tool from sources
 
-Standard way:
+### Standard way
 
 ```bash
 go get -u github.com/woleet/woleet-cli
@@ -182,6 +185,8 @@ go get -u github.com/woleet/woleet-cli
 
 Complex way:
 
+### For go < 1.11
+
 ```bash
 # Clone this project in $GOPATH/src/github.com/woleet
 # get mandatory libraries:
@@ -189,8 +194,19 @@ go get -u gopkg.in/resty.v1
 go get -u github.com/spf13/cobra
 go get -u github.com/spf13/viper
 go get -u github.com/mitchellh/go-homedir
-# For windows only, untested:
+# For windows only:
 go get -u github.com/inconshreveable/mousetrap
+
+# Generating the actual binary
+go build -o $<desired_path>/woleet-cli
+```
+
+### For go >= 1.11
+
+```bash
+# Clone this project wherever you want
+# get libraries:
+go get
 
 # Generating the actual binary
 go build -o $<desired_path>/woleet-cli
