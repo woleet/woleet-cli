@@ -44,7 +44,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if (cfgFile == "DISABLED") || (os.Getenv("WLT_CONFIG") != "DISABLED") {
+	if (cfgFile == "DISABLED") || (os.Getenv("WLT_CONFIG") == "DISABLED") {
 		return
 	} else if cfgFile != "" {
 		// Use config file from the flag.

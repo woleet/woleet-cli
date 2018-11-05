@@ -51,6 +51,14 @@ The tool behavior can be configured using command line arguments, environment va
 - config file
 - default value (if any)
 
+There is also a special environnement variable or config path to disable environnement configuration and configuration file:
+
+```bash
+woleet-cli --config "DISABLED" ...
+# or
+export WLT_CONFIG="DISABLED"
+```
+
 ### Usage
 
 ```
