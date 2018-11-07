@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -21,12 +20,16 @@ var exportCmd = &cobra.Command{
 You can specify a date to get all receipts created from this date`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a token")
 		}
 
 		if !viper.IsSet("export.directory") || strings.EqualFold(viper.GetString("export.directory"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a directory")
 		}
 
@@ -76,7 +79,7 @@ You can specify a date to get all receipts created from this date`,
 			}
 			unixEpochLimit = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).UnixNano()
 		}
-		app.ExportReceipts(viper.GetString("api.token"), viper.GetString("api.url"), absExportDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"))
+		app.ExportReceipts(viper.GetString("api.token"), viper.GetString("api.url"), absExportDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
 	},
 }
 

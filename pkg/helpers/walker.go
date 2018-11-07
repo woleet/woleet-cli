@@ -2,11 +2,12 @@ package helpers
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 const SuffixAnchorPending string = ".anchor-pending.json"
@@ -30,7 +31,7 @@ func checkFilename(fileInfo os.FileInfo) bool {
 	}
 }
 
-func ExploreDirectory(directory string) (map[string]os.FileInfo, error) {
+func ExploreDirectory(directory string, log *logrus.Logger) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -38,10 +39,10 @@ func ExploreDirectory(directory string) (map[string]os.FileInfo, error) {
 			if strings.HasPrefix(info.Name(), ".") {
 				return filepath.SkipDir
 			} else if pathlenght > 128 {
-				fmt.Fprintf(os.Stderr, "The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
+				log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
 				return filepath.SkipDir
 			} else if strings.Contains(strings.TrimPrefix(path, directory), " ") {
-				fmt.Fprintf(os.Stderr, "The directory: %s will be ignored, as it's name contains a space\n", path)
+				log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
 				return filepath.SkipDir
 			}
 		}

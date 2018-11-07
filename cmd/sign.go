@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,12 +18,16 @@ var signCmd = &cobra.Command{
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a token")
 		}
 
 		if !viper.IsSet("app.directory") || strings.EqualFold(viper.GetString("app.directory"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a directory")
 		}
 
@@ -43,13 +46,16 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 
 		if !viper.IsSet("sign.backendkitSignURL") || strings.EqualFold(viper.GetString("sign.backendkitSignURL"), "") {
-			cmd.Help()
-
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a backendkitSignURL")
 		}
 
 		if !viper.IsSet("sign.backendkitToken") || strings.EqualFold(viper.GetString("sign.backendkitToken"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a backendkitToken")
 		}
 
@@ -76,7 +82,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 			runParameters.BackendkitPubKey = viper.GetString("sign.backendkitPubKey")
 		}
 
-		app.BulkAnchor(runParameters)
+		app.BulkAnchor(runParameters, log)
 	},
 }
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,16 +14,20 @@ import (
 var anchorCmd = &cobra.Command{
 	Use:   "anchor",
 	Short: "Recursively anchor all files in a given directory and retrieve timestamped proofs of existence",
-	Long:  `Recursively anchor all files in a given directory and retrieve timestamped proofs of existence
+	Long: `Recursively anchor all files in a given directory and retrieve timestamped proofs of existence
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a token")
 		}
 
 		if !viper.IsSet("app.directory") || strings.EqualFold(viper.GetString("app.directory"), "") {
-			cmd.Help()
+			if !viper.GetBool("log.json") {
+				cmd.Help()
+			}
 			log.Fatalln("Please set a directory")
 		}
 
@@ -59,7 +62,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 			runParameters.Strict = false
 		}
 
-		app.BulkAnchor(runParameters)
+		app.BulkAnchor(runParameters, log)
 	},
 }
 

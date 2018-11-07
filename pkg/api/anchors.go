@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
@@ -19,9 +18,6 @@ func (client *Client) GetAnchors(page int, size int, direction string, sort stri
 		Get(client.BaseURL + "/anchors")
 
 	anchorsRet := resp.Result().(*woleetapi.Anchors)
-
-	if resp.StatusCode() != 200 {
-		err = errors.New(string(resp.Body()[:]))
-	}
+	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 	return anchorsRet, err
 }

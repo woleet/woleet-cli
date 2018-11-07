@@ -1,9 +1,16 @@
 package cmd
 
+import (
+	"github.com/sirupsen/logrus"
+)
+
 // Global
 var cfgFile string
 var baseURL string
 var token string
+var logLevel string
+var json bool
+var log = logrus.New()
 
 // Anchor / Sign
 var directory string

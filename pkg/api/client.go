@@ -2,13 +2,21 @@ package api
 
 import (
 	"crypto/tls"
+	"errors"
+	"io/ioutil"
 	"log"
+	gologger "log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"gopkg.in/resty.v1"
 )
+
+var defaultAllowedCodesMap = map[int]struct{}{
+	200: {},
+}
 
 type Client struct {
 	BaseURL     string
@@ -30,6 +38,12 @@ func GetNewClient(baseURL string, token string) *Client {
 			return r.StatusCode() == http.StatusTooManyRequests, nil
 		},
 	)
+	if !strings.EqualFold(os.Getenv("WLT_RESTY_DEBUG"), "true") {
+		client.RestyClient.Log = gologger.New(ioutil.Discard, "RESTY - ", gologger.LstdFlags)
+	} else {
+		client.RestyClient.Log = gologger.New(os.Stdout, "RESTY - ", gologger.LstdFlags)
+		client.RestyClient.SetDebug(true)
+	}
 	return client
 }
 
@@ -39,4 +53,14 @@ func (client *Client) SetCustomLogger(customLogger *log.Logger) {
 
 func (client *Client) DisableSSLVerification() {
 	client.RestyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+}
+
+func restyErrHandlerAllowedCodes(resp *resty.Response, err error, allowedCodes map[int]struct{}) error {
+	if err == nil {
+		_, ok := allowedCodes[resp.StatusCode()]
+		if !ok {
+			err = errors.New(string(resp.Body()[:]))
+		}
+	}
+	return err
 }

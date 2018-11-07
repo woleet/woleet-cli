@@ -1,15 +1,10 @@
 package api
 
 import (
-	"errors"
-	"log"
-	"os"
-
 	"github.com/woleet/woleet-cli/pkg/models/backendkit"
 )
 
 func (client *Client) GetSignature(hashToSign string, pubKey string) (*backendkit.SignatureResult, error) {
-
 	queryMap := map[string]string{
 		"hashToSign": hashToSign,
 	}
@@ -25,22 +20,21 @@ func (client *Client) GetSignature(hashToSign string, pubKey string) (*backendki
 		Get(client.BaseURL)
 
 	signatureRet := resp.Result().(*backendkit.SignatureResult)
-
-	if !(resp.StatusCode() == 200) {
-		err = errors.New(string(resp.Body()[:]))
-	}
+	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 	return signatureRet, err
 }
 
-func (client *Client) CheckBackendkitConnection(errLogger *log.Logger) {
+func (client *Client) CheckBackendkitConnection() error {
 
-	resp, _ := client.RestyClient.
+	queryMap := map[string]string{
+		"hashToSign": "0000000000000000000000000000000000000000000000000000000000000000",
+	}
+
+	resp, err := client.RestyClient.
 		R().
+		SetQueryParams(queryMap).
 		SetResult(&backendkit.SignatureResult{}).
 		Get(client.BaseURL)
 
-	if resp.StatusCode() != 400 {
-		errLogger.Printf("ERROR: Unable to connect to the backendkit %v\n", string(resp.Body()[:]))
-		os.Exit(1)
-	}
+	return restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 }

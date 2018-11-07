@@ -1,15 +1,18 @@
 package app
 
 import (
-	"log"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log *logrus.Logger
 
 const pageSize int = 1000
 
-func errHandlerExitOnError(err error, errLogger *log.Logger, exitOnError bool) {
+func errHandlerExitOnError(err error, exitOnError bool) {
 	if err != nil {
-		errLogger.Printf("ERROR: %v\n", err)
+		log.Errorf("%s\n", err)
 		if exitOnError {
 			os.Exit(1)
 		}

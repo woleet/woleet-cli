@@ -3,10 +3,10 @@ package app
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/helpers"
 	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
@@ -28,8 +28,6 @@ type RunParameters struct {
 }
 
 type commonInfos struct {
-	stdLogger        *log.Logger
-	errLogger        *log.Logger
 	client           *api.Client
 	backendkitClient *api.Client
 	mapPathFileinfo  map[string]os.FileInfo
@@ -38,19 +36,18 @@ type commonInfos struct {
 	runParameters    RunParameters
 }
 
-func BulkAnchor(runParameters *RunParameters) {
+func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 	commonInfos := new(commonInfos)
 	commonInfos.runParameters = *runParameters
 
-	commonInfos.stdLogger = log.New(os.Stdout, "woleet-cli ", log.LstdFlags)
-	commonInfos.errLogger = log.New(os.Stderr, "woleet-cli ", log.LstdFlags)
+	log = logInput
+
 	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
-	commonInfos.client.SetCustomLogger(commonInfos.errLogger)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory)
+	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, log)
 	if err != nil {
-		commonInfos.errLogger.Printf("ERROR: %v\n", err)
+		log.Errorln(err)
 		os.Exit(1)
 	}
 
@@ -62,8 +59,10 @@ func BulkAnchor(runParameters *RunParameters) {
 		if commonInfos.runParameters.UnsecureSSL {
 			commonInfos.backendkitClient.DisableSSLVerification()
 		}
-		commonInfos.backendkitClient.CheckBackendkitConnection(commonInfos.errLogger)
-		commonInfos.backendkitClient.SetCustomLogger(commonInfos.errLogger)
+		errBackendkit := commonInfos.backendkitClient.CheckBackendkitConnection()
+		if errBackendkit != nil {
+			log.Fatalf("Unable to connect to the backendkit: %s\n", errBackendkit)
+		}
 	}
 
 	commonInfos.checkPendings()
@@ -76,12 +75,12 @@ func (commonInfos *commonInfos) checkPendings() {
 	for path, fileinfo := range commonInfos.pending {
 		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
 		if erranchorNameInfo != nil {
-			errHandlerExitOnError(erranchorNameInfo, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		anchorGet, errAnchorGet := commonInfos.client.GetAnchor(anchorNameInfo.AnchorID)
 		if errAnchorGet != nil {
-			errHandlerExitOnError(errAnchorGet, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(errAnchorGet, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 
@@ -97,7 +96,7 @@ func (commonInfos *commonInfos) checkPendings() {
 			}
 			hash, errhash := helpers.HashFile(originalFilePath)
 			if errhash != nil {
-				errHandlerExitOnError(errhash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+				errHandlerExitOnError(errhash, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			// If the hashes corresponds, we removes the original file from the filelist
@@ -105,7 +104,7 @@ func (commonInfos *commonInfos) checkPendings() {
 			if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, anchorGet.Hash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, anchorGet.SignedHash)) {
 				delete(commonInfos.mapPathFileinfo, originalFilePath)
 			} else if commonInfos.runParameters.Prune {
-				commonInfos.stdLogger.Printf("INFO: Prune enabled, deleting old pending file: %s\n", path)
+				log.Infof("Prune enabled, deleting old pending file: %s\n", path)
 				// If prune is specified, we remove the old pending file that
 				// does not correspond anymore to the original file
 				os.Remove(path)
@@ -116,24 +115,24 @@ func (commonInfos *commonInfos) checkPendings() {
 			delete(commonInfos.mapPathFileinfo, originalFilePath)
 		}
 		if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
-			commonInfos.stdLogger.Printf("INFO: Proof for file: %s with anchorID: %s not yet available\n", originalFilePath, anchorNameInfo.AnchorID)
+			log.Infof("Proof for file: %s with anchorID: %s not yet available\n", originalFilePath, anchorNameInfo.AnchorID)
 		} else {
 			// If the anchor is confirmed, we get its receipt and we deletes the old pending file
-			commonInfos.stdLogger.Printf("INFO: Retrieving proof for file %s\n", originalFilePath)
+			log.Infof("Retrieving proof for file %s\n", originalFilePath)
 			currentSuffix := helpers.SuffixAnchorReceipt
 			if commonInfos.runParameters.Signature {
 				currentSuffix = helpers.SuffixSignatureReceipt
 			}
 			errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, strings.TrimSuffix(path, anchorNameInfo.Suffix)+currentSuffix)
 			if errGetReceipt != nil {
-				errHandlerExitOnError(errGetReceipt, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+				errHandlerExitOnError(errGetReceipt, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			errRemove := os.Remove(path)
 			if errRemove != nil {
-				errHandlerExitOnError(errRemove, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
 			}
-			commonInfos.stdLogger.Printf("INFO: Done\n")
+			log.Infof("Done\n")
 		}
 	}
 }
@@ -144,7 +143,7 @@ func (commonInfos *commonInfos) checkReceipts() {
 		// Extracting the file's original path by the name of the pending file
 		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
 		if erranchorNameInfo != nil {
-			errHandlerExitOnError(erranchorNameInfo, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		// Extracting the file's original path by the name of the receipt file
@@ -163,13 +162,13 @@ func (commonInfos *commonInfos) checkReceipts() {
 		// is the same as the one in the receipt file
 		hash, errHash := helpers.HashFile(originalFilePath)
 		if errHash != nil {
-			errHandlerExitOnError(errHash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(errHash, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		// Get hash from receipt
 		receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
 		if errReceiptJSON != nil {
-			errHandlerExitOnError(errReceiptJSON, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(errReceiptJSON, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		var receiptUnmarshalled woleetapi.Receipt
@@ -182,7 +181,7 @@ func (commonInfos *commonInfos) checkReceipts() {
 			// If prune is defined and the hashes does not correspond
 			// we remove the file as it does not correspond with the current hash
 			os.Remove(path)
-			commonInfos.stdLogger.Printf("INFO: Strict-prune mode enabled, deleting: %s\n", path)
+			log.Infof("Strict-prune mode enabled, deleting: %s\n", path)
 		}
 	}
 }
@@ -193,13 +192,13 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		anchor := new(woleetapi.Anchor)
 		hash, errHash := helpers.HashFile(path)
 		if errHash != nil {
-			errHandlerExitOnError(errHash, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+			errHandlerExitOnError(errHash, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 		tagsSlice := make([]string, 0)
 		var tags []string
 		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileinfo.Name())) {
-			commonInfos.errLogger.Printf("ERROR: Unable to extract tags form the path: %s\n", path)
+			log.Errorf("Unable to extract tags form the path: %s\n", path)
 			if commonInfos.runParameters.ExitOnError {
 				os.Exit(1)
 			}
@@ -220,7 +219,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		} else {
 			signatureGet, errSignatureGet := commonInfos.backendkitClient.GetSignature(hash, commonInfos.runParameters.BackendkitPubKey)
 			if errSignatureGet != nil {
-				errHandlerExitOnError(errSignatureGet, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 				continue
 			}
 			anchor.Name = fileinfo.Name()
@@ -238,7 +237,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.Anchor, path string) {
 	anchorPost, errAnchorPost := commonInfos.client.PostAnchor(anchor)
 	if errAnchorPost != nil {
-		errHandlerExitOnError(errAnchorPost, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+		errHandlerExitOnError(errAnchorPost, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	pendingReceipt := new(woleetapi.Receipt)
@@ -249,7 +248,7 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
-		errHandlerExitOnError(errPendingJSON, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+		errHandlerExitOnError(errPendingJSON, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	currentSuffix := helpers.SuffixAnchorPending
@@ -258,12 +257,12 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	}
 	errWriteFile := ioutil.WriteFile(path+"-"+anchorPost.Id+currentSuffix, pendingJSON, 0644)
 	if errWriteFile != nil {
-		errHandlerExitOnError(errWriteFile, commonInfos.errLogger, commonInfos.runParameters.ExitOnError)
+		errHandlerExitOnError(errWriteFile, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	if !commonInfos.runParameters.Signature {
-		commonInfos.stdLogger.Printf("INFO: Anchoring file: %s\n", path)
+		log.Infof("Anchoring file: %s\n", path)
 	} else {
-		commonInfos.stdLogger.Printf("INFO: Signing file: %s\n", path)
+		log.Infof("Signing file: %s\n", path)
 	}
 }

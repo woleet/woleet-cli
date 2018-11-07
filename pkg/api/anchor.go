@@ -1,8 +1,6 @@
 package api
 
 import (
-	"errors"
-
 	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
@@ -14,10 +12,7 @@ func (client *Client) PostAnchor(anchor *woleetapi.Anchor) (*woleetapi.Anchor, e
 		Post(client.BaseURL + "/anchor")
 
 	anchorRet := resp.Result().(*woleetapi.Anchor)
-
-	if resp.StatusCode() != 200 {
-		err = errors.New(string(resp.Body()[:]))
-	}
+	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 	return anchorRet, err
 }
 
@@ -28,9 +23,10 @@ func (client *Client) GetAnchor(anchorID string) (*woleetapi.Anchor, error) {
 		Get(client.BaseURL + "/anchor/" + anchorID)
 
 	anchorRet := resp.Result().(*woleetapi.Anchor)
-
-	if !(resp.StatusCode() == 200 || resp.StatusCode() == 202) {
-		err = errors.New(string(resp.Body()[:]))
+	allowedCodesMap := map[int]struct{}{
+		200: {},
+		202: {},
 	}
+	err = restyErrHandlerAllowedCodes(resp, err, allowedCodesMap)
 	return anchorRet, err
 }
