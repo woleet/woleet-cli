@@ -57,7 +57,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.woleet-cli.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&baseURL, "url", "u", "https://api.woleet.io/v1", "custom API url")
 	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "JWT token (required)")
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "loglevel", "l", "info", "Select log level info|warn|error|fatal (default is info)")
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "loglevel", "", "info", "Select log level info|warn|error|fatal (default is info)")
 	rootCmd.PersistentFlags().BoolVarP(&json, "json", "", false, "Switch output format to json")
 
 	viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("url"))

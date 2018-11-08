@@ -98,7 +98,7 @@ woleet-cli export [flags]
 Global Flags:
   -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
       --json              Switch output format to json
-  -l, --loglevel string   Select log level info|warn|error|fatal (default is info) (default "info")
+      --loglevel string   Select log level info|warn|error|fatal (default is info) (default "info")
   -t, --token string      JWT token (required)
   -u, --url string        custom API url (default "https://api.woleet.io/v1")
 ```
