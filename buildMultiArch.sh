@@ -3,16 +3,22 @@
 set -e
 
 # Check usage
-if ! [[ $1 =~ [0-9]\.[0-9]\.[0-9] ]] && [ "$#" == "1" ]
+if ! { [[ $1 =~ [0-9]\.[0-9]\.[0-9] ]] && { [ "$#" == "1" ] || { [ "$#" == "2" ] && [ "$2" == "--linux-static" ] ;} ;} ;}
 then
-  echo "usage: $0 (release number)"
+  echo "usage: $0 (release number) <--linux-static>"
   echo "release number format: [0-9].[0-9].[0-9]"
   exit 1
 fi
 
 RELEASE_NUMBER=$1
+if [ "$#" == "2" ] && [ "$2" == "--linux-static" ]
+then
+  STATIC=true
+else
+  STATIC=false
+fi
 
-platforms=( "linux/amd64" "darwin/amd64" "windows/amd64")
+platforms=( "linux/amd64" "darwin/amd64" "windows/amd64" )
 
 rm -rf dist && mkdir -p dist
 
@@ -22,7 +28,12 @@ do
     platform_split=( ${platform//\// } )
     GOOS="${platform_split[0]}"
     GOARCH="${platform_split[1]}"
-    GOOS="$GOOS" GOARCH="$GOARCH" go build -o dist/woleet-cli
+    if [ "$STATIC" == "true" ] && [ "$GOOS" == "linux" ]
+    then
+      GOOS="$GOOS" GOARCH="$GOARCH" CC=/usr/local/musl/bin/musl-gcc go build --ldflags '-linkmode external -extldflags "-static"' -o dist/woleet-cli
+    else
+      GOOS="$GOOS" GOARCH="$GOARCH" go build -o dist/woleet-cli
+    fi
     cd dist || exit
     if [ "$GOOS" != "windows" ]
     then
@@ -34,4 +45,3 @@ do
     rm -f woleet-cli woleet-cli.exe
   )
 done
-

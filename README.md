@@ -17,7 +17,8 @@ The tool scans a folder recursively and anchors or sign all files found. It also
 
 Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
-If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --strict--prune is used instead.
+If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --strict--prune is used instead.  
+If the original file is no longer present and the option --strict-prune is provided, the old receipt/pending file will be deleted.
 
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
@@ -65,20 +66,25 @@ export WLT_CONFIG="DISABLED"
 Usage:
 woleet-cli anchor [flags]
   -d, --directory string   source directory containing files to anchor (required)
+      --dryrun             Print information about the files to anchor without anchoring
   -e, --exitonerror        exit the app with an error code if anything goes wrong
   -h, --help               help for anchor
   -p, --private            create anchors with non-public access
+  -r, --recursive          Explore subfolders
       --strict             re-anchor any file that has changed since last anchoring
       --strict-prune       same as --strict, plus delete the previous anchoring receipt
+
 
 woleet-cli sign [flags]
       --backendkitPubKey string    backendkit pubkey
       --backendkitSignURL string   backendkit sign url ex: "https://backendkit.com:4443/signature" (required)
       --backendkitToken string     backendkit token (required)
   -d, --directory string           source directory containing files to sign (required)
+      --dryrun                     Print information about the files to sign without signing
   -e, --exitonerror                exit the app with an error code if anything goes wrong
   -h, --help                       help for sign
   -p, --private                    create signatues with non-public access
+  -r, --recursive                  Explore subfolders
       --strict                     re-sign any file that has changed since last signature
       --strict-prune               same as --strict, plus delete the previous signature receipt
       --unsecureSSL                Do not check the ssl certificate validity for the backendkit (only use in developpement)
@@ -90,9 +96,11 @@ woleet-cli export [flags]
   -l, --limitdate string   get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.woleet-cli.yaml)
-  -t, --token string    JWT token (required)
-  -u, --url string      custom API url (default "https://api.woleet.io/v1")
+  -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
+      --json              Switch output format to json
+  -l, --loglevel string   Select log level info|warn|error|fatal (default is info) (default "info")
+  -t, --token string      JWT token (required)
+  -u, --url string        custom API url (default "https://api.woleet.io/v1")
 ```
 
 ### Configuration file format
@@ -109,6 +117,8 @@ app:
   strict: true
   strict-prune: true
   exitonerror: true
+  recursive: true
+  dryrun: false
 sign:
   backendkitSignURL: https://backendkit.com:4443/signature
   backendkitToken: insert-your-backendkit-token-here
@@ -117,6 +127,9 @@ export:
   directory: /home/folder/to/anchor
   limitdate: 2018-01-21
   exitonerror: true
+log:
+  json: true
+  level: info
 ```
 
 JSON:
@@ -132,7 +145,9 @@ JSON:
     "directory": "/home/folder/to/anchor",
     "exitonerror": true,
     "strict": true,
-    "strict-prune": true
+    "strict-prune": true,
+    "recursive": true,
+    "dryrun": true,
   },
   "sign": {
     "backendkitSignURL": "https://backendkit.com:4443/signature",
@@ -140,9 +155,13 @@ JSON:
     "unsecureSSL": false
   },
   "export": {
-  "directory": "/home/folder/to/anchor",
-  "limitdate": "2018-01-21",
-  "exitonerror": true
+    "directory": "/home/folder/to/anchor",
+    "limitdate": "2018-01-21",
+    "exitonerror": true
+  },
+  "log": {
+    "json": true,
+    "level": "info"
   }
 }
 ```
@@ -158,12 +177,16 @@ export WLT_APP_DIRECTORY="/home/folder/to/anchor"
 export WLT_APP_EXITONERROR="true"
 export WLT_APP_STRICT="true"
 export WLT_APP_STRICT_PRUNE="true"
+export WLT_APP_RECURSIVE="true"
+export WLT_APP_DRYRUN="true"
 export WLT_SIGN_BACKENDKITSIGNURL="https://backendkit.com:4443/signature"
 export WLT_SIGN_BACKENDKITTOKEN="insert-your-backendkit-token-here"
 export WLT_SIGN_UNSECURESSL="false"
 export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
 export WLT_EXPORT_LIMITDATE="2018-01-21"
 export WLT_EXPORT_EXITONERROR="true"
+export WLT_LOG_JSON="true"
+export WLT_LOG_LEVEL="info"
 ```
 
 ## Generate models from OpenAPI/Swagger specifications

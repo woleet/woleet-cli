@@ -31,10 +31,13 @@ func checkFilename(fileInfo os.FileInfo) bool {
 	}
 }
 
-func ExploreDirectory(directory string, log *logrus.Logger) (map[string]os.FileInfo, error) {
+func ExploreDirectory(directory string, recursive bool, log *logrus.Logger) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
+			if !recursive && !strings.EqualFold(filepath.Clean(directory), filepath.Clean(path)) {
+				return filepath.SkipDir
+			}
 			pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), string(os.PathSeparator), "", -1))
 			if strings.HasPrefix(info.Name(), ".") {
 				return filepath.SkipDir
@@ -54,7 +57,7 @@ func ExploreDirectory(directory string, log *logrus.Logger) (map[string]os.FileI
 	return mapPathFileinfo, errWalk
 }
 
-func Separate(mapPathFileinfo map[string]os.FileInfo, signature bool, strict bool) (map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo) {
+func Separate(mapPathFileinfo map[string]os.FileInfo, signature bool) (map[string]os.FileInfo, map[string]os.FileInfo) {
 	pendingFiles := make(map[string]os.FileInfo)
 	receiptedFiles := make(map[string]os.FileInfo)
 	for path, fileinfo := range mapPathFileinfo {
@@ -80,7 +83,30 @@ func Separate(mapPathFileinfo map[string]os.FileInfo, signature bool, strict boo
 			delete(mapPathFileinfo, path)
 		}
 	}
-	return mapPathFileinfo, pendingFiles, receiptedFiles
+	return pendingFiles, receiptedFiles
+}
+
+func SeparateAll(mapPathFileinfo map[string]os.FileInfo) (map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo) {
+	anchorPendingFiles := make(map[string]os.FileInfo)
+	anchorReceiptedFiles := make(map[string]os.FileInfo)
+	signaturePendingFiles := make(map[string]os.FileInfo)
+	signatureReceiptedFiles := make(map[string]os.FileInfo)
+	for path, fileinfo := range mapPathFileinfo {
+		if strings.HasSuffix(fileinfo.Name(), SuffixAnchorPending) {
+			anchorPendingFiles[path] = fileinfo
+			delete(mapPathFileinfo, path)
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixAnchorReceipt) {
+			anchorReceiptedFiles[path] = fileinfo
+			delete(mapPathFileinfo, path)
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignaturePending) {
+			signaturePendingFiles[path] = fileinfo
+			delete(mapPathFileinfo, path)
+		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignatureReceipt) {
+			signatureReceiptedFiles[path] = fileinfo
+			delete(mapPathFileinfo, path)
+		}
+	}
+	return anchorPendingFiles, anchorReceiptedFiles, signaturePendingFiles, signatureReceiptedFiles
 }
 
 func GetAnchorIDFromName(fileInfo os.FileInfo) (*RegexExtracted, error) {

@@ -12,30 +12,6 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
-type RunParameters struct {
-	Signature         bool
-	ExitOnError       bool
-	InvertPrivate     bool
-	Strict            bool
-	Prune             bool
-	UnsecureSSL       bool
-	Directory         string
-	BaseURL           string
-	Token             string
-	BackendkitSignURL string
-	BackendkitToken   string
-	BackendkitPubKey  string
-}
-
-type commonInfos struct {
-	client           *api.Client
-	backendkitClient *api.Client
-	mapPathFileinfo  map[string]os.FileInfo
-	pending          map[string]os.FileInfo
-	receipt          map[string]os.FileInfo
-	runParameters    RunParameters
-}
-
 func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 	commonInfos := new(commonInfos)
 	commonInfos.runParameters = *runParameters
@@ -45,13 +21,17 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, log)
+	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, log)
 	if err != nil {
 		log.Errorln(err)
 		os.Exit(1)
 	}
 
-	commonInfos.mapPathFileinfo, commonInfos.pending, commonInfos.receipt = helpers.Separate(commonInfos.mapPathFileinfo, commonInfos.runParameters.Signature, commonInfos.runParameters.Strict)
+	if !commonInfos.runParameters.Signature {
+		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+	} else {
+		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+	}
 
 	if runParameters.Signature {
 		//Check backendkit connection
@@ -65,125 +45,95 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 		}
 	}
 
-	commonInfos.checkPendings()
-	commonInfos.checkReceipts()
+	commonInfos.splitPendingReceipt()
+	commonInfos.getReceipts(commonInfos.pending)
+	if !commonInfos.runParameters.Prune {
+		commonInfos.getReceipts(commonInfos.pendingToDelete)
+	} else {
+		for path := range commonInfos.pendingToDelete {
+			log.Infof("Deleting old pending file %s\n", path)
+			os.Remove(path)
+		}
+		for path := range commonInfos.receiptToDelete {
+			log.Infof("Deleting old receipt file %s\n", path)
+			os.Remove(path)
+		}
+	}
 	commonInfos.checkStandardFiles()
 }
 
-func (commonInfos *commonInfos) checkPendings() {
-	// In this loop only pending files are used
+func (commonInfos *commonInfos) splitPendingReceipt() {
 	for path, fileinfo := range commonInfos.pending {
-		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
-		if erranchorNameInfo != nil {
-			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
-			continue
-		}
-		anchorGet, errAnchorGet := commonInfos.client.GetAnchor(anchorNameInfo.AnchorID)
-		if errAnchorGet != nil {
-			errHandlerExitOnError(errAnchorGet, commonInfos.runParameters.ExitOnError)
-			continue
-		}
-
-		// Extracting the file's original path by the name of the pending file
-		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
-
-		// If strict mode is actived, we check that the hash of the file
-		// is the same as the one in the pending file
-		if commonInfos.runParameters.Strict {
-			_, exists := commonInfos.mapPathFileinfo[originalFilePath]
-			if !exists {
-				continue
-			}
-			hash, errhash := helpers.HashFile(originalFilePath)
-			if errhash != nil {
-				errHandlerExitOnError(errhash, commonInfos.runParameters.ExitOnError)
-				continue
-			}
-			// If the hashes corresponds, we removes the original file from the filelist
-			// Doing so it will not be reanchored
-			if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, anchorGet.Hash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, anchorGet.SignedHash)) {
-				delete(commonInfos.mapPathFileinfo, originalFilePath)
-			} else if commonInfos.runParameters.Prune {
-				log.Infof("Prune enabled, deleting old pending file: %s\n", path)
-				// If prune is specified, we remove the old pending file that
-				// does not correspond anymore to the original file
-				os.Remove(path)
-			}
-		} else {
-			// if strict mode is not enable we do not want to rescan
-			// the file so we remove the original file from the filelist
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
-		}
-		if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
-			log.Infof("Proof for file: %s with anchorID: %s not yet available\n", originalFilePath, anchorNameInfo.AnchorID)
-		} else {
-			// If the anchor is confirmed, we get its receipt and we deletes the old pending file
-			log.Infof("Retrieving proof for file %s\n", originalFilePath)
-			currentSuffix := helpers.SuffixAnchorReceipt
-			if commonInfos.runParameters.Signature {
-				currentSuffix = helpers.SuffixSignatureReceipt
-			}
-			errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, strings.TrimSuffix(path, anchorNameInfo.Suffix)+currentSuffix)
-			if errGetReceipt != nil {
-				errHandlerExitOnError(errGetReceipt, commonInfos.runParameters.ExitOnError)
-				continue
-			}
-			errRemove := os.Remove(path)
-			if errRemove != nil {
-				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
-			}
-			log.Infof("Done\n")
-		}
+		errHandlerExitOnError(commonInfos.sortFile(path, fileinfo, true, false), commonInfos.runParameters.ExitOnError)
+	}
+	for path, fileinfo := range commonInfos.receipt {
+		errHandlerExitOnError(commonInfos.sortFile(path, fileinfo, false, true), commonInfos.runParameters.ExitOnError)
 	}
 }
 
-func (commonInfos *commonInfos) checkReceipts() {
-	// In this loop only receipt files are used
-	for path, fileinfo := range commonInfos.receipt {
-		// Extracting the file's original path by the name of the pending file
-		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
-		if erranchorNameInfo != nil {
-			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
-			continue
-		}
-		// Extracting the file's original path by the name of the receipt file
-		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
-		// if strict mode is not enable we do not want to rescan
-		// the file so we remove the original file from the filelist
-		if !commonInfos.runParameters.Strict {
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
-			continue
-		}
-		_, exists := commonInfos.mapPathFileinfo[originalFilePath]
-		if !exists {
-			continue
-		}
-		// If strict mode is actived, we check that the hash of the file
-		// is the same as the one in the receipt file
-		hash, errHash := helpers.HashFile(originalFilePath)
-		if errHash != nil {
-			errHandlerExitOnError(errHash, commonInfos.runParameters.ExitOnError)
-			continue
-		}
-		// Get hash from receipt
-		receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
-		if errReceiptJSON != nil {
-			errHandlerExitOnError(errReceiptJSON, commonInfos.runParameters.ExitOnError)
-			continue
-		}
-		var receiptUnmarshalled woleetapi.Receipt
-		json.Unmarshal(receiptJSON, &receiptUnmarshalled)
-		if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.TargetHash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash)) {
-			// If the hashes corresponds, we removes the original file from the filelist
-			// Doing so it will not be reanchored
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
-		} else if commonInfos.runParameters.Prune {
-			// If prune is defined and the hashes does not correspond
-			// we remove the file as it does not correspond with the current hash
-			os.Remove(path)
-			log.Infof("Strict-prune mode enabled, deleting: %s\n", path)
+func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pending bool, receipt bool) error {
+	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+	if erranchorNameInfo != nil {
+		return erranchorNameInfo
+	}
+
+	// Extracting the file's original path by the name of the pending/receipt
+	originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
+
+	// If there is no strict mode, there is nothing to check and the file will not be reanchored
+	if !commonInfos.runParameters.Strict {
+		delete(commonInfos.mapPathFileinfo, originalFilePath)
+		return nil
+	}
+
+	// If strict mode is actived, we check that the hash of the file
+	// is the same as the one in the pending/receipt
+	// If the file does not exists anymore and the prune mode is set the file will be deleted
+	// if the prune mode is not set the file will be converted to a proper receipt
+	_, exists := commonInfos.mapPathFileinfo[originalFilePath]
+	if !exists {
+		if commonInfos.runParameters.Prune {
+			if pending {
+				commonInfos.pendingToDelete[path] = fileinfo
+				delete(commonInfos.pending, path)
+			}
+			if receipt {
+				commonInfos.receiptToDelete[path] = fileinfo
+				delete(commonInfos.receipt, path)
+			}
 		}
 	}
+
+	receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
+	if errReceiptJSON != nil {
+		return errReceiptJSON
+	}
+
+	var receiptUnmarshalled woleetapi.Receipt
+	json.Unmarshal(receiptJSON, &receiptUnmarshalled)
+	hash, errhash := helpers.HashFile(originalFilePath)
+	if errhash != nil {
+		return errhash
+	}
+
+	// If the hashes are equal, there is nothing to do
+	if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.TargetHash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash)) {
+		// File already anchored and valid
+		delete(commonInfos.mapPathFileinfo, originalFilePath)
+		return nil
+	}
+	// If they are not and there is a prune flag, the old pending file will be marked for deletion
+	if commonInfos.runParameters.Prune {
+		if pending {
+			commonInfos.pendingToDelete[path] = fileinfo
+			delete(commonInfos.pending, path)
+		}
+		if receipt {
+			commonInfos.receiptToDelete[path] = fileinfo
+			delete(commonInfos.receipt, path)
+		}
+	}
+	return nil
 }
 
 func (commonInfos *commonInfos) checkStandardFiles() {
@@ -264,5 +214,44 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 		log.Infof("Anchoring file: %s\n", path)
 	} else {
 		log.Infof("Signing file: %s\n", path)
+	}
+}
+
+func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
+	for path, fileinfo := range mapPending {
+		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+		if erranchorNameInfo != nil {
+			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
+			continue
+		}
+
+		anchorGet, errAnchorGet := commonInfos.client.GetAnchor(anchorNameInfo.AnchorID)
+		if errAnchorGet != nil {
+			errHandlerExitOnError(errAnchorGet, commonInfos.runParameters.ExitOnError)
+			continue
+		}
+
+		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
+		if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
+			log.Infof("Proof for file: %s with anchorID: %s not yet available\n", originalFilePath, anchorNameInfo.AnchorID)
+			continue
+		}
+
+		// If the anchor is confirmed, we get its receipt and we deletes the old pending file
+		log.Infof("Retrieving proof for file %s\n", originalFilePath)
+		currentSuffix := helpers.SuffixAnchorReceipt
+		if commonInfos.runParameters.Signature {
+			currentSuffix = helpers.SuffixSignatureReceipt
+		}
+		errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, strings.TrimSuffix(path, anchorNameInfo.Suffix)+currentSuffix)
+		if errGetReceipt != nil {
+			errHandlerExitOnError(errGetReceipt, commonInfos.runParameters.ExitOnError)
+			continue
+		}
+		errRemove := os.Remove(path)
+		if errRemove != nil {
+			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
+		}
+		log.Infof("Done\n")
 	}
 }

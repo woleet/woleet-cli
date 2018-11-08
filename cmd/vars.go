@@ -18,6 +18,8 @@ var strict bool
 var strictPrune bool
 var exitonerror bool
 var private bool
+var recursive bool
+var dryRun bool
 
 // Sign
 var backendkitSignURL string
