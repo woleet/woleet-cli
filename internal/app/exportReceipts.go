@@ -12,6 +12,7 @@ import (
 func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) {
 	log = logInput
 	client := api.GetNewClient(url, token)
+	normalizeName := strings.NewReplacer(`/`, `_`, `\`, `_`)
 
 	end := false
 
@@ -32,7 +33,7 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 			if anchor.Signature != "" {
 				currentSuffix = helpers.SuffixSignatureReceipt
 			}
-			receiptPath := exportDirectory + string(os.PathSeparator) + anchor.Name + "-" + anchor.Id + currentSuffix
+			receiptPath := exportDirectory + string(os.PathSeparator) + normalizeName.Replace(anchor.Name) + "-" + anchor.Id + currentSuffix
 			if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
 				log.Infof("Proof for anchor: %s named: %s is already on disk\n", anchor.Id, anchor.Name)
 				continue
