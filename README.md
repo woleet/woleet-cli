@@ -77,8 +77,8 @@ woleet-cli anchor [flags]
 
 woleet-cli sign [flags]
       --backendkitPubKey string    backendkit pubkey
-      --backendkitSignURL string   backendkit sign url ex: "https://backendkit.com:4443/signature" (required)
-      --backendkitToken string     backendkit token (required)
+      --backendkitSignURL string   backendkit sign URL ex: "https://backendkit.com:4443/sign" (required)
+      --backendkitToken string     backendkit API token (required)
   -d, --directory string           source directory containing files to sign (required)
       --dryrun                     Print information about the files to sign without signing
   -e, --exitonerror                exit the app with an error code if anything goes wrong
@@ -99,8 +99,8 @@ Global Flags:
   -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
       --json              Switch output format to json
       --loglevel string   Select log level info|warn|error|fatal (default is info) (default "info")
-  -t, --token string      JWT token (required)
-  -u, --url string        custom API url (default "https://api.woleet.io/v1")
+  -t, --token string      Woleet API token (required)
+  -u, --url string        custom API URL (default "https://api.woleet.io/v1")
 ```
 
 ### Configuration file format
@@ -120,7 +120,7 @@ app:
   recursive: true
   dryrun: false
 sign:
-  backendkitSignURL: https://backendkit.com:4443/signature
+  backendkitSignURL: https://backendkit.com:4443/sign
   backendkitToken: insert-your-backendkit-token-here
   unsecureSSL: false
 export:
@@ -150,7 +150,7 @@ JSON:
     "dryrun": true,
   },
   "sign": {
-    "backendkitSignURL": "https://backendkit.com:4443/signature",
+    "backendkitSignURL": "https://backendkit.com:4443/sign",
     "backendkitToken": "insert-your-backendkit-token-here",
     "unsecureSSL": false
   },
@@ -179,7 +179,7 @@ export WLT_APP_STRICT="true"
 export WLT_APP_STRICT_PRUNE="true"
 export WLT_APP_RECURSIVE="true"
 export WLT_APP_DRYRUN="true"
-export WLT_SIGN_BACKENDKITSIGNURL="https://backendkit.com:4443/signature"
+export WLT_SIGN_BACKENDKITSIGNURL="https://backendkit.com:4443/sign"
 export WLT_SIGN_BACKENDKITTOKEN="insert-your-backendkit-token-here"
 export WLT_SIGN_UNSECURESSL="false"
 export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
