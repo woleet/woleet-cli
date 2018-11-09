@@ -55,10 +55,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.woleet-cli.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&baseURL, "url", "u", "https://api.woleet.io/v1", "custom API url")
-	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "JWT token (required)")
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "loglevel", "", "info", "Select log level info|warn|error|fatal (default is info)")
-	rootCmd.PersistentFlags().BoolVarP(&json, "json", "", false, "Switch output format to json")
+	rootCmd.PersistentFlags().StringVarP(&baseURL, "url", "u", "https://api.woleet.io/v1", "Woleet API URL")
+	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "Woleet API token (required)")
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "loglevel", "", "info", "select log level info|warn|error|fatal (default is info)")
+	rootCmd.PersistentFlags().BoolVarP(&json, "json", "", false, "use JSON as log output format")
 
 	viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("api.token", rootCmd.PersistentFlags().Lookup("token"))

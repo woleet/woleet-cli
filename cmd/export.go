@@ -15,9 +15,9 @@ import (
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "Download all receipts for your anchors in a given directory",
-	Long: `Download all receipts for your anchors in a given directory
-You can specify a date to get all receipts created from this date`,
+	Short: "Download all proofs for your anchors in a given directory",
+	Long: `Download all proofs for your anchors in a given directory
+You can specify a date to only get proofs created after this date`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
 			if !viper.GetBool("log.json") {
@@ -86,9 +86,9 @@ You can specify a date to get all receipts created from this date`,
 func init() {
 	rootCmd.AddCommand(exportCmd)
 
-	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where the receipts will be downloaded (required)")
-	exportCmd.Flags().StringVarP(&exportLimitDate, "limitdate", "l", "", "get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)")
-	exportCmd.Flags().BoolVarP(&exportExitonerror, "exitonerror", "e", false, "exit the app with an error code if anything goes wrong")
+	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where to store the proofs (required)")
+	exportCmd.Flags().StringVarP(&exportLimitDate, "limitdate", "l", "", "get only proofs created after the provided date (format: yyyy-MM-dd)")
+	exportCmd.Flags().BoolVarP(&exportExitonerror, "exitonerror", "e", false, "exit with an error code if anything goes wrong")
 
 	viper.BindPFlag("export.directory", exportCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("export.limitdate", exportCmd.Flags().Lookup("limitdate"))
