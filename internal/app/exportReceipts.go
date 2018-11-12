@@ -34,14 +34,19 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 			}
 			receiptPath := exportDirectory + string(os.PathSeparator) + anchor.Name + "-" + anchor.Id + currentSuffix
 			if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
-				log.Infof("Proof for anchor: %s named: %s is already on disk\n", anchor.Id, anchor.Name)
+				log.WithFields(logrus.Fields{
+					"anchorID":   anchor.Id,
+					"anchorName": anchor.Name,
+				}).Infoln("Proof already on disk")
 				continue
 			}
 			if !strings.EqualFold(anchor.Status, "CONFIRMED") {
-				log.Infof("Proof for anchor: %s named: %s not available yet\n", anchor.Id, anchor.Name)
+				log.WithFields(logrus.Fields{
+					"anchorID":   anchor.Id,
+					"anchorName": anchor.Name,
+				}).Infoln("Proof not available yet")
 				continue
 			}
-			log.Infof("Retrieving proof for anchor: %s named: %s\n", anchor.Id, anchor.Name)
 			errGetReceipt := client.GetReceiptToFile(anchor.Id, receiptPath)
 			if errGetReceipt != nil {
 				if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
@@ -53,7 +58,10 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 				errHandlerExitOnError(errAnchors, exitOnError)
 				continue
 			}
-			log.Infof("Done\n")
+			log.WithFields(logrus.Fields{
+				"anchorID":   anchor.Id,
+				"anchorName": anchor.Name,
+			}).Infoln("Proof retrieved")
 		}
 	}
 }

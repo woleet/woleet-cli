@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/woleet/woleet-cli/pkg/models/backendkit"
+	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
-func (client *Client) GetSignature(hashToSign string, pubKey string) (*backendkit.SignatureResult, error) {
+func (client *Client) GetSignature(hashToSign string, pubKey string) (*idserver.SignatureResult, error) {
 	queryMap := map[string]string{
 		"hashToSign": hashToSign,
 	}
@@ -16,15 +16,15 @@ func (client *Client) GetSignature(hashToSign string, pubKey string) (*backendki
 	resp, err := client.RestyClient.
 		R().
 		SetQueryParams(queryMap).
-		SetResult(&backendkit.SignatureResult{}).
+		SetResult(&idserver.SignatureResult{}).
 		Get(client.BaseURL)
 
-	signatureRet := resp.Result().(*backendkit.SignatureResult)
+	signatureRet := resp.Result().(*idserver.SignatureResult)
 	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 	return signatureRet, err
 }
 
-func (client *Client) CheckBackendkitConnection() error {
+func (client *Client) CheckIDServerConnection() error {
 
 	queryMap := map[string]string{
 		"hashToSign": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -33,7 +33,7 @@ func (client *Client) CheckBackendkitConnection() error {
 	resp, err := client.RestyClient.
 		R().
 		SetQueryParams(queryMap).
-		SetResult(&backendkit.SignatureResult{}).
+		SetResult(&idserver.SignatureResult{}).
 		Get(client.BaseURL)
 
 	return restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)

@@ -66,41 +66,43 @@ export WLT_CONFIG="DISABLED"
 Usage:
 woleet-cli anchor [flags]
   -d, --directory string   source directory containing files to anchor (required)
-      --dryrun             Print information about the files to anchor without anchoring
-  -e, --exitonerror        exit the app with an error code if anything goes wrong
+      --dryRun             print information about files to anchor without anchoring
+  -e, --exitOnError        exit with an error code if anything goes wrong
   -h, --help               help for anchor
-  -p, --private            create anchors with non-public access
-  -r, --recursive          Explore subfolders
+  -p, --private            create non discoverable proofs
+      --prune              delete receipts that are not along the original file,
+                           with --strict it checks the hash of the original file and deletes the receipt if they do not match
+  -r, --recursive          explore sub-folders recursively
       --strict             re-anchor any file that has changed since last anchoring
-      --strict-prune       same as --strict, plus delete the previous anchoring receipt
 
 
 woleet-cli sign [flags]
-      --backendkitPubKey string    backendkit pubkey
-      --backendkitSignURL string   backendkit sign URL ex: "https://backendkit.com:4443/sign" (required)
-      --backendkitToken string     backendkit API token (required)
-  -d, --directory string           source directory containing files to sign (required)
-      --dryrun                     Print information about the files to sign without signing
-  -e, --exitonerror                exit the app with an error code if anything goes wrong
-  -h, --help                       help for sign
-  -p, --private                    create signatues with non-public access
-  -r, --recursive                  Explore subfolders
-      --strict                     re-sign any file that has changed since last signature
-      --strict-prune               same as --strict, plus delete the previous signature receipt
-      --unsecureSSL                Do not check the ssl certificate validity for the backendkit (only use in developpement)
+  -d, --directory string         source directory containing files to sign (required)
+      --dryRun                   print information about files to sign without signing
+  -e, --exitOnError              exit with an error code if anything goes wrong
+  -h, --help                     help for sign
+      --iDServerPubKey string    public key (ie. bitcopin address) to use to sign
+      --iDServerSignURL string   IDServer sign URL ex: "https://IDServer.com:4443/sign" (required)
+      --iDServerToken string     IDServer API token (required)
+      --iDServerUnsecureSSL      do not check IDServer's SSL certificate validity (only for developpement)
+  -p, --private                  create non discoveravble proofs
+      --prune                    delete receipts that are not along the original file,
+                                 with --strict it checks the hash of the original file and deletes the receipt if they do not match
+  -r, --recursive                explore subfolders recursively
+      --strict                   re-sign any file that has changed since last signature
 
 woleet-cli export [flags]
-  -d, --directory string   directory where the receipts will be downloaded (required)
-  -e, --exitonerror        exit the app with an error code if anything goes wrong
+  -d, --directory string   directory where to store the proofs (required)
+  -e, --exitOnError        exit with an error code if anything goes wrong
   -h, --help               help for export
-  -l, --limitdate string   get all receipts generated from the provided date format:yyyy-MM-dd (default is no limit)
+  -l, --limitDate string   get only proofs created after the provided date (format: yyyy-MM-dd)
 
 Global Flags:
   -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
-      --json              Switch output format to json
-      --loglevel string   Select log level info|warn|error|fatal (default is info) (default "info")
+      --json              use JSON as log output format
+      --logLevel string   select log level info|warn|error|fatal (default is info) (default "info")
   -t, --token string      Woleet API token (required)
-  -u, --url string        custom API URL (default "https://api.woleet.io/v1")
+  -u, --url string        Woleet API URL (default "https://api.woleet.io/v1")
 ```
 
 ### Configuration file format
@@ -197,12 +199,13 @@ If this specification were to be changed, model classes can be updated using the
 ```bash
 # Update definition files
 curl -s https://api.woleet.io/swagger.json > api/swagger.json
-curl -s https://raw.githubusercontent.com/woleet/woleet-backendkit/master/swagger.yaml > api/swaggerBackendkit.yaml
+curl -s https://raw.githubusercontent.com/woleet/woleet.id-server/master/swagger.yaml > api/swaggerIDServer.yaml
+
 
 # Update models
 openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -Dmodels -DmodelDocs=false -DpackageName=woleetapi --type-mappings boolean=*bool && \
 ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
-openapi-generator generate -i api/swaggerBackendkit.yaml -g go -o pkg/models/backendkit -Dmodels -DmodelDocs=false -DpackageName=backendkit --type-mappings boolean=*bool
+openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -Dmodels -DmodelDocs=false -DpackageName=idserver --type-mappings boolean=*bool && rm pkg/models/idserver/model_api_* pkg/models/idserver/model_key_* pkg/models/idserver/model_mnemonics* pkg/models/idserver/model_server_* pkg/models/idserver/model_user_*
 ```
 
 ## Build the tool from sources

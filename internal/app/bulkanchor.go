@@ -13,8 +13,7 @@ import (
 )
 
 func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
-	commonInfos := new(commonInfos)
-	commonInfos.runParameters = *runParameters
+	commonInfos := initCommonInfos(runParameters)
 
 	log = logInput
 
@@ -35,13 +34,13 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 
 	if runParameters.Signature {
 		//Check backendkit connection
-		commonInfos.backendkitClient = api.GetNewClient(commonInfos.runParameters.BackendkitSignURL, commonInfos.runParameters.BackendkitToken)
-		if commonInfos.runParameters.UnsecureSSL {
-			commonInfos.backendkitClient.DisableSSLVerification()
+		commonInfos.iDServerClient = api.GetNewClient(commonInfos.runParameters.IDServerSignURL, commonInfos.runParameters.IDServerToken)
+		if commonInfos.runParameters.IDServerUnsecureSSL {
+			commonInfos.iDServerClient.DisableSSLVerification()
 		}
-		errBackendkit := commonInfos.backendkitClient.CheckBackendkitConnection()
-		if errBackendkit != nil {
-			log.Fatalf("Unable to connect to the backendkit: %s\n", errBackendkit)
+		errIDServer := commonInfos.iDServerClient.CheckIDServerConnection()
+		if errIDServer != nil {
+			log.Fatalf("Unable to connect to the backendkit: %s\n", errIDServer)
 		}
 	}
 
@@ -51,11 +50,15 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 		commonInfos.getReceipts(commonInfos.pendingToDelete)
 	} else {
 		for path := range commonInfos.pendingToDelete {
-			log.Infof("Deleting old pending file %s\n", path)
+			log.WithFields(logrus.Fields{
+				"file": path,
+			}).Infoln("Deleting old pending file")
 			os.Remove(path)
 		}
 		for path := range commonInfos.receiptToDelete {
-			log.Infof("Deleting old receipt file %s\n", path)
+			log.WithFields(logrus.Fields{
+				"file": path,
+			}).Infoln("Deleting old receipt file")
 			os.Remove(path)
 		}
 	}
@@ -80,16 +83,6 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// Extracting the file's original path by the name of the pending/receipt
 	originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
 
-	// If there is no strict mode, there is nothing to check and the file will not be reanchored
-	if !commonInfos.runParameters.Strict {
-		delete(commonInfos.mapPathFileinfo, originalFilePath)
-		return nil
-	}
-
-	// If strict mode is actived, we check that the hash of the file
-	// is the same as the one in the pending/receipt
-	// If the file does not exists anymore and the prune mode is set the file will be deleted
-	// if the prune mode is not set the file will be converted to a proper receipt
 	_, exists := commonInfos.mapPathFileinfo[originalFilePath]
 	if !exists {
 		if commonInfos.runParameters.Prune {
@@ -102,7 +95,19 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 				delete(commonInfos.receipt, path)
 			}
 		}
+		return nil
 	}
+
+	// If there is no strict mode, there is nothing to check and the file will not be reanchored
+	if !commonInfos.runParameters.Strict {
+		delete(commonInfos.mapPathFileinfo, originalFilePath)
+		return nil
+	}
+
+	// If strict mode is actived, we check that the hash of the file
+	// is the same as the one in the pending/receipt
+	// If the file does not exists anymore and the prune mode is set the file will be deleted
+	// if the prune mode is not set the file will be converted to a proper receipt
 
 	receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
 	if errReceiptJSON != nil {
@@ -148,7 +153,9 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		tagsSlice := make([]string, 0)
 		var tags []string
 		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileinfo.Name())) {
-			log.Errorf("Unable to extract tags form the path: %s\n", path)
+			log.WithFields(logrus.Fields{
+				"path": path,
+			}).Errorln("Unable to extract tags form the path")
 			if commonInfos.runParameters.ExitOnError {
 				os.Exit(1)
 			}
@@ -167,7 +174,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 		} else {
-			signatureGet, errSignatureGet := commonInfos.backendkitClient.GetSignature(hash, commonInfos.runParameters.BackendkitPubKey)
+			signatureGet, errSignatureGet := commonInfos.iDServerClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey)
 			if errSignatureGet != nil {
 				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 				continue
@@ -211,9 +218,13 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 		return
 	}
 	if !commonInfos.runParameters.Signature {
-		log.Infof("Anchoring file: %s\n", path)
+		log.WithFields(logrus.Fields{
+			"file": path,
+		}).Infoln("Anchoring file")
 	} else {
-		log.Infof("Signing file: %s\n", path)
+		log.WithFields(logrus.Fields{
+			"file": path,
+		}).Infoln("Signing file")
 	}
 }
 
@@ -233,17 +244,20 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
 
 		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
 		if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
-			log.Infof("Proof for file: %s with anchorID: %s not yet available\n", originalFilePath, anchorNameInfo.AnchorID)
+			log.WithFields(logrus.Fields{
+				"anchorID":     anchorNameInfo.AnchorID,
+				"originalFile": originalFilePath,
+			}).Infoln("Proof not available yet")
 			continue
 		}
 
 		// If the anchor is confirmed, we get its receipt and we deletes the old pending file
-		log.Infof("Retrieving proof for file %s\n", originalFilePath)
 		currentSuffix := helpers.SuffixAnchorReceipt
 		if commonInfos.runParameters.Signature {
 			currentSuffix = helpers.SuffixSignatureReceipt
 		}
-		errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, strings.TrimSuffix(path, anchorNameInfo.Suffix)+currentSuffix)
+		receiptPath := strings.TrimSuffix(path, anchorNameInfo.Suffix) + currentSuffix
+		errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, receiptPath)
 		if errGetReceipt != nil {
 			errHandlerExitOnError(errGetReceipt, commonInfos.runParameters.ExitOnError)
 			continue
@@ -252,6 +266,9 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
 		if errRemove != nil {
 			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
 		}
-		log.Infof("Done\n")
+		log.WithFields(logrus.Fields{
+			"originalFile": originalFilePath,
+			"proofFile":    receiptPath,
+		}).Infoln("Proof retrieved")
 	}
 }

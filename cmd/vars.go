@@ -15,19 +15,19 @@ var log = logrus.New()
 // Anchor / Sign
 var directory string
 var strict bool
-var strictPrune bool
-var exitonerror bool
+var prune bool
+var exitOnError bool
 var private bool
 var recursive bool
 var dryRun bool
 
 // Sign
-var backendkitSignURL string
-var backendkitToken string
-var backendkitPubKey string
-var unsecureSSL bool
+var iDServerSignURL string
+var iDServerToken string
+var iDServerPubKey string
+var iDServerUnsecureSSL bool
 
 // Export
 var exportDirectory string
 var exportLimitDate string
-var exportExitonerror bool
+var exportExitOnError bool

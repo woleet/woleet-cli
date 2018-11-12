@@ -87,14 +87,14 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 
 	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where to store the proofs (required)")
-	exportCmd.Flags().StringVarP(&exportLimitDate, "limitdate", "l", "", "get only proofs created after the provided date (format: yyyy-MM-dd)")
-	exportCmd.Flags().BoolVarP(&exportExitonerror, "exitonerror", "e", false, "exit with an error code if anything goes wrong")
+	exportCmd.Flags().StringVarP(&exportLimitDate, "limitDate", "l", "", "get only proofs created after the provided date (format: yyyy-MM-dd)")
+	exportCmd.Flags().BoolVarP(&exportExitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 
 	viper.BindPFlag("export.directory", exportCmd.Flags().Lookup("directory"))
-	viper.BindPFlag("export.limitdate", exportCmd.Flags().Lookup("limitdate"))
-	viper.BindPFlag("export.exitonerror", exportCmd.Flags().Lookup("exitonerror"))
+	viper.BindPFlag("export.limitDate", exportCmd.Flags().Lookup("limitDate"))
+	viper.BindPFlag("export.exitOnError", exportCmd.Flags().Lookup("exitOnError"))
 
 	viper.BindEnv("export.directory")
-	viper.BindEnv("export.limitdate")
-	viper.BindEnv("export.exitonerror")
+	viper.BindEnv("export.limitDate")
+	viper.BindEnv("export.exitOnError")
 }

@@ -11,8 +11,13 @@ import (
 func DryRun(runParameters *RunParameters, logInput *logrus.Logger) {
 	log = logInput
 
-	commonInfos := new(commonInfos)
-	commonInfos.runParameters = *runParameters
+	commonInfos := initCommonInfos(runParameters)
+
+	commonInfos.mapPathFileinfo = make(map[string]os.FileInfo)
+	commonInfos.pending = make(map[string]os.FileInfo)
+	commonInfos.pendingToDelete = make(map[string]os.FileInfo)
+	commonInfos.receipt = make(map[string]os.FileInfo)
+	commonInfos.receiptToDelete = make(map[string]os.FileInfo)
 
 	log.SetOutput(ioutil.Discard)
 	var err error
@@ -35,9 +40,9 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) {
 	fields["files"] = len(commonInfos.mapPathFileinfo)
 	if commonInfos.runParameters.Prune {
 		fields["pendings"] = len(commonInfos.pending)
-		fields["pendings_to_delete"] = len(commonInfos.pendingToDelete)
+		fields["pendingsToDelete"] = len(commonInfos.pendingToDelete)
 		fields["receipts"] = len(commonInfos.receipt)
-		fields["receipts_to_delete"] = len(commonInfos.receiptToDelete)
+		fields["receiptsToDelete"] = len(commonInfos.receiptToDelete)
 	} else {
 		fields["pendings"] = len(commonInfos.pending) + len(commonInfos.pendingToDelete)
 		fields["receipts"] = len(commonInfos.receipt) + len(commonInfos.receiptToDelete)

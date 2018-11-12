@@ -46,8 +46,8 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		runParameters.BaseURL = viper.GetString("api.url")
 		runParameters.InvertPrivate = !viper.GetBool("api.private")
 
-		runParameters.Prune = viper.GetBool("app.strict-prune")
-		runParameters.ExitOnError = viper.GetBool("app.exitonerror")
+		runParameters.Prune = viper.GetBool("app.prune")
+		runParameters.ExitOnError = viper.GetBool("app.exitOnError")
 		runParameters.Recursive = viper.GetBool("app.recursive")
 		if runParameters.Prune || viper.GetBool("app.strict") {
 			runParameters.Strict = true
@@ -55,7 +55,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 			runParameters.Strict = false
 		}
 
-		if viper.GetBool("app.dryrun") {
+		if viper.GetBool("app.dryRun") {
 			app.DryRun(runParameters, log)
 			os.Exit(0)
 		}
@@ -68,25 +68,25 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 		runParameters.Token = viper.GetString("api.token")
 
-		if !viper.IsSet("sign.backendkitSignURL") || strings.EqualFold(viper.GetString("sign.backendkitSignURL"), "") {
+		if !viper.IsSet("sign.iDServerSignURL") || strings.EqualFold(viper.GetString("sign.iDServerSignURL"), "") {
 			if !viper.GetBool("log.json") {
 				cmd.Help()
 			}
-			log.Fatalln("Please set a backendkitSignURL")
+			log.Fatalln("Please set a iDServerSignURL")
 		}
-		runParameters.BackendkitSignURL = viper.GetString("sign.backendkitSignURL")
+		runParameters.IDServerSignURL = viper.GetString("sign.iDServerSignURL")
 
-		if !viper.IsSet("sign.backendkitToken") || strings.EqualFold(viper.GetString("sign.backendkitToken"), "") {
+		if !viper.IsSet("sign.iDServerToken") || strings.EqualFold(viper.GetString("sign.iDServerToken"), "") {
 			if !viper.GetBool("log.json") {
 				cmd.Help()
 			}
-			log.Fatalln("Please set a backendkitToken")
+			log.Fatalln("Please set a iDServerToken")
 		}
-		runParameters.BackendkitToken = viper.GetString("sign.backendkitToken")
+		runParameters.IDServerToken = viper.GetString("sign.iDServerToken")
 
-		runParameters.UnsecureSSL = viper.GetBool("sign.unsecureSSL")
-		if viper.IsSet("sign.backendkitPubKey") {
-			runParameters.BackendkitPubKey = viper.GetString("sign.backendkitPubKey")
+		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.iDServerUnsecureSSL")
+		if viper.IsSet("sign.iDServerPubKey") {
+			runParameters.IDServerPubKey = viper.GetString("sign.iDServerPubKey")
 		}
 
 		app.BulkAnchor(runParameters, log)
@@ -98,38 +98,39 @@ func init() {
 	rootCmd.AddCommand(signCmd)
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	signCmd.Flags().StringVarP(&backendkitSignURL, "backendkitSignURL", "", "", "backendkit sign URL ex: \"https://backendkit.com:4443/sign\" (required)")
-	signCmd.Flags().StringVarP(&backendkitToken, "backendkitToken", "", "", "backendkit API token (required)")
-	signCmd.Flags().StringVarP(&backendkitPubKey, "backendkitPubKey", "", "", "public key (ie. bitcopin address) to use to sign")
+	signCmd.Flags().StringVarP(&iDServerSignURL, "iDServerSignURL", "", "", "IDServer sign URL ex: \"https://IDServer.com:4443/sign\" (required)")
+	signCmd.Flags().StringVarP(&iDServerToken, "iDServerToken", "", "", "IDServer API token (required)")
+	signCmd.Flags().StringVarP(&iDServerPubKey, "iDServerPubKey", "", "", "public key (ie. bitcopin address) to use to sign")
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature")
-	signCmd.Flags().BoolVarP(&strictPrune, "strict-prune", "", false, "same as --strict, plus delete the previous signature proof")
-	signCmd.Flags().BoolVarP(&exitonerror, "exitonerror", "e", false, "exit with an error code if anything goes wrong")
+	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
+with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
+	signCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore subfolders recursively")
-	signCmd.Flags().BoolVarP(&dryRun, "dryrun", "", false, "print information about files to sign without signing")
+	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
 	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoveravble proofs")
-	signCmd.Flags().BoolVarP(&unsecureSSL, "unsecureSSL", "", false, "do not check backendkit's SSL certificate validity (only for developpement)")
+	signCmd.Flags().BoolVarP(&iDServerUnsecureSSL, "iDServerUnsecureSSL", "", false, "do not check IDServer's SSL certificate validity (only for developpement)")
 
 	viper.BindPFlag("api.private", signCmd.Flags().Lookup("private"))
 	viper.BindPFlag("app.strict", signCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.directory", signCmd.Flags().Lookup("directory"))
-	viper.BindPFlag("app.strict-prune", signCmd.Flags().Lookup("strict-prune"))
-	viper.BindPFlag("app.exitonerror", signCmd.Flags().Lookup("exitonerror"))
-	viper.BindPFlag("app.recursive", anchorCmd.Flags().Lookup("recursive"))
-	viper.BindPFlag("app.dryrun", anchorCmd.Flags().Lookup("dryrun"))
-	viper.BindPFlag("sign.backendkitSignURL", signCmd.Flags().Lookup("backendkitSignURL"))
-	viper.BindPFlag("sign.backendkitToken", signCmd.Flags().Lookup("backendkitToken"))
-	viper.BindPFlag("sign.backendkitPubKey", signCmd.Flags().Lookup("backendkitPubKey"))
-	viper.BindPFlag("sign.unsecureSSL", signCmd.Flags().Lookup("unsecureSSL"))
+	viper.BindPFlag("app.prune", signCmd.Flags().Lookup("prune"))
+	viper.BindPFlag("app.exitOnError", signCmd.Flags().Lookup("exitOnError"))
+	viper.BindPFlag("app.recursive", signCmd.Flags().Lookup("recursive"))
+	viper.BindPFlag("app.dryRun", signCmd.Flags().Lookup("dryRun"))
+	viper.BindPFlag("sign.iDServerSignURL", signCmd.Flags().Lookup("iDServerSignURL"))
+	viper.BindPFlag("sign.iDServerToken", signCmd.Flags().Lookup("iDServerToken"))
+	viper.BindPFlag("sign.iDServerPubKey", signCmd.Flags().Lookup("iDServerPubKey"))
+	viper.BindPFlag("sign.iDServerUnsecureSSL", signCmd.Flags().Lookup("iDServerUnsecureSSL"))
 
 	viper.BindEnv("api.private")
 	viper.BindEnv("app.directory")
 	viper.BindEnv("app.strict")
 	viper.BindEnv("app.strict-prune")
-	viper.BindEnv("app.exitonerror")
+	viper.BindEnv("app.exitOnError")
 	viper.BindEnv("app.recursive")
-	viper.BindEnv("app.dryrun")
-	viper.BindEnv("sign.backendkitSignURL")
-	viper.BindEnv("sign.backendkitToken")
-	viper.BindEnv("sign.backendkitPubKey")
-	viper.BindEnv("sign.unsecureSSL")
+	viper.BindEnv("app.dryRun")
+	viper.BindEnv("sign.iDServerSignURL")
+	viper.BindEnv("sign.iDServerToken")
+	viper.BindEnv("sign.iDServerPubKey")
+	viper.BindEnv("sign.iDServerUnsecureSSL")
 }

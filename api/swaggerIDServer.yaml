@@ -1,0 +1,1365 @@
+openapi: 3.0.0
+info:
+  description: This is Woleet.ID Server API documentation.
+  version: 1.0.4
+  title: Woleet.ID Server
+  contact:
+    email: contact@woleet.com
+  license:
+    name: MIT
+security:
+  - CookieAuth: []
+paths:
+  /login:
+    get:
+      tags:
+        - Authentication
+      summary: Log into the system. Both email or username can be used to authentify.
+      operationId: login
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: User successfully logged in. A `session` cookie is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserInfo'
+        '400':
+          description: Missing email/username or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Invalid email/username or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /logout:
+    get:
+      tags:
+        - Authentication
+      summary: Log out from the system.
+      operationId: logout
+      responses:
+        '200':
+          description: User successfully logged out.
+  /info:
+    get:
+      tags:
+        - Authentication
+      summary: Return information about the current logged user.
+      operationId: getUserInfo
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserInfo'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+
+  /sign:
+    get:
+      operationId: getSignature
+      summary: Sign some data using a key.
+      tags:
+        - Signature
+      description: >
+        Use this endpoint to sign some data using one of the keys managed by the server.
+        <br>Provide the SHA256 hash of the data to sign in the `hashToSign` parameter.
+        <br>The key to use can be specified using the `pubKey`, `userId` and `customUserId` parameters:
+        <br>- set the `pubKey` parameter only: the referred key is used
+        <br>- set the `userId` (or the `customUserId`) parameter only: the default key of the referred user is used (if any).
+        <br>- set none of the 3 parameters: the default key of the server is used (if any).
+        <br>The signature produced is the signature of the hash using the referred key.
+        <br>This endpoint is protected using an API token. It is recommended not to expose it publicly.
+      parameters:
+        - $ref: '#/components/parameters/HashToSignQueryParameter'
+        - $ref: '#/components/parameters/UserIdQueryParameter'
+        - $ref: '#/components/parameters/CustomUserIdQueryParameter'
+        - $ref: '#/components/parameters/PubKeyToUseQueryParameter'
+      security:
+        - APITokenAuth: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignatureResult'
+        '400':
+          description: Missing or invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: The provided parameters does not match any key to sign with.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '403':
+          description: No `pubKey` parameter is provided and the server or the user has no default key to fallback on.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+
+  /identity:
+    get:
+      operationId: getIdentity
+      summary: Prove and get the identity of a user.
+      security: []
+      tags:
+        - Identity
+      description: >
+        Use this endpoint to verify that the server manages a given public key (ie. it owns the associated private key) and to get identity of the user associated to that key.
+        <br>This endpoint signs some random data using the public key provided in the `pubKey` parameter and return the produced signature along with the associated user's identity.
+        <br>The random data is built by concatenating the `leftData` parameter (provided by the client) and some random data (returned in the `rightData` field) generated by the server.
+        <br>The caller must verify that the produced signature is valid for the public key (this validate the ownership of the private part of the key by the server).
+        <br>The caller can optionally read the TLS certificate securing this endpoint to get the certified identity of the hoster of the server.
+        <br>This endpoint is not protected. It is recommended to expose it publicly.
+      parameters:
+        - $ref: '#/components/parameters/PubKeyToVerifyQueryParameter'
+        - $ref: '#/components/parameters/LeftDataQueryParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityResult'
+        '400':
+          description: Missing or invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Public key not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+
+  /key/{keyId}:
+    get:
+      tags:
+        - Key
+      summary: Get a key by its identifier.
+      operationId: getKeyById
+      parameters:
+        - $ref: '#/components/parameters/KeyIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyGet'
+        '400':
+          description: Invalid key identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Key not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    put:
+      tags:
+        - Key
+      summary: Update a key.
+      operationId: updateKey
+      parameters:
+        - $ref: '#/components/parameters/KeyIdParameter'
+      requestBody:
+        $ref: '#/components/requestBodies/KeyPut'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyGet'
+        '400':
+          description: Invalid key identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Key not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    delete:
+      tags:
+        - Key
+      summary: Delete a key.
+      operationId: deleteKey
+      parameters:
+        - $ref: '#/components/parameters/KeyIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyGet'
+        '400':
+          description: Invalid key identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Key not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /key/{keyId}/export:
+    get:
+      tags:
+        - Key
+      summary: Get the mnemonic words associated to a key.
+      description: Get the list of mnemonic words that can be used to backup and recover a key.
+      operationId: exportKey
+      parameters:
+        - $ref: '#/components/parameters/KeyIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mnemonics'
+        '400':
+          description: Invalid key identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Key not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /user/{userId}/key:
+    post:
+      tags:
+        - Key
+      summary: Create a new key for a user.
+      operationId: createKey
+      parameters:
+        - $ref: '#/components/parameters/UserIdParameter'
+      requestBody:
+        $ref: '#/components/requestBodies/KeyPost'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/KeyGet'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /user/{userId}/key/list:
+    get:
+      tags:
+        - Key
+      summary: List all keys of a user.
+      operationId: getAllUserKeys
+      parameters:
+        - $ref: '#/components/parameters/UserIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/KeyArray'
+        '400':
+          description: Invalid user identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+
+  /user:
+    post:
+      tags:
+        - User
+      summary: Create a new user.
+      operationId: createUser
+      requestBody:
+        description: User object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPost'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserGet'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '400':
+          description: Invalid object supplied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /user/{userId}:
+    get:
+      tags:
+        - User
+      summary: Get a user by his identifier.
+      operationId: getUserById
+      parameters:
+        - $ref: '#/components/parameters/UserIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserGet'
+        '400':
+          description: Invalid user identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    put:
+      tags:
+        - User
+      summary: Update a user.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserIdParameter'
+      requestBody:
+        description: User object to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPut'
+        required: true
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserGet'
+        '400':
+          description: Invalid object supplied / Invalid user identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    delete:
+      tags:
+        - User
+      summary: Delete a user.
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UserIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserGet'
+        '400':
+          description: Invalid user identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /user/list:
+    get:
+      tags:
+        - User
+      summary: List all users.
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Array of users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/UserArray'
+
+  /api-token:
+    post:
+      tags:
+        - API Token
+      summary: Create an API token.
+      description: Create an API token suitable to call the /sign endpoint (this can only be done by an admin).
+      operationId: createAPIToken
+      requestBody:
+        description: API token object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APITokenPost'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APITokenGet'
+        '400':
+          description: Invalid object supplied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /api-token/{APITokenId}:
+    get:
+      tags:
+        - API Token
+      summary: Get an API token by its identifier.
+      operationId: getAPITokenById
+      parameters:
+        - $ref: '#/components/parameters/APITokenIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APITokenGet'
+        '400':
+          description: Invalid API token identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: API token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    put:
+      tags:
+        - API Token
+      summary: Update an API token.
+      operationId: updateAPIToken
+      parameters:
+        - $ref: '#/components/parameters/APITokenIdParameter'
+      requestBody:
+        description: API token object to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APITokenPut'
+        required: true
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APITokenGet'
+        '400':
+          description: Invalid object supplied / Invalid API token identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: API token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    delete:
+      tags:
+        - API Token
+      summary: Delete an API token.
+      operationId: deleteAPIToken
+      parameters:
+        - $ref: '#/components/parameters/APITokenIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APITokenGet'
+        '400':
+          description: Invalid API token identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: API token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /api-token/list:
+    get:
+      tags:
+        - API Token
+      summary: List all API tokens.
+      operationId: getAllAPITokens
+      responses:
+        '200':
+          description: Succesful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APITokenArray'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /server-event/{ServerEventId}:
+    get:
+      tags:
+        - Server Event
+      summary: Get a server event by its identifier.
+      operationId: getServerEventById
+      parameters:
+        - $ref: '#/components/parameters/ServerEventIdParameter'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ServerEventGet'
+        '400':
+          description: Invalid Server Event identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: Server Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /server-event/list:
+    get:
+      tags:
+        - Server Event
+      summary: List all Server Events.
+      operationId: getServerEventList
+      responses:
+        '200':
+          description: Succesful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ServerEventArray'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+  /server-config:
+    get:
+      tags:
+        - Server Config
+      summary: Get the current server configuration.
+      operationId: getServerConfig
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ServerConfig'
+        '400':
+          description: Invalid API token identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: API token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+    put:
+      tags:
+        - Server Config
+      summary: Update the server's configuration.
+      operationId: updateServerConfig
+      requestBody:
+        $ref: '#/components/requestBodies/ServerConfig'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ServerConfig'
+        '400':
+          description: Invalid object supplied / Invalid API token identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '401':
+          description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: API token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+components:
+  schemas:
+    Identity:
+      type: object
+      description: User identity provided as a set of X.500 attributes (see https://www.ietf.org/rfc/rfc4519.txt).
+      properties:
+        commonName:
+          type: string
+          description: commonName (CN) (2.5.4.3)
+          example: "Jim Smith"
+        organization:
+          type: string
+          description: organizationName (O) (2.5.4.10)
+          example: "Woleet"
+        organizationalUnit:
+          type: string
+          description: organizationalUnitName (OU) (2.5.4.11)
+          example: "Sales"
+        locality:
+          type: string
+          description: localityName (L) (2.5.4.7)
+          example: "Rennes"
+        country:
+          type: string
+          description: countryName (C) (2.5.4.6)
+          example: "FR"
+      required:
+        - commonName
+    FullIdentity:
+      allOf:
+        - $ref: '#/components/schemas/Identity'
+        - type: object
+          properties:
+            userId:
+              type: string
+              description: >
+                userId (UID) (0.9.2342.19200300.100.1.1)
+                <br>The custom user identifier: it must be unique for each user.
+              example: "wol.jim-smith.01"
+    Password:
+      type: string
+      format: password
+      description: User password.
+      example: "nSBa+rV3%2/LpD"
+    Mnemonics:
+      type: object
+      properties:
+        phrase:
+          type: string
+          description: List of mnemonic words used to recover or import a key.
+          example: "abandon ability able about above absent"
+    PubKey:
+      type: string
+      description: Public key (bitcoin address when using BIP39 keys).
+      example: "1GChJMuyxvq28F3Uksqf5v7QkxQ4WLQdBh"
+    CreatedAt:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date of creation (Unix ms timestamp).
+      example: 1529052551419
+    UpdatedAt:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date of last modification (Unix ms timestamp).
+      example: 1529052551419
+    DeletedAt:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date of deletion (Unix ms timestamp) (`null` if not deleted).
+      example: 1529052551419
+    LastUsed:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date of last usage (Unix ms timestamp).
+      example: 1529059167339
+    LastLogin:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date of last login (Unix ms timestamp).
+      example: 1529050155459
+    OccurredAt:
+      type: integer
+      format: int64
+      readOnly: true
+      description: Date on which an event occurred (Unix ms timestamp).
+      example: 1529052551419
+    UserRoleEnum:
+      type: string
+      enum:
+       - user
+       - admin
+      default: "user"
+      description: User role.
+      example: "user"
+    UserStatusEnum:
+      type: string
+      enum:
+      - active
+      - blocked
+      default: "active"
+      description: User status (a `blocked` user cannot sign).
+      example: "active"
+    KeyStatusEnum:
+      type: string
+      enum:
+      - active
+      - blocked
+      default: "active"
+      description: Key status (a `blocked` key cannot be used to sign).
+      example: "active"
+    UserBase:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email (can be used for login).
+          example: "john.doe@acme.com"
+        username:
+          type: string
+          description: User name (can be used for login).
+          example: "johndoe"
+        status:
+          $ref: '#/components/schemas/UserStatusEnum'
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        identity:
+          $ref: '#/components/schemas/FullIdentity'
+        defaultKeyId:
+          type: string
+          format: uuid
+          description: Identifier of the default key to use for this user.
+          example: "c7c6e0de-2acb-4311-80b4-17dbf0b76806"
+    UserGet:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+              description: User identifier (allocated by the server).
+              example: "7c42e7e9-aec5-4d56-9a3b-bd55e129aae3"
+            createdAt:
+              $ref: '#/components/schemas/CreatedAt'
+            updatedAt:
+              $ref: '#/components/schemas/UpdatedAt'
+            deletedAt:
+              $ref: '#/components/schemas/DeletedAt'
+            lastLogin:
+              $ref: '#/components/schemas/LastLogin'
+    UserPost:
+      allOf:
+        - $ref: '#/components/schemas/UserPut'
+        - type: object
+          required:
+            - identity
+    UserPut:
+      allOf:
+      - $ref: '#/components/schemas/UserBase'
+      - type: object
+        properties:
+          password:
+            $ref: '#/components/schemas/Password'
+    UserArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserGet'
+    UserInfo:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+    APITokenStatusEnum:
+      type: string
+      enum:
+      - active
+      - blocked
+      default: "active"
+      description: API token status (a `blocked` API token cannot be used).
+      example: "active"
+    APITokenBase:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "My API token name"
+          description: Key name.
+        status:
+          $ref: '#/components/schemas/APITokenStatusEnum'
+    APITokenGet:
+      allOf:
+        - $ref: '#/components/schemas/APITokenBase'
+        - type: object
+          properties:
+            id:
+              readOnly: true
+              type: string
+              format: uuid
+              description: API token identifier (allocated by the platform).
+              example: "a35c9fee-3893-4eb7-adde-205e1be03209"
+            value:
+              readOnly: true
+              type: string
+              description: Token to use for the signature endpoint.
+              example: "b9PXEeMpSCyeaPpQiZ3Bvw=="
+            createdAt:
+              $ref: '#/components/schemas/CreatedAt'
+            updatedAt:
+              $ref: '#/components/schemas/UpdatedAt'
+            deletedAt:
+              $ref: '#/components/schemas/DeletedAt'
+            lastUsed:
+              $ref: '#/components/schemas/LastUsed'
+    APITokenPost:
+      allOf:
+        - $ref: '#/components/schemas/APITokenBase'
+        - type: object
+          required:
+            - name
+    APITokenPut:
+      allOf:
+        - $ref: '#/components/schemas/APITokenBase'
+    APITokenArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/APITokenGet'
+    ServerConfig:
+      type: object
+      properties:
+        identityURL:
+          type: string
+          example: "https://identity.mydomain.com/identity"
+          description: |
+            The identity URL that the server returns with a signature.
+            Note that the server always expects to be called on the "/identity" endpoint,
+            if you want to map it to another one (like in the example, where it is linked to a dedicated subdomain)
+            you must not forget it in your reverse proxy configuration.
+        defaultKeyId:
+          type: string
+          format: uuid
+          example: "7b8e5c49-18c6-4ef7-9dab-261a5e717b31"
+          description: Identifier of the default key to use when signing with no user and no key specified.
+        fallbackOnDefaultKey:
+          type: boolean
+          example: true
+          description: True is the server must fallback on the default key (if any).
+    ServerEventTypeEnum:
+      type: string
+      enum:
+      - login
+      - signature
+      - config.edit
+      - key.create
+      - key.edit
+      - key.delete
+      - user.create
+      - user.edit
+      - user.delete
+      - token.create
+      - token.edit
+      - token.delete
+      description: Type of the event.
+      example: "user.edit"
+    ServerEventBase:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ServerEventTypeEnum'
+        occurredAt:
+          $ref: '#/components/schemas/OccurredAt'
+        authorizedUserId:
+          type: string
+          format: uuid
+          description: Identifier of the user that triggered the event.
+          example: "2b5ced14-01c5-419d-a0ae-aa9622918ca6"
+        authorizedTokenId:
+          type: string
+          format: uuid
+          description: Identifier of the API token used to authentify.
+          example: "fd7cb389-91e6-41ba-a0a5-14a05bd2b5f7"
+        associatedTokenId:
+          type: string
+          format: uuid
+          description: Identifier of the related API token.
+          example: "e2611d40-166f-4d7e-9fc5-164972878646"
+        associatedUserId:
+          type: string
+          format: uuid
+          description: Identifier of the related user.
+          example: "a84996d3-9a77-4e8c-947f-f00c4d64a167"
+        associatedKeyId:
+          type: string
+          format: uuid
+          description: Identifier of the related key.
+          example: "461816ca-5623-4417-a2d1-5ee960f0a7a9"
+    ServerEventGet:
+      allOf:
+      - $ref: '#/components/schemas/ServerEventBase'
+      - type: object
+        properties:
+          data:
+            type: object
+            description: Specific additional data associated with the event.
+            example: { "username": "foo", "identity" : {"countryName" : "FR"} }
+    ServerEventArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/ServerEventGet'
+    KeyTypeEnum:
+      type: string
+      enum:
+      - bip39
+      description: Key type.
+      example: "bip39"
+    KeyBase:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "My key name"
+          description: Key name.
+        status:
+          $ref: '#/components/schemas/KeyStatusEnum'
+    KeyGet:
+      allOf:
+        - $ref: '#/components/schemas/KeyBase'
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              readOnly: true
+              type: string
+              format: uuid
+              description: Key identifier (allocated by the platform).
+              example: "a35c9fee-3893-4eb7-adde-205e1be03209"
+            pubKey:
+              $ref: '#/components/schemas/PubKey'
+            type:
+              $ref: '#/components/schemas/KeyTypeEnum'
+            createdAt:
+              $ref: '#/components/schemas/CreatedAt'
+            updatedAt:
+              $ref: '#/components/schemas/UpdatedAt'
+            deletedAt:
+              $ref: '#/components/schemas/DeletedAt'
+            lastUsed:
+              $ref: '#/components/schemas/LastUsed'
+    KeyPost:
+      allOf:
+        - $ref: '#/components/schemas/KeyBase'
+        - type: object
+          required:
+          - name
+    KeyPut:
+      allOf:
+        - $ref: '#/components/schemas/KeyBase'
+    KeyArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/KeyGet'
+    SignatureResult:
+      type: object
+      properties:
+        pubKey:
+          type: string
+          format: base58
+          example: "1KjQ8LgUgYVSqeK7JFhA9W8FVsHCzFrFi8"
+          description: The public key used to sign (must be the same as the `pubKey` parameter, if provided).
+        signedHash:
+          type: string
+          format: hex
+          example: "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+          description: The hash that is signed (same as the `hashToSign` parameter).
+        signature:
+          type: string
+          format: base64
+          example: "IKnOvW2/BQqahssC2l9Icz7qiJQqesgu0HCKvW/L5xZLaMCLyg19ATDNJojMILdUijFOqiRzgk6ieDXi89DeB0Q="
+          description: The signature of `hashToSign` using the public key `pubKey`.
+        identityURL:
+          type: string
+          format: URL
+          example: "https://woleetidserver.acme.com/v1/identity"
+          description: The public URL of the `/identity` endpoint (ie. a URL that anyone can use to prove and verify the identity associated with the public key).
+    IdentityResult:
+      allOf:
+        - type: object
+          properties:
+            rightData:
+              type: string
+              description: >
+                The right part of the signed data (generated randomly).
+                <br>To prevent man-in-the-middle attacks, the data start with the server's identity URL and this should be verified by the caller.
+            signature:
+              type: string
+              format: base64
+              example: "IKnOvW2/BQqahssC2l9Icz7qiJQqesgu0HCKvW/L5xZLaMCLyg19ATDNJojMILdUijFOqiRzgk6ieDXi89DeB0Q="
+              description: The signature of the concatenation of `leftData` and `rightData` using the public key `pubKey`.
+            identity:
+              $ref: '#/components/schemas/Identity'
+    APIError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+              format: int32
+              example: 418
+            message:
+              type: string
+              example: "I'm a teapot"
+          required:
+            - code
+            - message
+  parameters:
+    UserIdParameter:
+      name: userId
+      in: path
+      description: Identifier of the user.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 'feb37e23-d04e-4e71-bf53-1f1a75ba3a68'
+    KeyIdParameter:
+      name: keyId
+      in: path
+      description: Identifier of the key.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "552aa3fd-3b5e-434f-bdd3-9b6c58c269c1"
+    APITokenIdParameter:
+      name: APITokenId
+      in: path
+      description: Identifier of the API token.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "f34d92e3-4f71-49ab-862f-69443bd48266"
+    ServerEventIdParameter:
+      name: ServerEventId
+      in: path
+      description: Identifier of the server event.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "813797c8-01e3-4a80-8068-bc2bda13df16"
+    PubKeyToUseQueryParameter:
+      name: pubKey
+      in: query
+      description: >
+        The public key to use to sign.
+        When not provided and a user is provided, the default key of the user is used (if any).
+        When not provided and no user is provided, the default key of the server is used (if any).
+      required: false
+      schema:
+        type: string
+        example: "1GChJMuyxvq28F3Uksqf5v7QkxQ4WLQdBh"
+    PubKeyToVerifyQueryParameter:
+      name: pubKey
+      in: query
+      description: The public key to verify.
+      required: true
+      schema:
+        type: string
+        example: "1GChJMuyxvq28F3Uksqf5v7QkxQ4WLQdBh"
+    CustomUserIdQueryParameter:
+      name: customUserId
+      in: query
+      description: The custom user identifier (ie. `userId` field of the user's identity).
+      required: false
+      schema:
+        type: string
+        example: "wol.jim-smith.01"
+    UserIdQueryParameter:
+      name: userId
+      in: query
+      description: The user identifier.
+      required: false
+      schema:
+        type: string
+        format: uuid
+        example: "345a4513-0266-419a-8344-2daf645b78ed"
+    LeftDataQueryParameter:
+      name: leftData
+      in: query
+      description: Left part of the random data to sign (should be generated randomly).
+      required: true
+      schema:
+        type: string
+        example: '00c8a2b0c373050e7f2abbb2e4c631a42c10d402'
+    HashToSignQueryParameter:
+      name: hashToSign
+      in: query
+      description: The SHA256 hash that is to be signed (a string formatted like [a-f0-9]{64}).
+      required: true
+      schema:
+        type: string
+        example: 'd8e734d7c02e5b889e3e15acd5aaf231a67e1d9974f17b2c907148c4f4a7f975'
+  requestBodies:
+    KeyPost:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/KeyPost'
+      description: Key object to add.
+      required: true
+    KeyPut:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/KeyPut'
+      description: Replacement key object.
+      required: true
+    APITokenPost:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APITokenPost'
+      description: API token object to add.
+      required: true
+    APITokenPut:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APITokenPut'
+      description: Replacement API token object.
+      required: true
+    ServerConfig:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServerConfig'
+      description: Replacement server config object.
+      required: true
+  responses:
+    UserGet:
+      $ref: '#/components/schemas/UserGet'
+    UserArray:
+      $ref: '#/components/schemas/UserArray'
+    UserInfo:
+      $ref: '#/components/schemas/UserInfo'
+    APIError:
+      $ref: '#/components/schemas/APIError'
+    KeyGet:
+      $ref: '#/components/schemas/KeyGet'
+    KeyArray:
+      $ref: '#/components/schemas/KeyArray'
+    APITokenGet:
+      $ref: '#/components/schemas/APITokenGet'
+    APITokenArray:
+      $ref: '#/components/schemas/APITokenArray'
+    ServerConfig:
+      $ref: '#/components/schemas/ServerConfig'
+    ServerEventGet:
+      $ref: '#/components/schemas/ServerEventGet'
+    ServerEventArray:
+      $ref: '#/components/schemas/ServerEventArray'
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Use email/username and password to authenticate.
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Use a session cookie to authentify (see /login).
+    APITokenAuth:
+      type: http
+      scheme: bearer
+      description: Use an API token to authentify (see /api-token).
