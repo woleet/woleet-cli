@@ -225,6 +225,8 @@ go get -u gopkg.in/resty.v1
 go get -u github.com/spf13/cobra
 go get -u github.com/spf13/viper
 go get -u github.com/mitchellh/go-homedir
+go get -u github.com/kennygrant/sanitize
+go get -u github.com/sirupsen/logrus
 # For windows only:
 go get -u github.com/inconshreveable/mousetrap
 
