@@ -59,7 +59,7 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 				errHandlerExitOnError(errAnchors, exitOnError)
 				continue
 			}
-			log.WithFields(fields).Infoln("Proof retrived successfully")
+			log.WithFields(fields).Infoln("Proof retrived")
 		}
 	}
 }

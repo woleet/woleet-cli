@@ -6,7 +6,7 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 Currently, the tool only supports:
 
 * the `anchor` command, allowing to recursively anchor all files in a given directory
-* the `sign` command, allowing to recursively sign all files in a given directory (using the backend kit: <https://github.com/woleet/woleet-backendkit>)
+* the `sign` command, allowing to recursively sign all files in a given directory (using the IDServer kit: <https://github.com/woleet/woleet.id-server>)
 * the `export` command, allowing to download all your receipts in a given directory
 
 ## Anchor / Sign
@@ -17,8 +17,8 @@ The tool scans a folder recursively and anchors or sign all files found. It also
 
 Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
-If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --strict--prune is used instead.  
-If the original file is no longer present and the option --strict-prune is provided, the old receipt/pending file will be deleted.
+If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
+If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
@@ -117,18 +117,19 @@ api:
 app:
   directory: /home/folder/to/anchor
   strict: true
-  strict-prune: true
-  exitonerror: true
+  prune: true
+  exitOnError: true
   recursive: true
-  dryrun: false
+  dryRun: false
 sign:
-  backendkitSignURL: https://backendkit.com:4443/sign
-  backendkitToken: insert-your-backendkit-token-here
-  unsecureSSL: false
+  iDServerSignURL: https://IDServer.com:4443/sign
+  iDServerToken: insert-your-IDServer-token-here
+  iDServerPubKey: insert-your-IDServer-PubKey-here
+  iDServerUnsecureSSL: false
 export:
   directory: /home/folder/to/anchor
-  limitdate: 2018-01-21
-  exitonerror: true
+  limitDate: 2018-01-21
+  exitOnError: true
 log:
   json: true
   level: info
@@ -145,21 +146,22 @@ JSON:
   },
   "app": {
     "directory": "/home/folder/to/anchor",
-    "exitonerror": true,
+    "exitOnError": true,
     "strict": true,
-    "strict-prune": true,
+    "prune": true,
     "recursive": true,
-    "dryrun": true,
+    "dryRun": true,
   },
   "sign": {
-    "backendkitSignURL": "https://backendkit.com:4443/sign",
-    "backendkitToken": "insert-your-backendkit-token-here",
-    "unsecureSSL": false
+    "iDServerSignURL": "https://IDServer.com:4443/sign",
+    "iDServerToken": "insert-your-IDServer-token-here",
+    "iDServerPubKey": "insert-your-IDServer-PubKey-here",
+    "iDServerUnsecureSSL": false
   },
   "export": {
     "directory": "/home/folder/to/anchor",
-    "limitdate": "2018-01-21",
-    "exitonerror": true
+    "limitDate": "2018-01-21",
+    "exitOnError": true
   },
   "log": {
     "json": true,
@@ -178,12 +180,13 @@ export WLT_API_PRIVATE="true"
 export WLT_APP_DIRECTORY="/home/folder/to/anchor"
 export WLT_APP_EXITONERROR="true"
 export WLT_APP_STRICT="true"
-export WLT_APP_STRICT_PRUNE="true"
+export WLT_APP_PRUNE="true"
 export WLT_APP_RECURSIVE="true"
 export WLT_APP_DRYRUN="true"
-export WLT_SIGN_BACKENDKITSIGNURL="https://backendkit.com:4443/sign"
-export WLT_SIGN_BACKENDKITTOKEN="insert-your-backendkit-token-here"
-export WLT_SIGN_UNSECURESSL="false"
+export WLT_SIGN_IDSERVERSIGNURL="https://IDServer.com:4443/sign"
+export WLT_SIGN_IDSERVERTOKEN="insert-your-IDServer-token-here"
+export WLT_SIGN_IDSERVERPUBKEY="insert-your-IDServer-PubKey-here"
+export WLT_SIGN_IDSERVERUNSECURESSL="false"
 export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
 export WLT_EXPORT_LIMITDATE="2018-01-21"
 export WLT_EXPORT_EXITONERROR="true"
@@ -193,7 +196,7 @@ export WLT_LOG_LEVEL="info"
 
 ## Generate models from OpenAPI/Swagger specifications
 
-The tool calls the Woleet API and the BackendKit API using model classes generated from their OpenAPI/Swagger specification.
+The tool calls the Woleet API and the IDServer API using model classes generated from their OpenAPI/Swagger specification.
 If this specification were to be changed, model classes can be updated using the following commands:
 
 ```bash

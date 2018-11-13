@@ -33,14 +33,14 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 	}
 
 	if runParameters.Signature {
-		//Check backendkit connection
+		//Check IDServer connection
 		commonInfos.iDServerClient = api.GetNewClient(commonInfos.runParameters.IDServerSignURL, commonInfos.runParameters.IDServerToken)
 		if commonInfos.runParameters.IDServerUnsecureSSL {
 			commonInfos.iDServerClient.DisableSSLVerification()
 		}
 		errIDServer := commonInfos.iDServerClient.CheckIDServerConnection()
 		if errIDServer != nil {
-			log.Fatalf("Unable to connect to the backendkit: %s\n", errIDServer)
+			log.Fatalf("Unable to connect to the IDServer: %s\n", errIDServer)
 		}
 	}
 
