@@ -3,6 +3,7 @@ module github.com/woleet/woleet-cli
 require (
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/kennygrant/sanitize v1.2.4
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/russross/blackfriday v2.0.0+incompatible // indirect

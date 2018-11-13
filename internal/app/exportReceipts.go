@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kennygrant/sanitize"
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/helpers"
@@ -32,19 +33,19 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 			if anchor.Signature != "" {
 				currentSuffix = helpers.SuffixSignatureReceipt
 			}
-			receiptPath := exportDirectory + string(os.PathSeparator) + anchor.Name + "-" + anchor.Id + currentSuffix
+
+			fields := logrus.Fields{}
+			fields["anchorID"] = anchor.Id
+			fields["anchor_Name"] = anchor.Name
+			fields["File_Name"] = sanitize.BaseName(anchor.Name) + "-" + anchor.Id + currentSuffix
+
+			receiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.Name) + "-" + anchor.Id + currentSuffix
 			if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
-				log.WithFields(logrus.Fields{
-					"anchorID":   anchor.Id,
-					"anchorName": anchor.Name,
-				}).Infoln("Proof already on disk")
+				log.WithFields(fields).Infoln("Proof already on disk")
 				continue
 			}
 			if !strings.EqualFold(anchor.Status, "CONFIRMED") {
-				log.WithFields(logrus.Fields{
-					"anchorID":   anchor.Id,
-					"anchorName": anchor.Name,
-				}).Infoln("Proof not available yet")
+				log.WithFields(fields).Infoln("Proof not available yet")
 				continue
 			}
 			errGetReceipt := client.GetReceiptToFile(anchor.Id, receiptPath)
@@ -58,10 +59,7 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 				errHandlerExitOnError(errAnchors, exitOnError)
 				continue
 			}
-			log.WithFields(logrus.Fields{
-				"anchorID":   anchor.Id,
-				"anchorName": anchor.Name,
-			}).Infoln("Proof retrieved")
+			log.WithFields(fields).Infoln("Proof retrived successfully")
 		}
 	}
 }
