@@ -98,17 +98,17 @@ func init() {
 	rootCmd.AddCommand(signCmd)
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	signCmd.Flags().StringVarP(&iDServerSignURL, "iDServerSignURL", "", "", "IDServer sign URL ex: \"https://IDServer.com:4443/sign\" (required)")
-	signCmd.Flags().StringVarP(&iDServerToken, "iDServerToken", "", "", "IDServer API token (required)")
-	signCmd.Flags().StringVarP(&iDServerPubKey, "iDServerPubKey", "", "", "public key (ie. bitcopin address) to use to sign")
+	signCmd.Flags().StringVarP(&iDServerSignURL, "iDServerSignURL", "", "", "ID.Server sign URL ex: \"https://idserver.com:4443/sign\" (required)")
+	signCmd.Flags().StringVarP(&iDServerToken, "iDServerToken", "", "", "ID.Server API token (required)")
+	signCmd.Flags().StringVarP(&iDServerPubKey, "iDServerPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature")
 	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
 	signCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
-	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore subfolders recursively")
+	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
-	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoveravble proofs")
-	signCmd.Flags().BoolVarP(&iDServerUnsecureSSL, "iDServerUnsecureSSL", "", false, "do not check IDServer's SSL certificate validity (only for developpement)")
+	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
+	signCmd.Flags().BoolVarP(&iDServerUnsecureSSL, "iDServerUnsecureSSL", "", false, "do not check ID.Server's SSL certificate validity (only for development)")
 
 	viper.BindPFlag("api.private", signCmd.Flags().Lookup("private"))
 	viper.BindPFlag("app.strict", signCmd.Flags().Lookup("strict"))

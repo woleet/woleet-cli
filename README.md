@@ -6,7 +6,7 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 Currently, the tool only supports:
 
 * the `anchor` command, allowing to recursively anchor all files in a given directory
-* the `sign` command, allowing to recursively sign all files in a given directory (using the IDServer kit: <https://github.com/woleet/woleet.id-server>)
+* the `sign` command, allowing to recursively sign all files in a given directory (using Woleet ID.Server: <https://github.com/woleet/woleet.id-server>)
 * the `export` command, allowing to download all your receipts in a given directory
 
 ## Anchor / Sign
@@ -81,14 +81,14 @@ woleet-cli sign [flags]
       --dryRun                   print information about files to sign without signing
   -e, --exitOnError              exit with an error code if anything goes wrong
   -h, --help                     help for sign
-      --iDServerPubKey string    public key (ie. bitcopin address) to use to sign
-      --iDServerSignURL string   IDServer sign URL ex: "https://IDServer.com:4443/sign" (required)
-      --iDServerToken string     IDServer API token (required)
-      --iDServerUnsecureSSL      do not check IDServer's SSL certificate validity (only for developpement)
-  -p, --private                  create non discoveravble proofs
+      --iDServerPubKey string    public key (ie. bitcoin address) to use to sign
+      --iDServerSignURL string   ID.Server sign URL ex: "https://idserver.com:4443/sign" (required)
+      --iDServerToken string     ID.Server API token (required)
+      --iDServerUnsecureSSL      do not check ID.Server's SSL certificate validity (only for developpement)
+  -p, --private                  create non discoverable proofs
       --prune                    delete receipts that are not along the original file,
                                  with --strict it checks the hash of the original file and deletes the receipt if they do not match
-  -r, --recursive                explore subfolders recursively
+  -r, --recursive                explore sub-folders recursively
       --strict                   re-sign any file that has changed since last signature
 
 woleet-cli export [flags]
@@ -122,9 +122,9 @@ app:
   recursive: true
   dryRun: false
 sign:
-  iDServerSignURL: https://IDServer.com:4443/sign
-  iDServerToken: insert-your-IDServer-token-here
-  iDServerPubKey: insert-your-IDServer-PubKey-here
+  iDServerSignURL: https://idserver.com:4443/sign
+  iDServerToken: insert-your-idserver-token-here
+  iDServerPubKey: insert-your-idserver-pubkey-here
   iDServerUnsecureSSL: false
 export:
   directory: /home/folder/to/anchor
@@ -150,12 +150,12 @@ JSON:
     "strict": true,
     "prune": true,
     "recursive": true,
-    "dryRun": true,
+    "dryRun": true
   },
   "sign": {
-    "iDServerSignURL": "https://IDServer.com:4443/sign",
-    "iDServerToken": "insert-your-IDServer-token-here",
-    "iDServerPubKey": "insert-your-IDServer-PubKey-here",
+    "iDServerSignURL": "https://idserver.com:4443/sign",
+    "iDServerToken": "insert-your-idserver-token-here",
+    "iDServerPubKey": "insert-your-idserver-pubkey-here",
     "iDServerUnsecureSSL": false
   },
   "export": {
@@ -183,9 +183,9 @@ export WLT_APP_STRICT="true"
 export WLT_APP_PRUNE="true"
 export WLT_APP_RECURSIVE="true"
 export WLT_APP_DRYRUN="true"
-export WLT_SIGN_IDSERVERSIGNURL="https://IDServer.com:4443/sign"
-export WLT_SIGN_IDSERVERTOKEN="insert-your-IDServer-token-here"
-export WLT_SIGN_IDSERVERPUBKEY="insert-your-IDServer-PubKey-here"
+export WLT_SIGN_IDSERVERSIGNURL="https://idserver.com:4443/sign"
+export WLT_SIGN_IDSERVERTOKEN="insert-your-idserver-token-here"
+export WLT_SIGN_IDSERVERPUBKEY="insert-your-idserver-pubkey-here"
 export WLT_SIGN_IDSERVERUNSECURESSL="false"
 export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
 export WLT_EXPORT_LIMITDATE="2018-01-21"
@@ -196,7 +196,7 @@ export WLT_LOG_LEVEL="info"
 
 ## Generate models from OpenAPI/Swagger specifications
 
-The tool calls the Woleet API and the IDServer API using model classes generated from their OpenAPI/Swagger specification.
+The tool calls Woleet API and ID.Server API using model classes generated from their OpenAPI/Swagger specification.
 If this specification were to be changed, model classes can be updated using the following commands:
 
 ```bash
