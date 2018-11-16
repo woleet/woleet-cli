@@ -33,14 +33,14 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 	}
 
 	if runParameters.Signature {
-		// Check Woleet.ID server connection
+		// Check Woleet.ID Server connection
 		commonInfos.iDServerClient = api.GetNewClient(commonInfos.runParameters.IDServerSignURL, commonInfos.runParameters.IDServerToken)
 		if commonInfos.runParameters.IDServerUnsecureSSL {
 			commonInfos.iDServerClient.DisableSSLVerification()
 		}
 		errIDServer := commonInfos.iDServerClient.CheckIDServerConnection()
 		if errIDServer != nil {
-			log.Fatalf("Unable to connect to Woleet.ID server: %s\n", errIDServer)
+			log.Fatalf("Unable to connect to Woleet.ID Server: %s\n", errIDServer)
 		}
 	}
 
