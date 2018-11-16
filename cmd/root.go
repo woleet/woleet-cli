@@ -74,14 +74,14 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
-	if (cfgFile == "DISABLED") || (os.Getenv("WLT_CONFIG") == "DISABLED") {
+	if (cfgFile == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
 		return
 	} else if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
-	} else if os.Getenv("WLT_CONFIG") != "" {
+	} else if os.Getenv("WCLI_CONFIG") != "" {
 		// Use config file from env
-		viper.SetConfigFile(os.Getenv("WLT_CONFIG"))
+		viper.SetConfigFile(os.Getenv("WCLI_CONFIG"))
 	} else {
 		// Find home directory.
 		home, errHome := homedir.Dir()

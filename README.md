@@ -57,7 +57,7 @@ There is also a special environnement variable or config path to disable environ
 ```bash
 woleet-cli --config "DISABLED" ...
 # or
-export WLT_CONFIG="DISABLED"
+export WCLI_CONFIG="DISABLED"
 ```
 
 ### Usage
@@ -81,10 +81,10 @@ woleet-cli sign [flags]
       --dryRun                   print information about files to sign without signing
   -e, --exitOnError              exit with an error code if anything goes wrong
   -h, --help                     help for sign
-      --iDServerPubKey string    public key (ie. bitcoin address) to use to sign
-      --iDServerSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:4443/sign" (required)
-      --iDServerToken string     Woleet.ID Server API token (required)
-      --iDServerUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for developpement)
+      --widsPubKey string    public key (ie. bitcoin address) to use to sign
+      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:4443/sign" (required)
+      --widsToken string     Woleet.ID Server API token (required)
+      --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for developpement)
   -p, --private                  create non discoverable proofs
       --prune                    delete receipts that are not along the original file,
                                  with --strict it checks the hash of the original file and deletes the receipt if they do not match
@@ -122,10 +122,10 @@ app:
   recursive: true
   dryRun: false
 sign:
-  iDServerSignURL: https://idserver.com:4443/sign
-  iDServerToken: insert-your-idserver-token-here
-  iDServerPubKey: insert-your-idserver-pubkey-here
-  iDServerUnsecureSSL: false
+  widsSignURL: https://idserver.com:4443/sign
+  widsToken: insert-your-idserver-token-here
+  widsPubKey: insert-your-idserver-pubkey-here
+  widsUnsecureSSL: false
 export:
   directory: /home/folder/to/anchor
   limitDate: 2018-01-21
@@ -153,10 +153,10 @@ JSON:
     "dryRun": true
   },
   "sign": {
-    "iDServerSignURL": "https://idserver.com:4443/sign",
-    "iDServerToken": "insert-your-idserver-token-here",
-    "iDServerPubKey": "insert-your-idserver-pubkey-here",
-    "iDServerUnsecureSSL": false
+    "widsSignURL": "https://idserver.com:4443/sign",
+    "widsToken": "insert-your-idserver-token-here",
+    "widsPubKey": "insert-your-idserver-pubkey-here",
+    "widsUnsecureSSL": false
   },
   "export": {
     "directory": "/home/folder/to/anchor",
@@ -173,25 +173,25 @@ JSON:
 ENV:
 
 ```bash
-export WLT_CONFIG="$HOME/.woleet-cli.json"
-export WLT_API_URL="https://api.woleet.io/v1"
-export WLT_API_TOKEN="insert-your-token-here"
-export WLT_API_PRIVATE="true"
-export WLT_APP_DIRECTORY="/home/folder/to/anchor"
-export WLT_APP_EXITONERROR="true"
-export WLT_APP_STRICT="true"
-export WLT_APP_PRUNE="true"
-export WLT_APP_RECURSIVE="true"
-export WLT_APP_DRYRUN="true"
-export WLT_SIGN_IDSERVERSIGNURL="https://idserver.com:4443/sign"
-export WLT_SIGN_IDSERVERTOKEN="insert-your-idserver-token-here"
-export WLT_SIGN_IDSERVERPUBKEY="insert-your-idserver-pubkey-here"
-export WLT_SIGN_IDSERVERUNSECURESSL="false"
-export WLT_EXPORT_DIRECTORY="/home/folder/to/anchor"
-export WLT_EXPORT_LIMITDATE="2018-01-21"
-export WLT_EXPORT_EXITONERROR="true"
-export WLT_LOG_JSON="true"
-export WLT_LOG_LEVEL="info"
+export WCLI_CONFIG="$HOME/.woleet-cli.json"
+export WCLI_API_URL="https://api.woleet.io/v1"
+export WCLI_API_TOKEN="insert-your-token-here"
+export WCLI_API_PRIVATE="true"
+export WCLI_APP_DIRECTORY="/home/folder/to/anchor"
+export WCLI_APP_EXITONERROR="true"
+export WCLI_APP_STRICT="true"
+export WCLI_APP_PRUNE="true"
+export WCLI_APP_RECURSIVE="true"
+export WCLI_APP_DRYRUN="true"
+export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:4443/sign"
+export WCLI_SIGN_WIDSTOKEN="insert-your-idserver-token-here"
+export WCLI_SIGN_WIDSPUBKEY="insert-your-idserver-pubkey-here"
+export WCLI_SIGN_WIDSUNSECURESSL="false"
+export WCLI_EXPORT_DIRECTORY="/home/folder/to/anchor"
+export WCLI_EXPORT_LIMITDATE="2018-01-21"
+export WCLI_EXPORT_EXITONERROR="true"
+export WCLI_LOG_JSON="true"
+export WCLI_LOG_LEVEL="info"
 ```
 
 ## Generate models from OpenAPI/Swagger specifications

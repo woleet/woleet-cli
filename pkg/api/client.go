@@ -38,7 +38,7 @@ func GetNewClient(baseURL string, token string) *Client {
 			return r.StatusCode() == http.StatusTooManyRequests, nil
 		},
 	)
-	if !strings.EqualFold(os.Getenv("WLT_RESTY_DEBUG"), "true") {
+	if !strings.EqualFold(os.Getenv("WCLI_RESTY_DEBUG"), "true") {
 		client.RestyClient.Log = gologger.New(ioutil.Discard, "RESTY - ", gologger.LstdFlags)
 	} else {
 		client.RestyClient.Log = gologger.New(os.Stdout, "RESTY - ", gologger.LstdFlags)

@@ -29,7 +29,7 @@ type RunParameters struct {
 
 type commonInfos struct {
 	client          *api.Client
-	iDServerClient  *api.Client
+	widsClient      *api.Client
 	mapPathFileinfo map[string]os.FileInfo
 	pending         map[string]os.FileInfo
 	pendingToDelete map[string]os.FileInfo

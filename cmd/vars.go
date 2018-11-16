@@ -22,10 +22,10 @@ var recursive bool
 var dryRun bool
 
 // Sign
-var iDServerSignURL string
-var iDServerToken string
-var iDServerPubKey string
-var iDServerUnsecureSSL bool
+var widsSignURL string
+var widsToken string
+var widsPubKey string
+var widsUnsecureSSL bool
 
 // Export
 var exportDirectory string

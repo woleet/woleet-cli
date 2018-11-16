@@ -68,25 +68,25 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 		runParameters.Token = viper.GetString("api.token")
 
-		if !viper.IsSet("sign.iDServerSignURL") || strings.EqualFold(viper.GetString("sign.iDServerSignURL"), "") {
+		if !viper.IsSet("sign.widsSignURL") || strings.EqualFold(viper.GetString("sign.widsSignURL"), "") {
 			if !viper.GetBool("log.json") {
 				cmd.Help()
 			}
-			log.Fatalln("Please set a iDServerSignURL")
+			log.Fatalln("Please set a widsSignURL")
 		}
-		runParameters.IDServerSignURL = viper.GetString("sign.iDServerSignURL")
+		runParameters.IDServerSignURL = viper.GetString("sign.widsSignURL")
 
-		if !viper.IsSet("sign.iDServerToken") || strings.EqualFold(viper.GetString("sign.iDServerToken"), "") {
+		if !viper.IsSet("sign.widsToken") || strings.EqualFold(viper.GetString("sign.widsToken"), "") {
 			if !viper.GetBool("log.json") {
 				cmd.Help()
 			}
-			log.Fatalln("Please set a iDServerToken")
+			log.Fatalln("Please set a widsToken")
 		}
-		runParameters.IDServerToken = viper.GetString("sign.iDServerToken")
+		runParameters.IDServerToken = viper.GetString("sign.widsToken")
 
-		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.iDServerUnsecureSSL")
-		if viper.IsSet("sign.iDServerPubKey") {
-			runParameters.IDServerPubKey = viper.GetString("sign.iDServerPubKey")
+		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.widsUnsecureSSL")
+		if viper.IsSet("sign.widsPubKey") {
+			runParameters.IDServerPubKey = viper.GetString("sign.widsPubKey")
 		}
 
 		app.BulkAnchor(runParameters, log)
@@ -98,9 +98,9 @@ func init() {
 	rootCmd.AddCommand(signCmd)
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	signCmd.Flags().StringVarP(&iDServerSignURL, "iDServerSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:4443/sign\" (required)")
-	signCmd.Flags().StringVarP(&iDServerToken, "iDServerToken", "", "", "Woleet.ID Server API token (required)")
-	signCmd.Flags().StringVarP(&iDServerPubKey, "iDServerPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
+	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:4443/sign\" (required)")
+	signCmd.Flags().StringVarP(&widsToken, "widsToken", "", "", "Woleet.ID Server API token (required)")
+	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature")
 	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
@@ -108,7 +108,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
 	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
-	signCmd.Flags().BoolVarP(&iDServerUnsecureSSL, "iDServerUnsecureSSL", "", false, "do not check Woleet.ID Server's SSL certificate validity (only for development)")
+	signCmd.Flags().BoolVarP(&widsUnsecureSSL, "widsUnsecureSSL", "", false, "do not check Woleet.ID Server's SSL certificate validity (only for development)")
 
 	viper.BindPFlag("api.private", signCmd.Flags().Lookup("private"))
 	viper.BindPFlag("app.strict", signCmd.Flags().Lookup("strict"))
@@ -117,10 +117,10 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("app.exitOnError", signCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", signCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("app.dryRun", signCmd.Flags().Lookup("dryRun"))
-	viper.BindPFlag("sign.iDServerSignURL", signCmd.Flags().Lookup("iDServerSignURL"))
-	viper.BindPFlag("sign.iDServerToken", signCmd.Flags().Lookup("iDServerToken"))
-	viper.BindPFlag("sign.iDServerPubKey", signCmd.Flags().Lookup("iDServerPubKey"))
-	viper.BindPFlag("sign.iDServerUnsecureSSL", signCmd.Flags().Lookup("iDServerUnsecureSSL"))
+	viper.BindPFlag("sign.widsSignURL", signCmd.Flags().Lookup("widsSignURL"))
+	viper.BindPFlag("sign.widsToken", signCmd.Flags().Lookup("widsToken"))
+	viper.BindPFlag("sign.widsPubKey", signCmd.Flags().Lookup("widsPubKey"))
+	viper.BindPFlag("sign.widsUnsecureSSL", signCmd.Flags().Lookup("widsUnsecureSSL"))
 
 	viper.BindEnv("api.private")
 	viper.BindEnv("app.directory")
@@ -129,8 +129,8 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindEnv("app.exitOnError")
 	viper.BindEnv("app.recursive")
 	viper.BindEnv("app.dryRun")
-	viper.BindEnv("sign.iDServerSignURL")
-	viper.BindEnv("sign.iDServerToken")
-	viper.BindEnv("sign.iDServerPubKey")
-	viper.BindEnv("sign.iDServerUnsecureSSL")
+	viper.BindEnv("sign.widsSignURL")
+	viper.BindEnv("sign.widsToken")
+	viper.BindEnv("sign.widsPubKey")
+	viper.BindEnv("sign.widsUnsecureSSL")
 }
