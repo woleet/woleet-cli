@@ -6,7 +6,7 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 Currently, the tool only supports:
 
 * the `anchor` command, allowing to recursively anchor all files in a given directory
-* the `sign` command, allowing to recursively sign all files in a given directory (using Woleet ID.Server: <https://github.com/woleet/woleet.id-server>)
+* the `sign` command, allowing to recursively sign all files in a given directory (using Woleet.ID server: <https://github.com/woleet/woleet.id-server>)
 * the `export` command, allowing to download all your receipts in a given directory
 
 ## Anchor / Sign
@@ -82,9 +82,9 @@ woleet-cli sign [flags]
   -e, --exitOnError              exit with an error code if anything goes wrong
   -h, --help                     help for sign
       --iDServerPubKey string    public key (ie. bitcoin address) to use to sign
-      --iDServerSignURL string   ID.Server sign URL ex: "https://idserver.com:4443/sign" (required)
-      --iDServerToken string     ID.Server API token (required)
-      --iDServerUnsecureSSL      do not check ID.Server's SSL certificate validity (only for developpement)
+      --iDServerSignURL string   Woleet.ID server sign URL ex: "https://idserver.com:4443/sign" (required)
+      --iDServerToken string     Woleet.ID server API token (required)
+      --iDServerUnsecureSSL      do not check Woleet.ID server's SSL certificate validity (only for developpement)
   -p, --private                  create non discoverable proofs
       --prune                    delete receipts that are not along the original file,
                                  with --strict it checks the hash of the original file and deletes the receipt if they do not match
@@ -196,7 +196,7 @@ export WLT_LOG_LEVEL="info"
 
 ## Generate models from OpenAPI/Swagger specifications
 
-The tool calls Woleet API and ID.Server API using model classes generated from their OpenAPI/Swagger specification.
+The tool calls Woleet API and Woleet.ID server API using model classes generated from their OpenAPI/Swagger specification.
 If this specification were to be changed, model classes can be updated using the following commands:
 
 ```bash
