@@ -39,7 +39,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 
 		runParameters.IDServerSignURL = checkWidSignURL(cmd)
-		runParameters.IDServerToken = checkToken(cmd)
+		runParameters.IDServerToken = checkWidToken(cmd)
 		if viper.IsSet("sign.widsPubKey") {
 			runParameters.IDServerPubKey = viper.GetString("sign.widsPubKey")
 		}
