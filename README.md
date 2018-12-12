@@ -99,7 +99,6 @@ woleet-cli export [flags]
 
 Global Flags:
   -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
-      --domain string     Domain to use (if any, format: [a-z]*)
   -h, --help              help for woleet-cli
       --json              use JSON as log output format
       --logLevel string   select log level info|warn|error|fatal (default "info")
@@ -117,7 +116,6 @@ YAML:
 api:
   url: https://api.woleet.io/v1
   token: insert-your-token-here
-  domain: insert-your-domain-here-if-any
   private: true
 app:
   directory: /home/folder/to/anchor
@@ -147,7 +145,6 @@ JSON:
   "api": {
     "url": "https://api.woleet.io/v1",
     "token": "insert-your-token-here",
-    "domain": "insert-your-domain-here-if-any",
     "private": true,
   },
   "app": {
@@ -182,7 +179,6 @@ ENV:
 export WCLI_CONFIG="$HOME/.woleet-cli.json"
 export WCLI_API_URL="https://api.woleet.io/v1"
 export WCLI_API_TOKEN="insert-your-token-here"
-export WCLI_API_DOMAIN="insert-your-domain-here-if-any"
 export WCLI_API_PRIVATE="true"
 export WCLI_APP_DIRECTORY="/home/folder/to/anchor"
 export WCLI_APP_EXITONERROR="true"

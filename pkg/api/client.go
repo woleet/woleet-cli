@@ -47,12 +47,6 @@ func GetNewClient(baseURL string, token string) *Client {
 	return client
 }
 
-func (client *Client) SetDomain(domain string) {
-	if !strings.EqualFold(domain, "") {
-		client.RestyClient.SetHeader("Domain", domain)
-	}
-}
-
 func (client *Client) SetCustomLogger(customLogger *log.Logger) {
 	client.RestyClient.Log = customLogger
 }

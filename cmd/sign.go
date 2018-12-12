@@ -20,7 +20,6 @@ Proofs being created asynchronously, you need to run the command at least twice 
 
 		runParameters.Directory = checkDirectory(cmd)
 		runParameters.Token = checkToken(cmd)
-		runParameters.Domain = checkDomain(cmd)
 
 		runParameters.BaseURL = viper.GetString("api.url")
 		runParameters.InvertPrivate = !viper.GetBool("api.private")

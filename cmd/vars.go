@@ -8,7 +8,6 @@ import (
 var cfgFile string
 var baseURL string
 var token string
-var domain string
 var logLevel string
 var json bool
 var log = logrus.New()

@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -48,17 +47,6 @@ func checkDirectory(cmd *cobra.Command) string {
 		}
 	}
 	return absDirectory
-}
-
-func checkDomain(cmd *cobra.Command) string {
-	matched, errMatched := regexp.MatchString("^[a-z]*$", viper.GetString("api.domain"))
-	if !(matched && errMatched == nil) {
-		if !viper.GetBool("log.json") {
-			cmd.Help()
-		}
-		log.Fatalln("The provided domain does not have the required format")
-	}
-	return viper.GetString("api.domain")
 }
 
 func checkWidSignURL(cmd *cobra.Command) string {

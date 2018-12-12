@@ -19,7 +19,6 @@ You can specify a date to only get proofs created after this date`,
 	Run: func(cmd *cobra.Command, args []string) {
 		absDirectory := checkExportDirectory(cmd)
 		token := checkToken(cmd)
-		domain := checkDomain(cmd)
 
 		var unixEpochLimit int64 = 0
 		if viper.IsSet("export.limitDate") && !strings.EqualFold(viper.GetString("export.limitDate"), "") {
@@ -53,7 +52,7 @@ You can specify a date to only get proofs created after this date`,
 			}
 			unixEpochLimit = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).UnixNano()
 		}
-		app.ExportReceipts(token, viper.GetString("api.url"), domain, absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
+		app.ExportReceipts(token, viper.GetString("api.url"), absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
 	},
 }
 
