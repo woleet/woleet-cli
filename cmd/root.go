@@ -57,16 +57,19 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.woleet-cli.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&baseURL, "url", "u", "https://api.woleet.io/v1", "Woleet API URL")
 	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "Woleet API token (required)")
+	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "", "", "Domain to use (if any, format: [a-z]*)")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "logLevel", "", "info", "select log level info|warn|error|fatal")
 	rootCmd.PersistentFlags().BoolVarP(&json, "json", "", false, "use JSON as log output format")
 
 	viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("api.token", rootCmd.PersistentFlags().Lookup("token"))
+	viper.BindPFlag("api.domain", rootCmd.PersistentFlags().Lookup("domain"))
 	viper.BindPFlag("log.level", rootCmd.PersistentFlags().Lookup("logLevel"))
 	viper.BindPFlag("log.json", rootCmd.PersistentFlags().Lookup("json"))
 
 	viper.BindEnv("api.url")
 	viper.BindEnv("api.token")
+	viper.BindEnv("api.domain")
 	viper.BindEnv("log.level")
 	viper.BindEnv("log.json")
 }

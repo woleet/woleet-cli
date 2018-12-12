@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -19,33 +17,9 @@ var exportCmd = &cobra.Command{
 	Long: `Download all proofs for your anchors in a given directory
 You can specify a date to only get proofs created after this date`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
-			if !viper.GetBool("log.json") {
-				cmd.Help()
-			}
-			log.Fatalln("Please set a token")
-		}
-
-		if !viper.IsSet("export.directory") || strings.EqualFold(viper.GetString("export.directory"), "") {
-			if !viper.GetBool("log.json") {
-				cmd.Help()
-			}
-			log.Fatalln("Please set a directory")
-		}
-
-		absExportDirectory, errAbs := filepath.Abs(viper.GetString("export.directory"))
-		if errAbs != nil {
-			log.Fatalln("Unable to get Absolute directory from --directory")
-		}
-
-		info, err := os.Stat(absExportDirectory)
-		if err != nil {
-			log.Fatalln("The provided directory does not exists")
-		} else {
-			if !info.IsDir() {
-				log.Fatalln("The provided path is not a directory")
-			}
-		}
+		absDirectory := checkExportDirectory(cmd)
+		token := checkToken(cmd)
+		domain := checkDomain(cmd)
 
 		var unixEpochLimit int64 = 0
 		if viper.IsSet("export.limitDate") && !strings.EqualFold(viper.GetString("export.limitDate"), "") {
@@ -79,7 +53,7 @@ You can specify a date to only get proofs created after this date`,
 			}
 			unixEpochLimit = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).UnixNano()
 		}
-		app.ExportReceipts(viper.GetString("api.token"), viper.GetString("api.url"), absExportDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
+		app.ExportReceipts(token, viper.GetString("api.url"), domain, absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
 	},
 }
 

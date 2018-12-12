@@ -22,6 +22,7 @@ type RunParameters struct {
 	Directory           string
 	BaseURL             string
 	Token               string
+	Domain              string
 	IDServerSignURL     string
 	IDServerToken       string
 	IDServerPubKey      string

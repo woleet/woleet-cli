@@ -10,9 +10,10 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) {
+func ExportReceipts(token string, url string, domain string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) {
 	log = logInput
 	client := api.GetNewClient(url, token)
+	client.SetDomain(domain)
 
 	end := false
 
