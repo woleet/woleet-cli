@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
@@ -36,5 +38,16 @@ func (client *Client) CheckIDServerConnection() error {
 		SetResult(&idserver.SignatureResult{}).
 		Get(client.BaseURL)
 
-	return restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
+	if err == nil {
+		_, ok := defaultAllowedCodesMap[resp.StatusCode()]
+		if !ok {
+			err = errors.New(string(resp.Body()[:]))
+		} else {
+			if resp.Result().(*idserver.SignatureResult).SignedHash != "0000000000000000000000000000000000000000000000000000000000000000" {
+				err = errors.New("Unable to sign, please check your parameters")
+			}
+		}
+	}
+
+	return err
 }
