@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -95,7 +95,7 @@ func initConfig() {
 		viper.SetConfigName(".woleet-cli")
 	}
 
-	viper.SetEnvPrefix("WLT")
+	viper.SetEnvPrefix("WCLI")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
 
