@@ -8,7 +8,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func DryRun(runParameters *RunParameters, logInput *logrus.Logger) {
+func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 	log = logInput
 
 	commonInfos := initCommonInfos(runParameters)
@@ -49,4 +49,5 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) {
 	}
 
 	log.WithFields(fields).Infoln("Number of each category of files")
+	return returnValue
 }

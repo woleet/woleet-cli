@@ -30,12 +30,9 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		runParameters.Recursive = viper.GetBool("app.recursive")
 
 		if viper.GetBool("app.dryRun") {
-			app.DryRun(runParameters, log)
-			os.Exit(0)
+			os.Exit(app.DryRun(runParameters, log))
 		}
-
-		app.BulkAnchor(runParameters, log)
-		os.Exit(0)
+		os.Exit(app.BulkAnchor(runParameters, log))
 	},
 }
 

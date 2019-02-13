@@ -12,7 +12,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models/woleetapi"
 )
 
-func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
+func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 	commonInfos := initCommonInfos(runParameters)
 
 	log = logInput
@@ -63,6 +63,7 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) {
 		}
 	}
 	commonInfos.checkStandardFiles()
+	return returnValue
 }
 
 func (commonInfos *commonInfos) splitPendingReceipt() {

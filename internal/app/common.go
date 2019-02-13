@@ -8,6 +8,7 @@ import (
 )
 
 var log *logrus.Logger
+var returnValue = 0
 
 const pageSize int = 1000
 
@@ -51,6 +52,7 @@ func initCommonInfos(runParameters *RunParameters) *commonInfos {
 
 func errHandlerExitOnError(err error, exitOnError bool) {
 	if err != nil {
+		returnValue = 1
 		log.Errorln(err)
 		if exitOnError {
 			os.Exit(1)

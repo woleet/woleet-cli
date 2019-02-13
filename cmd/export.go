@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -52,7 +53,7 @@ You can specify a date to only get proofs created after this date`,
 			}
 			unixEpochLimit = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).UnixNano()
 		}
-		app.ExportReceipts(token, viper.GetString("api.url"), absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log)
+		os.Exit(app.ExportReceipts(token, viper.GetString("api.url"), absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log))
 	},
 }
 

@@ -34,8 +34,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 
 		if viper.GetBool("app.dryRun") {
-			app.DryRun(runParameters, log)
-			os.Exit(0)
+			os.Exit(app.DryRun(runParameters, log))
 		}
 
 		runParameters.IDServerSignURL = checkWidSignURL(cmd)
@@ -45,8 +44,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.widsUnsecureSSL")
 
-		app.BulkAnchor(runParameters, log)
-		os.Exit(0)
+		os.Exit(app.BulkAnchor(runParameters, log))
 	},
 }
 

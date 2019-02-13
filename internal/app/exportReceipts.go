@@ -10,7 +10,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) {
+func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) int {
 	log = logInput
 	client := api.GetNewClient(url, token)
 
@@ -62,4 +62,5 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 			log.WithFields(fields).Infoln("Proof retrived")
 		}
 	}
+	return returnValue
 }
