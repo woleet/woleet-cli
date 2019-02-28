@@ -17,7 +17,7 @@ The tool scans a folder recursively and anchors or sign all files found. It also
 
 Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
-If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes). If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
+If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the pubkey is check as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
 If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
@@ -77,19 +77,19 @@ woleet-cli anchor [flags]
 
 
 woleet-cli sign [flags]
-  -d, --directory string         source directory containing files to sign (required)
-      --dryRun                   print information about files to sign without signing
-  -e, --exitOnError              exit with an error code if anything goes wrong
-  -h, --help                     help for sign
+  -d, --directory string     source directory containing files to sign (required)
+      --dryRun               print information about files to sign without signing
+  -e, --exitOnError          exit with an error code if anything goes wrong
+  -h, --help                 help for sign
+  -p, --private              create non discoverable proofs
+      --prune                delete receipts that are not along the original file,
+                             with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
+  -r, --recursive            explore sub-folders recursively
+      --strict               re-sign any file that has changed since last signature or if the pubkey was changed
       --widsPubKey string    public key (ie. bitcoin address) to use to sign
       --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:4443/sign" (required)
       --widsToken string     Woleet.ID Server API token (required)
-      --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for developpement)
-  -p, --private                  create non discoverable proofs
-      --prune                    delete receipts that are not along the original file,
-                                 with --strict it checks the hash of the original file and deletes the receipt if they do not match
-  -r, --recursive                explore sub-folders recursively
-      --strict                   re-sign any file that has changed since last signature
+      --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for development)
 
 woleet-cli export [flags]
   -d, --directory string   directory where to store the proofs (required)

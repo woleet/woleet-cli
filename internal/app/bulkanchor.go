@@ -122,12 +122,24 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 		return errhash
 	}
 
-	// If the hashes are equal, there is nothing to do
-	if (!commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.TargetHash)) || (commonInfos.runParameters.Signature && strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash)) {
-		// File already anchored and valid
-		delete(commonInfos.mapPathFileinfo, originalFilePath)
-		return nil
+	// In case of simple anchoring:
+	//   If the hashes are equal, there is nothing to do
+	// In case of signature:
+	//   If the signedhashs and pubkeys are equals, there is nothing to do
+	if !commonInfos.runParameters.Signature {
+		if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
+			// File already anchored and valid
+			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			return nil
+		}
+	} else {
+		if strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, receiptUnmarshalled.Signature.PubKey) {
+			// File signed and signature is up-to-date with current PubKey anchored and valid
+			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			return nil
+		}
 	}
+
 	// If they are not and there is a prune flag, the old pending file will be marked for deletion
 	if commonInfos.runParameters.Prune {
 		if pending {
@@ -203,6 +215,7 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 		pendingReceipt.TargetHash = anchorPost.Hash
 	} else {
 		pendingReceipt.Signature.SignedHash = anchorPost.SignedHash
+		pendingReceipt.Signature.PubKey = anchorPost.PubKey
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
