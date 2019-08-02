@@ -10,7 +10,7 @@
 
 package idserver
 
-type IdentityResult struct {
+type IdentityResultAllOf struct {
 	// The right part of the signed data (generated randomly). <br>To prevent man-in-the-middle attacks, the data starts with the server's identity URL and this should be verified by the caller. 
 	RightData string `json:"rightData,omitempty"`
 	// The signature of the concatenation of `leftData` and `rightData` using the public key `pubKey`. 

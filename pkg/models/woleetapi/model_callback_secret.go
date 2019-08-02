@@ -10,7 +10,7 @@
 
 package woleetapi
 
-type SignatureRequestSignResult struct {
-	// Identifier of the signature anchor created. 
-	AnchorId string `json:"anchorId,omitempty"`
+type CallbackSecret struct {
+	// The secret used to sign the callback.
+	Secret string `json:"secret,omitempty"`
 }

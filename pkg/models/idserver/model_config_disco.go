@@ -10,13 +10,7 @@
 
 package idserver
 
-type SignatureResult struct {
-	// Public key used to sign (must be the same as the `pubKey` parameter if provided).
-	PubKey string `json:"pubKey,omitempty"`
-	// SHA256 hash that is signed (same as the `hashToSign` parameter).
-	SignedHash string `json:"signedHash,omitempty"`
-	// Signature of `hashToSign` using the public key `pubKey`.
-	Signature string `json:"signature,omitempty"`
+type ConfigDisco struct {
 	// Public URL of the `/identity` endpoint (ie. the URL that anyone can use to get the identity associated with a public key). 
 	IdentityURL string `json:"identityURL,omitempty"`
 }

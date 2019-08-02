@@ -10,7 +10,6 @@
 
 package woleetapi
 
-type SignatureRequestSignResult struct {
-	// Identifier of the signature anchor created. 
-	AnchorId string `json:"anchorId,omitempty"`
+type Tokens struct {
+	Tokens []string `json:"tokens,omitempty"`
 }
