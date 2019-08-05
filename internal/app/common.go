@@ -70,11 +70,17 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 
 	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(userID)
 	if errPubKeys != nil {
-		log.Fatalf("Unable to get current userID publicKeys on Woleet.ID Server: %s\n", errPubKeys)
+		log.Fatalf("Unable to get current userID puyblic keys on Woleet.ID Server: %s\n", errPubKeys)
 	}
 
 	for _, pubKey := range *pubKeys {
-		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) && pubKey.Status == idserver.KeyStatusACTIVE && pubKey.Device == idserver.KeyDeviceSERVER {
+		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) {
+			if pubKey.Status != idserver.KeyStatusACTIVE {
+				log.Fatalf("The specified pulblic key is not active")
+			}
+			if pubKey.Device != idserver.KeyDeviceSERVER {
+				log.Fatalf("The specified public key is not owned by the server")
+			}
 			return
 		}
 	}
