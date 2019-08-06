@@ -105,7 +105,7 @@ woleet-cli sign [flags]
   -r, --recursive            explore sub-folders recursively
       --strict               re-sign any file that has changed since last signature or if the pubkey was changed
       --widsPubKey string    public key (ie. bitcoin address) to use to sign
-      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:4443/sign" (required)
+      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
       --widsToken string     Woleet.ID Server API token (required)
       --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for development)
 
@@ -143,7 +143,7 @@ app:
   recursive: true
   dryRun: false
 sign:
-  widsSignURL: https://idserver.com:4443/sign
+  widsSignURL: https://idserver.com:3002
   widsToken: insert-your-idserver-token-here
   widsPubKey: insert-your-idserver-pubkey-here
   widsUnsecureSSL: false
@@ -174,7 +174,7 @@ JSON:
     "dryRun": true
   },
   "sign": {
-    "widsSignURL": "https://idserver.com:4443/sign",
+    "widsSignURL": "https://idserver.com:3002",
     "widsToken": "insert-your-idserver-token-here",
     "widsPubKey": "insert-your-idserver-pubkey-here",
     "widsUnsecureSSL": false
@@ -204,7 +204,7 @@ export WCLI_APP_STRICT="true"
 export WCLI_APP_PRUNE="true"
 export WCLI_APP_RECURSIVE="true"
 export WCLI_APP_DRYRUN="true"
-export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:4443/sign"
+export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:3002"
 export WCLI_SIGN_WIDSTOKEN="insert-your-idserver-token-here"
 export WCLI_SIGN_WIDSPUBKEY="insert-your-idserver-pubkey-here"
 export WCLI_SIGN_WIDSUNSECURESSL="false"
