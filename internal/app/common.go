@@ -84,5 +84,5 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 			return
 		}
 	}
-	log.Fatalf("Unable to get find specified publicKey on Woleet.ID Server")
+	log.Fatalf("Unable to get find specified publicKey on Woleet.ID Server with provided token")
 }
