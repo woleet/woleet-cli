@@ -57,7 +57,7 @@ func checkInclude(cmd *cobra.Command) *regexp.Regexp {
 	}
 	include, errInclude := regexp.Compile(viper.GetString("app.include"))
 	if errInclude != nil {
-		log.Fatalln("Unable parse the regexp specified by the --include %s\n", errInclude)
+		log.Fatalf("Unable parse the regexp specified by the --include: \n%s\n", errInclude)
 	}
 	return include
 }
