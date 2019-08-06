@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"regexp"
 
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
@@ -26,6 +27,7 @@ type RunParameters struct {
 	IDServerSignURL     string
 	IDServerToken       string
 	IDServerPubKey      string
+	Include             *regexp.Regexp
 }
 
 type commonInfos struct {

@@ -20,7 +20,7 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, log)
+	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
 	if err != nil {
 		log.Errorln(err)
 		os.Exit(1)

@@ -21,17 +21,22 @@ type RegexExtracted struct {
 	Suffix   string
 }
 
-func checkFilename(fileInfo os.FileInfo) bool {
+func checkFilename(fileInfo os.FileInfo, include *regexp.Regexp) bool {
 	if !fileInfo.Mode().IsRegular() {
 		return false
-	} else if strings.HasPrefix(fileInfo.Name(), ".") {
-		return false
-	} else {
-		return true
 	}
+	if strings.HasPrefix(fileInfo.Name(), ".") {
+		return false
+	}
+	if include != nil {
+		if !include.MatchString(fileInfo.Name()) {
+			return false
+		}
+	}
+	return true
 }
 
-func ExploreDirectory(directory string, recursive bool, log *logrus.Logger) (map[string]os.FileInfo, error) {
+func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -49,7 +54,7 @@ func ExploreDirectory(directory string, recursive bool, log *logrus.Logger) (map
 				return filepath.SkipDir
 			}
 		}
-		if checkFilename(info) {
+		if checkFilename(info, include) {
 			mapPathFileinfo[path] = info
 		}
 		return nil

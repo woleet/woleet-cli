@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -47,6 +48,18 @@ func checkDirectory(cmd *cobra.Command) string {
 		}
 	}
 	return absDirectory
+}
+
+func checkInclude(cmd *cobra.Command) *regexp.Regexp {
+
+	if !viper.IsSet("app.include") || strings.EqualFold(viper.GetString("app.include"), "") {
+		return nil
+	}
+	include, errInclude := regexp.Compile(viper.GetString("app.include"))
+	if errInclude != nil {
+		log.Fatalln("Unable parse the regexp specified by the --include %s\n", errInclude)
+	}
+	return include
 }
 
 func checkWidSignURL(cmd *cobra.Command) string {
