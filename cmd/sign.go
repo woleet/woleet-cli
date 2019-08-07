@@ -53,7 +53,7 @@ func init() {
 	rootCmd.AddCommand(signCmd)
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	signCmd.Flags().StringVarP(&include, "include", "i", "", "Only files taht match that regex will be anchored")
+	signCmd.Flags().StringVarP(&include, "include", "i", "", "Only files taht match that regex will be signed")
 	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:4443/sign\" (required)")
 	signCmd.Flags().StringVarP(&widsToken, "widsToken", "", "", "Woleet.ID Server API token (required)")
 	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
