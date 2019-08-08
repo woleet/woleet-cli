@@ -68,9 +68,17 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 		log.Fatalf("Unable to request current userID on Woleet.ID Server: %s\n", errUserID)
 	}
 
+	if strings.EqualFold(userID, "admin") {
+		userID, errUserID = commonInfos.widsClient.GetUserIDFromPubkey(commonInfos.runParameters.IDServerPubKey)
+		if errUserID != nil {
+			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUserID)
+		}
+	}
+
 	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(userID)
+
 	if errPubKeys != nil {
-		log.Fatalf("Unable to get current userID puyblic keys on Woleet.ID Server: %s\n", errPubKeys)
+		log.Fatalf("Unable to get current userID public keys on this Woleet.ID Server: %s\n", errPubKeys)
 	}
 
 	for _, pubKey := range *pubKeys {
@@ -84,5 +92,5 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 			return
 		}
 	}
-	log.Fatalf("Unable to get find specified publicKey on Woleet.ID Server with provided token")
+	log.Fatalf("Unable to find specified publicKey on this Woleet.ID Server with provided token")
 }
