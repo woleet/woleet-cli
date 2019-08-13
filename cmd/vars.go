@@ -14,6 +14,7 @@ var log = logrus.New()
 
 // Anchor / Sign
 var directory string
+var include string
 var strict bool
 var prune bool
 var exitOnError bool

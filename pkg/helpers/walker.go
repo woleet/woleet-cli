@@ -15,23 +15,41 @@ const SuffixAnchorReceipt string = ".anchor-receipt.json"
 const SuffixSignaturePending string = ".signature-pending.json"
 const SuffixSignatureReceipt string = ".signature-receipt.json"
 
+var regexpAnchorIDFromName = regexp.MustCompile("(^.*)-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixAnchorPending+"|"+SuffixAnchorReceipt+"|"+SuffixSignaturePending+"|"+SuffixSignatureReceipt, ".", "\\.", -1) + ")$")
+var regexNameSuffixReceipt = regexp.MustCompile("^.*" + "(" + SuffixAnchorPending + "|" + SuffixAnchorReceipt + "|" + SuffixSignaturePending + "|" + SuffixSignatureReceipt + ")$")
+
 type RegexExtracted struct {
-	Filename string
-	AnchorID string
-	Suffix   string
+	Filename         string
+	OriginalFilename string
+	AnchorID         string
+	Suffix           string
 }
 
-func checkFilename(fileInfo os.FileInfo) bool {
+func checkFilename(fileInfo os.FileInfo, include *regexp.Regexp) bool {
 	if !fileInfo.Mode().IsRegular() {
 		return false
-	} else if strings.HasPrefix(fileInfo.Name(), ".") {
-		return false
-	} else {
-		return true
 	}
+	if strings.HasPrefix(fileInfo.Name(), ".") {
+		return false
+	}
+	if include != nil {
+		tempFileName := fileInfo.Name()
+		if regexNameSuffixReceipt.MatchString(fileInfo.Name()) {
+			anchorIDF, errAnchorIDF := GetAnchorIDFromName(fileInfo)
+			if errAnchorIDF != nil {
+				// Safeguard here, not the best way to handle issues
+				return false
+			}
+			tempFileName = anchorIDF.OriginalFilename
+		}
+		if !include.MatchString(tempFileName) {
+			return false
+		}
+	}
+	return true
 }
 
-func ExploreDirectory(directory string, recursive bool, log *logrus.Logger) (map[string]os.FileInfo, error) {
+func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]os.FileInfo, error) {
 	mapPathFileinfo := make(map[string]os.FileInfo)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -49,7 +67,7 @@ func ExploreDirectory(directory string, recursive bool, log *logrus.Logger) (map
 				return filepath.SkipDir
 			}
 		}
-		if checkFilename(info) {
+		if checkFilename(info, include) {
 			mapPathFileinfo[path] = info
 		}
 		return nil
@@ -110,15 +128,15 @@ func SeparateAll(mapPathFileinfo map[string]os.FileInfo) (map[string]os.FileInfo
 }
 
 func GetAnchorIDFromName(fileInfo os.FileInfo) (*RegexExtracted, error) {
-	re := regexp.MustCompile(".*?-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixAnchorPending+"|"+SuffixAnchorReceipt+"|"+SuffixSignaturePending+"|"+SuffixSignatureReceipt, ".", "\\.", -1) + ")")
-	match := re.FindStringSubmatch(fileInfo.Name())
-	if len(match) != 3 {
+	match := regexpAnchorIDFromName.FindStringSubmatch(fileInfo.Name())
+	if len(match) != 4 {
 		err := errors.New("Unable to extract anchorID form the filename:" + fileInfo.Name())
 		return nil, err
 	}
 	out := new(RegexExtracted)
 	out.Filename = match[0]
-	out.AnchorID = match[1]
-	out.Suffix = match[2]
+	out.OriginalFilename = match[1]
+	out.AnchorID = match[2]
+	out.Suffix = match[3]
 	return out, nil
 }

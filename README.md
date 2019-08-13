@@ -20,6 +20,8 @@ Since anchoring is not a realtime operation, the tool is supposed to be run on a
 If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the pubkey is check as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
 If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
+If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --include option which will limit the scope of this tool to the files taht matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
+
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
 Note: tags are added to the anchors according to the name of sub-folders  
@@ -87,6 +89,7 @@ woleet-cli anchor [flags]
       --dryRun             print information about files to anchor without anchoring
   -e, --exitOnError        exit with an error code if anything goes wrong
   -h, --help               help for anchor
+  -i, --include string     Only files taht match that regex will be anchored
   -p, --private            create non discoverable proofs
       --prune              delete receipts that are not along the original file,
                            with --strict it checks the hash of the original file and deletes the receipt if they do not match
@@ -99,6 +102,7 @@ woleet-cli sign [flags]
       --dryRun               print information about files to sign without signing
   -e, --exitOnError          exit with an error code if anything goes wrong
   -h, --help                 help for sign
+  -i, --include string       Only files taht match that regex will be signed
   -p, --private              create non discoverable proofs
       --prune                delete receipts that are not along the original file,
                              with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
@@ -137,6 +141,7 @@ api:
   private: true
 app:
   directory: /home/folder/to/anchor
+  include: '.*\.json'
   strict: true
   prune: true
   exitOnError: true
