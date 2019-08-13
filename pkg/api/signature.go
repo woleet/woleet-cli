@@ -19,15 +19,14 @@ func (client *Client) GetSignature(hashToSign string, pubKey string) (*idserver.
 		R().
 		SetQueryParams(queryMap).
 		SetResult(&idserver.SignatureResult{}).
-		Get(client.BaseURL)
+		Get(client.BaseURL + "/sign")
 
 	signatureRet := resp.Result().(*idserver.SignatureResult)
 	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 	return signatureRet, err
 }
 
-func (client *Client) CheckIDServerConnection() error {
-
+func (client *Client) dummySignature() error {
 	queryMap := map[string]string{
 		"hashToSign": "0000000000000000000000000000000000000000000000000000000000000000",
 	}
@@ -36,7 +35,7 @@ func (client *Client) CheckIDServerConnection() error {
 		R().
 		SetQueryParams(queryMap).
 		SetResult(&idserver.SignatureResult{}).
-		Get(client.BaseURL)
+		Get(client.BaseURL + "/sign")
 
 	if err == nil {
 		_, ok := defaultAllowedCodesMap[resp.StatusCode()]

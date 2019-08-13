@@ -2,9 +2,11 @@ package app
 
 import (
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
+	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
 var log *logrus.Logger
@@ -58,4 +60,37 @@ func errHandlerExitOnError(err error, exitOnError bool) {
 			os.Exit(1)
 		}
 	}
+}
+
+func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
+	userID, errUserID := commonInfos.widsClient.GetUserID(commonInfos.runParameters.IDServerPubKey)
+	if errUserID != nil {
+		log.Fatalf("Unable to request current userID on Woleet.ID Server: %s\n", errUserID)
+	}
+
+	if strings.EqualFold(userID, "admin") {
+		userID, errUserID = commonInfos.widsClient.GetUserIDFromPubkey(commonInfos.runParameters.IDServerPubKey)
+		if errUserID != nil {
+			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUserID)
+		}
+	}
+
+	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(userID)
+
+	if errPubKeys != nil {
+		log.Fatalf("Unable to get current userID public keys on this Woleet.ID Server: %s\n", errPubKeys)
+	}
+
+	for _, pubKey := range *pubKeys {
+		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) {
+			if pubKey.Status != idserver.KeyStatusACTIVE {
+				log.Fatalf("The specified pulblic key is not active")
+			}
+			if pubKey.Device != idserver.KeyDeviceSERVER {
+				log.Fatalf("The specified public key is not owned by the server")
+			}
+			return
+		}
+	}
+	log.Fatalf("Unable to find specified publicKey on this Woleet.ID Server with provided token")
 }

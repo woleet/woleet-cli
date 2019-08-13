@@ -105,7 +105,7 @@ woleet-cli sign [flags]
   -r, --recursive            explore sub-folders recursively
       --strict               re-sign any file that has changed since last signature or if the pubkey was changed
       --widsPubKey string    public key (ie. bitcoin address) to use to sign
-      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:4443/sign" (required)
+      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
       --widsToken string     Woleet.ID Server API token (required)
       --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for development)
 
@@ -143,7 +143,7 @@ app:
   recursive: true
   dryRun: false
 sign:
-  widsSignURL: https://idserver.com:4443/sign
+  widsSignURL: https://idserver.com:3002
   widsToken: insert-your-idserver-token-here
   widsPubKey: insert-your-idserver-pubkey-here
   widsUnsecureSSL: false
@@ -174,7 +174,7 @@ JSON:
     "dryRun": true
   },
   "sign": {
-    "widsSignURL": "https://idserver.com:4443/sign",
+    "widsSignURL": "https://idserver.com:3002",
     "widsToken": "insert-your-idserver-token-here",
     "widsPubKey": "insert-your-idserver-pubkey-here",
     "widsUnsecureSSL": false
@@ -204,7 +204,7 @@ export WCLI_APP_STRICT="true"
 export WCLI_APP_PRUNE="true"
 export WCLI_APP_RECURSIVE="true"
 export WCLI_APP_DRYRUN="true"
-export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:4443/sign"
+export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:3002"
 export WCLI_SIGN_WIDSTOKEN="insert-your-idserver-token-here"
 export WCLI_SIGN_WIDSPUBKEY="insert-your-idserver-pubkey-here"
 export WCLI_SIGN_WIDSUNSECURESSL="false"
@@ -271,5 +271,5 @@ curl -s https://raw.githubusercontent.com/woleet/woleet.id-server/master/swagger
 # Update models
 openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -Dmodels -DmodelDocs=false -DpackageName=woleetapi --type-mappings boolean=*bool && \
 ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
-openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -Dmodels -DmodelDocs=false -DpackageName=idserver --type-mappings boolean=*bool && rm pkg/models/idserver/model_api_* pkg/models/idserver/model_key_* pkg/models/idserver/model_mnemonics* pkg/models/idserver/model_server_* pkg/models/idserver/model_user_*
+openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -Dmodels -DmodelDocs=false -DpackageName=idserver --type-mappings boolean=*bool && rm pkg/models/idserver/model_api_* pkg/models/idserver/model_server_* pkg/models/idserver/model_enrollment_*
 ```
