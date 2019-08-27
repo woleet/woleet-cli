@@ -13,11 +13,12 @@ func (client *Client) GetUserID(pubKey string) (string, error) {
 	userRet := resp.Result().(*idserver.UserDisco)
 	allowedCodesMap := map[int]struct{}{
 		200: {},
+		204: {},
 		404: {},
 	}
 	err := restyErrHandlerAllowedCodes(resp, nil, allowedCodesMap)
 
-	if resp.StatusCode() == 404 {
+	if resp.StatusCode() == 204 || resp.StatusCode() == 404 {
 		respConfig, errConfig := client.RestyClient.
 			R().
 			SetResult(&idserver.UserDisco{}).
@@ -39,7 +40,7 @@ func (client *Client) ListKeysFromUserID(userID string) (*[]idserver.KeyGet, err
 	return keysRet, err
 }
 
-func (client *Client) GetUserIDFromPubkey(pubKey string) (string, error) {
+func (client *Client) GetUserDiscoFromPubkey(pubKey string) (*idserver.UserDisco, error) {
 	resp, err := client.RestyClient.
 		R().
 		SetResult(&idserver.UserDisco{}).
@@ -48,5 +49,5 @@ func (client *Client) GetUserIDFromPubkey(pubKey string) (string, error) {
 	userRet := resp.Result().(*idserver.UserDisco)
 	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
 
-	return userRet.Id, err
+	return userRet, err
 }
