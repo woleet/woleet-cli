@@ -25,6 +25,8 @@ type KeyGet struct {
 	Device KeyDeviceEnum `json:"device,omitempty"`
 	// Indicates whether the key has expired or not. <br>Note that the field is not returned if the key has not expired. 
 	Expired *bool `json:"expired,omitempty"`
+	// Key revocation date (Unix ms timestamp). <br>Note that the field is not returned if the key has no revocation date. 
+	RevokedAt int64 `json:"revokedAt,omitempty"`
 	// Date of creation (Unix ms timestamp).
 	CreatedAt int64 `json:"createdAt,omitempty"`
 	// Date of last modification (Unix ms timestamp).

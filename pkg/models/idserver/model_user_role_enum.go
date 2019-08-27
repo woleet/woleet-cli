@@ -14,6 +14,6 @@ type UserRoleEnum string
 
 // List of UserRoleEnum
 const (
-	UserRoleUSER UserRoleEnum = "user"
-	UserRoleADMIN UserRoleEnum = "admin"
+	USERROLEENUM_USER UserRoleEnum = "user"
+	USERROLEENUM_ADMIN UserRoleEnum = "admin"
 )

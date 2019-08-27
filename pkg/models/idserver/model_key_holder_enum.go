@@ -14,6 +14,6 @@ type KeyHolderEnum string
 
 // List of KeyHolderEnum
 const (
-	KeyHolderSERVER KeyHolderEnum = "server"
-	KeyHolderUSER KeyHolderEnum = "user"
+	KEYHOLDERENUM_SERVER KeyHolderEnum = "server"
+	KEYHOLDERENUM_USER KeyHolderEnum = "user"
 )

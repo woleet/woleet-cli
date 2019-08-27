@@ -24,10 +24,9 @@ type UserPost struct {
 	Status UserStatusEnum `json:"status,omitempty"`
 	Role UserRoleEnum `json:"role,omitempty"`
 	Identity FullIdentity `json:"identity"`
-	// Identifier of the default key to use to sign for this user (cannot be the an external key).
-	DefaultKeyId string `json:"defaultKeyId,omitempty"`
 	// User password.
 	Password string `json:"password,omitempty"`
 	// If true create a key holded by the server when this user is created.
 	CreateDefaultKey *bool `json:"createDefaultKey"`
+	Mode UserModeEnum `json:"mode,omitempty"`
 }

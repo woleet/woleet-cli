@@ -14,6 +14,6 @@ type UserStatusEnum string
 
 // List of UserStatusEnum
 const (
-	UserStatusACTIVE UserStatusEnum = "active"
-	UserStatusBLOCKED UserStatusEnum = "blocked"
+	USERSTATUSENUM_ACTIVE UserStatusEnum = "active"
+	USERSTATUSENUM_BLOCKED UserStatusEnum = "blocked"
 )

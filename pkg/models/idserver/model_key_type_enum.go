@@ -14,5 +14,5 @@ type KeyTypeEnum string
 
 // List of KeyTypeEnum
 const (
-	KeyTypeBIP39 KeyTypeEnum = "bip39"
+	KEYTYPEENUM_BIP39 KeyTypeEnum = "bip39"
 )

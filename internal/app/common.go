@@ -85,10 +85,10 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 
 	for _, pubKey := range *pubKeys {
 		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) {
-			if pubKey.Status != idserver.KeyStatusACTIVE {
+			if pubKey.Status != idserver.KEYSTATUSENUM_ACTIVE {
 				log.Fatalf("The specified pulblic key is not active")
 			}
-			if pubKey.Device != idserver.KeyDeviceSERVER {
+			if pubKey.Device != idserver.KEYDEVICEENUM_SERVER {
 				log.Fatalf("The specified public key is not owned by the server")
 			}
 			return

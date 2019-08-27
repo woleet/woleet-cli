@@ -17,4 +17,7 @@ type UserGetAllOf struct {
 	UpdatedAt int64 `json:"updatedAt,omitempty"`
 	// Date of last login (Unix ms timestamp).
 	LastLogin int64 `json:"lastLogin,omitempty"`
+	Mode UserModeEnum `json:"mode,omitempty"`
+	// Identifier of the default key to use to sign for this user (cannot be the an external key).
+	DefaultKeyId string `json:"defaultKeyId,omitempty"`
 }

@@ -13,4 +13,6 @@ package idserver
 type UserPutAllOf struct {
 	// User password.
 	Password string `json:"password,omitempty"`
+	// Identifier of the default key to use to sign for this user (cannot be the an external key).
+	DefaultKeyId string `json:"defaultKeyId,omitempty"`
 }

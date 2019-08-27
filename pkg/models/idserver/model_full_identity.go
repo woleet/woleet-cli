@@ -13,8 +13,6 @@ package idserver
 type FullIdentity struct {
 	// Common name (CN) (2.5.4.3)
 	CommonName string `json:"commonName"`
-	// Email Address (EMAILADDRESS) (1.2.840.113549.1.9.1)
-	EmailAddress string `json:"emailAddress,omitempty"`
 	// Organization name (O) (2.5.4.10)
 	Organization string `json:"organization,omitempty"`
 	// Organizational unit name (OU) (2.5.4.11)

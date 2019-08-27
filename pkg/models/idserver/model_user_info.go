@@ -24,6 +24,4 @@ type UserInfo struct {
 	Status UserStatusEnum `json:"status,omitempty"`
 	Role UserRoleEnum `json:"role,omitempty"`
 	Identity FullIdentity `json:"identity,omitempty"`
-	// Identifier of the default key to use to sign for this user (cannot be the an external key).
-	DefaultKeyId string `json:"defaultKeyId,omitempty"`
 }

@@ -14,7 +14,7 @@ type KeyDeviceEnum string
 
 // List of KeyDeviceEnum
 const (
-	KeyDeviceSERVER KeyDeviceEnum = "server"
-	KeyDeviceNANO KeyDeviceEnum = "nano"
-	KeyDeviceMOBILE KeyDeviceEnum = "mobile"
+	KEYDEVICEENUM_SERVER KeyDeviceEnum = "server"
+	KEYDEVICEENUM_NANO KeyDeviceEnum = "nano"
+	KEYDEVICEENUM_MOBILE KeyDeviceEnum = "mobile"
 )

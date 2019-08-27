@@ -24,6 +24,13 @@ type UserDisco struct {
 	Status UserStatusEnum `json:"status,omitempty"`
 	Role UserRoleEnum `json:"role,omitempty"`
 	Identity FullIdentity `json:"identity,omitempty"`
+	// Date of creation (Unix ms timestamp).
+	CreatedAt int64 `json:"createdAt,omitempty"`
+	// Date of last modification (Unix ms timestamp).
+	UpdatedAt int64 `json:"updatedAt,omitempty"`
+	// Date of last login (Unix ms timestamp).
+	LastLogin int64 `json:"lastLogin,omitempty"`
+	Mode UserModeEnum `json:"mode,omitempty"`
 	// Identifier of the default key to use to sign for this user (cannot be the an external key).
 	DefaultKeyId string `json:"defaultKeyId,omitempty"`
 }

@@ -19,4 +19,6 @@ type Key struct {
 	Status string `json:"status,omitempty"`
 	// Key expiration date (Unix ms timestamp). <br>Note that the field is not returned if the key has no expiration date. 
 	Expiration int64 `json:"expiration,omitempty"`
+	// Key revocation date (Unix ms timestamp). <br>Note that the field is not returned if the key has no revocation date. 
+	RevokedAt int64 `json:"revokedAt,omitempty"`
 }

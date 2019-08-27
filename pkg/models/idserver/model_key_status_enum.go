@@ -14,6 +14,7 @@ type KeyStatusEnum string
 
 // List of KeyStatusEnum
 const (
-	KeyStatusACTIVE KeyStatusEnum = "active"
-	KeyStatusBLOCKED KeyStatusEnum = "blocked"
+	KEYSTATUSENUM_ACTIVE KeyStatusEnum = "active"
+	KEYSTATUSENUM_BLOCKED KeyStatusEnum = "blocked"
+	KEYSTATUSENUM_REVOKED KeyStatusEnum = "revoked"
 )

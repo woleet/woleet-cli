@@ -226,13 +226,21 @@ paths:
         Use this endpoint to get the current logged user.
       responses:
         '200':
-          description: Successful operation.
+          description: Successful operation. Send the user corresponding to the token.
           content:
             application/json:
               schema:
                 $ref: '#/components/responses/UserDisco'
+        '204':
+          description: Successful operation. This case happend when this endpoint is called with an admin token.
         '401':
           description: Missing or bad session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/APIError'
+        '404':
+          description: User not found.
           content:
             application/json:
               schema:
@@ -1073,10 +1081,6 @@ components:
           type: string
           description: Common name (CN) (2.5.4.3)
           example: "Jim Smith"
-        emailAddress:
-          type: string
-          description: Email Address (EMAILADDRESS) (1.2.840.113549.1.9.1)
-          example: "jim.smith@woleet.com"
         organization:
           type: string
           description: Organization name (O) (2.5.4.10)
@@ -1112,6 +1116,7 @@ components:
           enum:
             - valid
             - expired
+            - revoked
         expiration:
           type: integer
           format: int64
@@ -1119,6 +1124,13 @@ components:
           description: >
             Key expiration date (Unix ms timestamp).
             <br>Note that the field is not returned if the key has no expiration date.
+        revokedAt:
+          type: integer
+          format: int64
+          example: 1569542400000
+          description: >
+            Key revocation date (Unix ms timestamp).
+            <br>Note that the field is not returned if the key has no revocation date.
     FullIdentity:
       allOf:
         - $ref: '#/components/schemas/Identity'
@@ -1183,11 +1195,22 @@ components:
       default: "active"
       description: User status (a `blocked` user cannot sign).
       example: "active"
+    UserModeEnum:
+      type: string
+      enum:
+        - seal
+        - esign
+      default: "seal"
+      description: >
+        User mode, esign the user is a real user, and his keys are used to create electronic signatures.
+        seal the user represents an organization, and his keys are used to create server seals.
+      example: "seal"
     KeyStatusEnum:
       type: string
       enum:
         - active
         - blocked
+        - revoked
       default: "active"
       description: Key status (a `blocked` key cannot be used to sign).
       example: "active"
@@ -1223,11 +1246,6 @@ components:
           $ref: '#/components/schemas/UserRoleEnum'
         identity:
           $ref: '#/components/schemas/FullIdentity'
-        defaultKeyId:
-          type: string
-          format: uuid
-          description: Identifier of the default key to use to sign for this user (cannot be the an external key).
-          example: "c7c6e0de-2acb-4311-80b4-17dbf0b76806"
     UserGet:
       allOf:
         - $ref: '#/components/schemas/UserBase'
@@ -1239,17 +1257,28 @@ components:
               $ref: '#/components/schemas/UpdatedAt'
             lastLogin:
               $ref: '#/components/schemas/LastLogin'
+            mode:
+              $ref: '#/components/schemas/UserModeEnum'
+            defaultKeyId:
+              type: string
+              format: uuid
+              description: Identifier of the default key to use to sign for this user (cannot be the an external key).
+              example: "c7c6e0de-2acb-4311-80b4-17dbf0b76806"
     UserPost:
       allOf:
-        - $ref: '#/components/schemas/UserPut'
+        - $ref: '#/components/schemas/UserBase'
         - type: object
           required:
             - identity
             - createDefaultKey
           properties:
-              createDefaultKey:
-                type: boolean
-                description: If true create a key holded by the server when this user is created.
+            password:
+              $ref: '#/components/schemas/Password'
+            createDefaultKey:
+              type: boolean
+              description: If true create a key holded by the server when this user is created.
+            mode:
+              $ref: '#/components/schemas/UserModeEnum'
     UserPut:
       allOf:
         - $ref: '#/components/schemas/UserBase'
@@ -1257,6 +1286,11 @@ components:
           properties:
             password:
               $ref: '#/components/schemas/Password'
+            defaultKeyId:
+              type: string
+              format: uuid
+              description: Identifier of the default key to use to sign for this user (cannot be the an external key).
+              example: "c7c6e0de-2acb-4311-80b4-17dbf0b76806"
     UserArray:
       type: array
       items:
@@ -1266,7 +1300,7 @@ components:
         - $ref: '#/components/schemas/UserBase'
     UserDisco:
       allOf:
-        - $ref: '#/components/schemas/UserBase'
+        - $ref: '#/components/schemas/UserGet'
     UserDiscoArray:
       type: array
       items:
@@ -1484,6 +1518,13 @@ components:
               description: >
                 Indicates whether the key has expired or not.
                 <br>Note that the field is not returned if the key has not expired.
+            revokedAt:
+              type: integer
+              format: int64
+              example: 1569542400000
+              description: >
+                Key revocation date (Unix ms timestamp).
+                <br>Note that the field is not returned if the key has no revocation date.
             createdAt:
               $ref: '#/components/schemas/CreatedAt'
             updatedAt:
@@ -1614,6 +1655,13 @@ components:
           description: >
             Enrollment expiration date (Unix ms timestamp).
             <br>Note that the field is not returned if the enrollment has no expiration date.
+        keyExpiration:
+          type: integer
+          format: int64
+          example: 1569542400000
+          description: >
+            Enrolled key expiration date (Unix ms timestamp).
+            <br>Note that the field is not returned if the enrollment has no expiration date.
     EnrollmentGet:
       allOf:
         - $ref: '#/components/schemas/EnrollmentBase'
@@ -1644,7 +1692,7 @@ components:
               example: 'feb37e23-d04e-4e71-bf53-1f1a75ba3a68'
             test:
               type: boolean
-              description: True if it's a test.
+              description: Used only for test purpose.
     EnrollmentPut:
       allOf:
         - $ref: '#/components/schemas/EnrollmentBase'

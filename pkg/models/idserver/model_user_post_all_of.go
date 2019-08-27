@@ -11,6 +11,9 @@
 package idserver
 
 type UserPostAllOf struct {
+	// User password.
+	Password string `json:"password,omitempty"`
 	// If true create a key holded by the server when this user is created.
 	CreateDefaultKey *bool `json:"createDefaultKey"`
+	Mode UserModeEnum `json:"mode,omitempty"`
 }
