@@ -89,7 +89,7 @@ woleet-cli anchor [flags]
       --dryRun             print information about files to anchor without anchoring
   -e, --exitOnError        exit with an error code if anything goes wrong
   -h, --help               help for anchor
-  -i, --include string     Only files taht match that regex will be anchored
+  -i, --include string     Only files that match that regex will be anchored
   -p, --private            create non discoverable proofs
       --prune              delete receipts that are not along the original file,
                            with --strict it checks the hash of the original file and deletes the receipt if they do not match
@@ -102,7 +102,7 @@ woleet-cli sign [flags]
       --dryRun               print information about files to sign without signing
   -e, --exitOnError          exit with an error code if anything goes wrong
   -h, --help                 help for sign
-  -i, --include string       Only files taht match that regex will be signed
+  -i, --include string       Only files that match that regex will be signed
   -p, --private              create non discoverable proofs
       --prune                delete receipts that are not along the original file,
                              with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
