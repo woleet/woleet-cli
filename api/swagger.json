@@ -1,10 +1,10 @@
 {
   "swagger" : "2.0",
   "info" : {
-    "description" : "Welcome to **Woleet API reference documentation**.<br>\nIt is highly recommanded to read the chapters **[introducing Woleet API concepts](https://doc.woleet.io/v1.5.1/reference)** before reading this documentation.\n",
-    "version" : "1.5.1",
+    "description" : "Welcome to **Woleet API reference documentation**.<br>\nIt is highly recommanded to read the chapters **[introducing Woleet API concepts](https://doc.woleet.io/reference)** before reading this documentation.\n",
+    "version" : "1.6.2",
     "title" : "Woleet API",
-    "termsOfService" : "https://www.woleet.io/terms",
+    "termsOfService" : "https://doc.woleet.io/docs/terms-of-service",
     "contact" : {
       "url" : "https://www.woleet.io/",
       "email" : "contact@woleet.com"
@@ -44,7 +44,7 @@
       "post" : {
         "tags" : [ "anchor" ],
         "summary" : "Create a new anchor.",
-        "description" : "Use this operation to create a new anchor of one of these two types:<br>\n\n- a data anchor (generating a proof of existence receipt) allows to prove the existence of some data at some point in time.<br>\n- a signature anchor (generating a proof of signature receipt) allows to prove the existence of the signature of some data at some point in time, the validity of the signature and the signee's identity.<br>\n\nThe properties `id`, `created`, `lastModified`, `status`, `timestamp` and `confirmations` are read-only and so must not be provided: they are managed by the platform and added to the returned anchor.<br>\nFor data anchors, only the properties `name` and `hash` are required: the `hash` property must be the SHA256 hash of the data to anchor, and must be computed caller side. This allows not to leak the original data.<br>\nFor signature anchors, only the properties `name`, `signedHash`, `signature` and `pubKey` are required (though the `identityURL` property is highly recommended): the `signedHash` property must be the SHA256 hash of the data to sign. This allows not to leak the original data and to keep the actual signed data small (signing the digest is equivalent to signing the original data).<br>\nBe sure to have at least 1 anchoring credit on your account. The `signature` property must contains a valid signature of the `data` property using the private key paired with the `pubKey` public key.\n",
+        "description" : "Use this operation to create a new anchor of one of these two types:<br>\n\n- a data anchor (generating a proof of existence receipt) allows to prove the existence of some data at some point in time.<br>\n- a signature anchor (generating a proof of signature receipt) allows to prove the existence of the signature of some data at some point in time, the validity of the signature and the signee's identity.<br>\n\nThe properties `id`, `created`, `lastModified`, `status`, `timestamp` and `confirmations` are read-only and so must not be provided: they are managed by the platform and added to the returned anchor.<br>\nFor data anchors, only the properties `name` and `hash` are required: the `hash` property must be the SHA256 hash of the data to anchor, and must be computed caller side. This allows not to leak the original data.<br>\nFor signature anchors, only the properties `name`, `signedHash`, `signature` and `pubKey` are required (though the `identityURL` property is highly recommended): the `signedHash` property must be the SHA256 hash of the data to sign. This allows not to leak the original data and to keep the actual signed data small (signing the digest is equivalent to signing the original data).<br>\nBe sure to have at least 1 anchoring credit on your account. The `signature` property must contain a valid signature of the `data` property using the private key paired with the `pubKey` public key.\n",
         "operationId" : "createAnchor",
         "parameters" : [ {
           "in" : "body",
@@ -71,14 +71,14 @@
         }
       }
     },
-    "/anchor/{anchorid}" : {
+    "/anchor/{anchorId}" : {
       "get" : {
         "tags" : [ "anchor" ],
         "summary" : "Get an anchor by its identifier.",
         "description" : "Use this operation to retrieve an anchor by its identifier.",
         "operationId" : "getAnchor",
         "parameters" : [ {
-          "name" : "anchorid",
+          "name" : "anchorId",
           "in" : "path",
           "description" : "Identifier of the anchor to retrieve.",
           "required" : true,
@@ -102,7 +102,7 @@
         "description" : "Use this operation to update an anchor.<br>\nOnly the properties `name`, `public`, `tags`, `metadata` and `callbackURL` can be modified.\n",
         "operationId" : "updateAnchor",
         "parameters" : [ {
-          "name" : "anchorid",
+          "name" : "anchorId",
           "in" : "path",
           "description" : "Identifier of anchor to update.",
           "required" : true,
@@ -137,7 +137,7 @@
         "description" : "Use this operation to delete an anchor.<br>\n**WARNING: You should never delete an anchor, otherwise you will no longer be able to download its proof receipt.<br>\nUse this for test purpose only.**\n",
         "operationId" : "deleteAnchor",
         "parameters" : [ {
-          "name" : "anchorid",
+          "name" : "anchorId",
           "in" : "path",
           "description" : "Identifier of the anchor to delete.",
           "required" : true,
@@ -236,7 +236,7 @@
         }, {
           "name" : "name",
           "in" : "query",
-          "description" : "`name` to search for: all anchors whose `name` property contains this sub-string are returned.<br>\n**WARNING: searching by name can timeout on a large anchor set.**\n",
+          "description" : "`name` to search for: all anchors whose `name` property contains this sub-string are returned.<br>\n**WARNING: Searching by name can timeout on a large anchor set.**\n",
           "required" : false,
           "type" : "string"
         }, {
@@ -274,14 +274,14 @@
         }
       }
     },
-    "/receipt/{anchorid}" : {
+    "/receipt/{anchorId}" : {
       "get" : {
         "tags" : [ "receipt" ],
-        "summary" : "Get the proof receipt of an anchor.",
+        "summary" : "Get the proof receipt of an anchor (Chainpoint proof format).",
         "description" : "Use this operation to retrieve the Chainpoint proof receipt associated to a given anchor.\nThis is a publicly accessible endpoint: authentication is not required to retrieve a proof receipt (but the anchor identifier need to be known).\n",
         "operationId" : "getReceipt",
         "parameters" : [ {
-          "name" : "anchorid",
+          "name" : "anchorId",
           "in" : "path",
           "description" : "Identifier of the anchor for which to build the proof receipt.",
           "required" : true,
@@ -304,11 +304,41 @@
         "security" : [ ]
       }
     },
+    "/receipt/{anchorId}/ots" : {
+      "get" : {
+        "tags" : [ "receipt" ],
+        "summary" : "Get the proof receipt of an anchor (OpenTimestamps proof format).",
+        "description" : "Use this operation to retrieve the OpenTimestamps proof receipt associated to a given anchor.\nThis is a publicly accessible endpoint: authentication is not required to retrieve a proof receipt (but the anchor identifier need to be known).\n",
+        "operationId" : "getOTSReceipt",
+        "parameters" : [ {
+          "name" : "anchorId",
+          "in" : "path",
+          "description" : "Identifier of the anchor for which to build the proof receipt.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The proof receipt (conform to the OpenTimestamps format).",
+            "schema" : {
+              "$ref" : "#/definitions/otsReceipt"
+            }
+          },
+          "202" : {
+            "description" : "The proof receipt is not ready for this anchor."
+          },
+          "404" : {
+            "description" : "No anchor matching the given identifier."
+          }
+        },
+        "security" : [ ]
+      }
+    },
     "/receipt/verify" : {
       "post" : {
         "tags" : [ "receipt" ],
         "summary" : "Verify a proof receipt.",
-        "description" : "Use this operation to verify a Chainpoint proof receipt.<br>\nThis is a publicly accessible endpoint: authentication is not required to verify a proof receipt.\n",
+        "description" : "Use this operation to verify a Chainpoint proof receipt and get the timestamp of the proof.<br>\nFor proof of signature receipts including an identity URL, this operation also verify and returns information about the signee's identity.<br>\nThis is a publicly accessible endpoint: authentication is not required to verify a proof receipt.\n",
         "operationId" : "verifyReceipt",
         "parameters" : [ {
           "in" : "body",
@@ -337,7 +367,7 @@
       "post" : {
         "tags" : [ "signatureRequest" ],
         "summary" : "Create a new signature request.",
-        "description" : "Use this operation to create a new signature request.<br>\nThe properties `id`, `created` and `lastModified` are read-only and so must not be provided: they are managed by the platform and added to the returned request.<br>\nOnly the properties `name` and `hashToSign` are required: the `hashToSign` property must be the SHA256 hash of the data to sign. This allows not to leak the original data and to keep the actual signed data small (signing the digest is equivalent to signing the original data).<br>\nBe sure to have enough anchoring credits on your account to fulfill the signature request (each signature registered will cost you 1 anchoring credit).<br>\n",
+        "description" : "Use this operation to create a new signature request.<br>\nThe properties `id`, `created` and `lastModified` are read-only and so must not be provided: they are managed by the platform and added to the returned request.<br>\nOnly the properties `name` and `hashToSign` are required: the `hashToSign` property must be the SHA256 hash of the data to sign. This allows not to leak the original data and to keep the actual signed data small (signing the digest is equivalent to signing the original data).<br>\nBe sure to have enough signature and anchoring credits on your account to fulfill the signature request (each registered signature will cost you 1 signature and 1 anchoring credit).<br>\n",
         "operationId" : "createSignatureRequest",
         "parameters" : [ {
           "in" : "body",
@@ -361,14 +391,58 @@
         }
       }
     },
-    "/signatureRequest/{requestid}/sign" : {
+    "/signatureRequest/{requestId}/otp/{signeeId}" : {
+      "get" : {
+        "tags" : [ "signatureRequest" ],
+        "summary" : "Generate and send a One Time Password to a signee of a signature request.",
+        "description" : "Use this operation to generate and send a One Time Password by SMS to a signee of a signature request.<br>\n",
+        "operationId" : "sendSignatureRequestOTP",
+        "parameters" : [ {
+          "name" : "requestId",
+          "in" : "path",
+          "description" : "Identifier of the signature request.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "signeeId",
+          "in" : "path",
+          "description" : "Secret identifier of the signee wanting to retrieve his One Time Password.<br>\n**This secret identifier is generated by the platform and only included in the email sent to the signee, allowing the platform to authenticate the signee.**\n",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "signature",
+          "description" : "Signature to register.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/signatureRequestSign"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "One Time Password succesfully generated and sent by SMS to the signee."
+          },
+          "401" : {
+            "description" : "Unauthorized. The signee is not an authorized signee (signee identifier not found)."
+          },
+          "403" : {
+            "description" : "Forbidden. The signature request is suspended, the deadline has been reached, or the signee does not requires One Time Password."
+          },
+          "404" : {
+            "description" : "Signature request or signee not found."
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/signatureRequest/{requestId}/sign" : {
       "post" : {
         "tags" : [ "signatureRequest" ],
         "summary" : "Sign a signature request.",
-        "description" : "Use this operation to register a signature for a signature request.<br>\nThe signature is automatically anchored (on behalf of the owner of the signature request). The signature anchor created is added to the list of signature anchors of the signature request.\nThis is a publicly accessible endpoint: authentication is not required to register a signature.\n",
+        "description" : "Use this operation to register a signature in a signature request.<br>\nThe signature is automatically anchored (on behalf of the owner of the signature request).<br>\nThe signature anchor created is added to the list of signature anchors of the signature request.<br>\nThis is a publicly accessible endpoint: authentication is not required to register a signature.\n",
         "operationId" : "signSignatureRequest",
         "parameters" : [ {
-          "name" : "requestid",
+          "name" : "requestId",
           "in" : "path",
           "description" : "Identifier of the signature request.",
           "required" : true,
@@ -392,11 +466,14 @@
           "400" : {
             "description" : "Invalid request. More details are returned in the response body as a JSON object."
           },
+          "401" : {
+            "description" : "Unauthorized. The signee is not an authorized signee (public key or signee identifier not found, or invalid One Time Password)."
+          },
           "402" : {
-            "description" : "Insufficient credits. The owner of the signature request run out of anchoring credit."
+            "description" : "Insufficient credits. The owner of the signature request runs out of signature or anchoring credit."
           },
           "403" : {
-            "description" : "Forbidden. The signature request is suspended, the deadline or the maximum number of signatures has been reached, or the signee is not an authorized signee."
+            "description" : "Forbidden. The signature request is suspended, the deadline has been reached, or the maximum number of signatures has been reached."
           },
           "404" : {
             "description" : "Signature request not found."
@@ -408,17 +485,23 @@
         "security" : [ ]
       }
     },
-    "/signatureRequest/{requestid}" : {
+    "/signatureRequest/{requestId}" : {
       "get" : {
         "tags" : [ "signatureRequest" ],
         "summary" : "Get a signature request by its identifier.",
         "description" : "Use this operation to retrieve a signature request by its identifier.<br>\nWhen accessed with no authentication, only public attributes of the signature request are returned.\n",
         "operationId" : "getSignatureRequest",
         "parameters" : [ {
-          "name" : "requestid",
+          "name" : "requestId",
           "in" : "path",
           "description" : "Identifier of the signature request to retrieve.",
           "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "signeeId",
+          "in" : "query",
+          "description" : "Secret identifier of the signee wanting to retrieve the signature request.<br>\nIf set, information related to this signee is returned in `authorizedSignees[0]`.<br>\n**This secret identifier is generated by the platform and only included in the email sent to the signee, allowing the platform to authenticate the signee.**\n",
+          "required" : false,
           "type" : "string"
         } ],
         "responses" : {
@@ -439,7 +522,7 @@
         "description" : "Use this operation to update a signature request.<br>\nOnly the properties `name`, `suspended`, `deadline`, `maxSignatures` and `authorizedSignees` can be modified.<br>\n",
         "operationId" : "updateSignatureRequest",
         "parameters" : [ {
-          "name" : "requestid",
+          "name" : "requestId",
           "in" : "path",
           "description" : "Identifier of signature request to update.",
           "required" : true,
@@ -474,7 +557,7 @@
         "description" : "Use this operation to delete a signature request.<br>\n",
         "operationId" : "deleteSignatureRequest",
         "parameters" : [ {
-          "name" : "requestid",
+          "name" : "requestId",
           "in" : "path",
           "description" : "Identifier of the signature request to delete.",
           "required" : true,
@@ -529,7 +612,7 @@
         }, {
           "name" : "name",
           "in" : "query",
-          "description" : "`name` to search for: all signature requests whose `name` property contains this sub-string are returned.<br>\n**WARNING: searching by name can timeout on a large signature request set.**\n",
+          "description" : "`name` to search for: all signature requests whose `name` property contains this sub-string are returned.<br>\n**WARNING: Searching by name can timeout on a large signature request set.**\n",
           "required" : false,
           "type" : "string"
         }, {
@@ -556,7 +639,7 @@
       "get" : {
         "tags" : [ "token" ],
         "summary" : "Generate a JWT token.",
-        "description" : "Use this operation to generate a new JWT token.<br>\nThen, use this token to authenticate using the `Bearer` scheme of the `Authorization` header, like:<br>\n`Authorization: Bearer {JWT token value}`\n",
+        "description" : "Use this operation to generate a new JWT token.<br>\nJWT tokens can be used to authenticate to the API, using the `Bearer` scheme of the `Authorization` header, like:<br>\n`Authorization: Bearer {JWT token}`\n",
         "operationId" : "generateToken",
         "parameters" : [ {
           "name" : "cdata",
@@ -575,31 +658,26 @@
           "400" : {
             "description" : "Invalid request. More details are returned in the response body as a JSON object."
           }
-        },
-        "security" : [ {
-          "BasicAuth" : [ ]
-        } ]
+        }
       },
       "delete" : {
         "tags" : [ "token" ],
         "summary" : "Revoke a JWT token.",
-        "description" : "Use this operation to revoke a JWT token.<br>\nJWT tokens have no expiration date so are always valid: if you need to invalidate a token (eg. because you think it is compromised) you need to use this endpoint to inform the platform that this token should no longer be accepted.\n",
+        "description" : "Use this operation to revoke a JWT token.<br>\nJWT tokens have no expiration date so are always valid: if you need to invalidate a token (eg. because you think it is compromised) you need to use this endpoint to inform the platform that this token must no longer be accepted.\n",
         "operationId" : "revokeToken",
         "parameters" : [ {
-          "in" : "body",
           "name" : "token",
-          "description" : "Token to revoke.",
+          "in" : "query",
+          "description" : "JWT token to revoke.",
           "required" : true,
-          "schema" : {
-            "$ref" : "#/definitions/token"
-          }
+          "type" : "string"
         } ],
         "responses" : {
           "200" : {
-            "description" : "The token is revoked."
+            "description" : "The JWT token is revoked."
           },
           "400" : {
-            "description" : "Invalid token object. More details are returned in the response body as a JSON object."
+            "description" : "Invalid JWT token object. More details are returned in the response body as a JSON object."
           }
         }
       }
@@ -607,15 +685,87 @@
     "/user/credits" : {
       "get" : {
         "tags" : [ "user" ],
-        "summary" : "Get remaining anchoring credits.",
-        "description" : "Use this operation to get the remaining anchoring credits of the authenticated user's account.<br>\n",
+        "summary" : "Get user's credits.",
+        "description" : "Use this operation to get the remaining signature and anchoring credits of the authenticated user.<br>\n",
         "operationId" : "getCredits",
         "parameters" : [ ],
         "responses" : {
           "200" : {
-            "description" : "The remaining anchoring credits.",
+            "description" : "The remaining signature and anchoring credits.",
             "schema" : {
               "$ref" : "#/definitions/credits"
+            }
+          }
+        }
+      }
+    },
+    "/user/tokens" : {
+      "get" : {
+        "tags" : [ "user" ],
+        "summary" : "Get user's registered JWT tokens.",
+        "description" : "Use this operation to list all JWT tokens registered for the authenticated user.\n",
+        "operationId" : "getTokens",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "The list of JWT tokens of the user, possibly empty.",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "user" ],
+        "summary" : "Update user's registered JWT tokens.",
+        "description" : "Use this operation to update the list of JWT tokens registered for the authenticated user.\n",
+        "operationId" : "putTokens",
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "tokens",
+          "description" : "The list of JWT tokens to updated.",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/tokens"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The list of JWT tokens was successfully updated."
+          }
+        }
+      }
+    },
+    "/user/callbackSecret" : {
+      "get" : {
+        "tags" : [ "user" ],
+        "summary" : "Get the currently used callback secret (null if not set).",
+        "description" : "Use this operation to get the api callback secret.<br>\n",
+        "operationId" : "getCallbackSecret",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "The currently used callback secret.",
+            "schema" : {
+              "$ref" : "#/definitions/callbackSecret"
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "user" ],
+        "summary" : "Generates a new callback secret.",
+        "description" : "Use this operation to generate the api callback secret.<br>\n",
+        "operationId" : "updateCallbackSecret",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "The newly generated callback secret.",
+            "schema" : {
+              "$ref" : "#/definitions/callbackSecret"
             }
           }
         }
@@ -649,14 +799,14 @@
         }
       }
     },
-    "/domain/admin/user/{userid}" : {
+    "/domain/admin/user/{userId}" : {
       "get" : {
         "tags" : [ "domain" ],
         "summary" : "Get a domain user by its identifier.",
         "description" : "Use this operation to retrieve a domain user by its identifier.",
         "operationId" : "getDomainUser",
         "parameters" : [ {
-          "name" : "userid",
+          "name" : "userId",
           "in" : "path",
           "description" : "Identifier of the domain user to retrieve.",
           "required" : true,
@@ -680,7 +830,7 @@
         "description" : "Use this operation to update a domain user.",
         "operationId" : "updateDomainUser",
         "parameters" : [ {
-          "name" : "userid",
+          "name" : "userId",
           "in" : "path",
           "description" : "Identifier of the domain user to update.",
           "required" : true,
@@ -715,7 +865,7 @@
         "description" : "Use this operation to delete a domain user.",
         "operationId" : "deleteDomainUser",
         "parameters" : [ {
-          "name" : "userid",
+          "name" : "userId",
           "in" : "path",
           "description" : "Identifier of the domain user to delete.",
           "required" : true,
@@ -735,7 +885,7 @@
       "get" : {
         "tags" : [ "domain" ],
         "summary" : "Search for domain users.",
-        "description" : "Use this operation to retrieve all domain users having a given `email` property.<br>\nPaging and sorting is supported.\n",
+        "description" : "Use this operation to list all domain users or search for domain users given their email.<br>\nPaging and sorting is supported.\n",
         "operationId" : "searchDomainUsers",
         "parameters" : [ {
           "name" : "page",
@@ -762,15 +912,15 @@
         }, {
           "name" : "sort",
           "in" : "query",
-          "description" : "Sorting property: possible values are limited to `created`, `email`, `roles` and `status`.\n",
+          "description" : "Sorting property: possible values are `email`, `created`, `roles`, `info.firstName`, `info.lastName`, `status`.\n",
           "required" : false,
           "type" : "string",
           "default" : "created",
-          "enum" : [ "created", "email", "roles", "status" ]
+          "enum" : [ "email", "created", "roles", "info.firstName", "info.lastName", "status" ]
         }, {
           "name" : "email",
           "in" : "query",
-          "description" : "email to search for: a sub-string or regex of the email.\n",
+          "description" : "email to search for: a sub-string of the email.\n",
           "required" : false,
           "type" : "string"
         } ],
@@ -802,22 +952,27 @@
       "type" : "object",
       "properties" : {
         "type" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Chainpoint 2.x only. Type of Chainpoint 2.x receipt."
         },
         "targetHash" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Chainpoint 2.x only. SHA256 hash of the proven data or signature."
         },
         "merkleRoot" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Chainpoint 2.x only. Root of the Merkle tree."
         },
         "proof" : {
           "type" : "array",
+          "description" : "Chainpoint 2.x only. Merkle proof: path from `targetHash` to `merkleRoot` in the Merkle tree.\n",
           "items" : {
             "$ref" : "#/definitions/receipt_proof_node"
           }
         },
         "anchors" : {
           "type" : "array",
+          "description" : "Chainpoint 2.x only. List of sources where the root of the Merkle proof is anchored.",
           "items" : {
             "$ref" : "#/definitions/receipt_anchors_node"
           }
@@ -832,12 +987,15 @@
           "$ref" : "#/definitions/receipt_target"
         }
       },
+      "description" : "A Chainpoint 1.x or 2.x proof receipt",
       "example" : {
         "targetHash" : "targetHash",
         "signature" : {
+          "signedIssuerDomain" : "signedIssuerDomain",
           "signature" : "signature",
           "signedHash" : "signedHash",
           "identityURL" : "identityURL",
+          "signedIdentity" : "signedIdentity",
           "pubKey" : "pubKey"
         },
         "header" : {
@@ -857,10 +1015,10 @@
         } ],
         "anchors" : [ {
           "sourceId" : "sourceId",
-          "type" : "type"
+          "type" : "BTCOpReturn"
         }, {
           "sourceId" : "sourceId",
-          "type" : "type"
+          "type" : "BTCOpReturn"
         } ],
         "type" : "type",
         "target" : {
@@ -879,7 +1037,6 @@
     },
     "receipt_proof_node" : {
       "type" : "object",
-      "required" : [ "left", "right" ],
       "properties" : {
         "left" : {
           "type" : "string"
@@ -895,10 +1052,10 @@
     },
     "receipt_anchors_node" : {
       "type" : "object",
-      "required" : [ "sourceId", "type" ],
       "properties" : {
         "type" : {
-          "type" : "string"
+          "type" : "string",
+          "default" : "BTCOpReturn"
         },
         "sourceId" : {
           "type" : "string"
@@ -906,30 +1063,44 @@
       },
       "example" : {
         "sourceId" : "sourceId",
-        "type" : "type"
+        "type" : "BTCOpReturn"
       }
     },
     "receipt_signature" : {
       "type" : "object",
-      "required" : [ "pubKey", "signature", "signedHash" ],
       "properties" : {
         "signedHash" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "SHA256 hash (ie. the fingerprint) of the original signed data."
+        },
+        "signedIdentity" : {
+          "type" : "string",
+          "description" : "X500 Distinguished Name representing the signed identity."
+        },
+        "signedIssuerDomain" : {
+          "type" : "string",
+          "description" : "Domain name of the identity issuer (ie. of the organization who verified the identity)."
         },
         "pubKey" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Public key of the signee.<br>\n**Currently only Bitcoin addresses are supported.**\n"
         },
         "signature" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Signature of the `signedHash` property using the public key `pubKey`, or, if any of `signedIdentity` or `signedIssuerDomain` is provided,\nsignature of SHA256(`hashToSign` + `signedIdentity` + `signedIssuerDomain`) using the public key `pubKey`.\n"
         },
         "identityURL" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Web hook to use to verify the signee's identity."
         }
       },
+      "description" : "For proof of signature receipts only. The anchored signature.",
       "example" : {
+        "signedIssuerDomain" : "signedIssuerDomain",
         "signature" : "signature",
         "signedHash" : "signedHash",
         "identityURL" : "identityURL",
+        "signedIdentity" : "signedIdentity",
         "pubKey" : "pubKey"
       }
     },
@@ -955,7 +1126,7 @@
           "format" : "int64"
         }
       },
-      "description" : "For Chainpoint 1.x receipts only",
+      "description" : "Chainpoint 1.x only",
       "example" : {
         "chainpoint_version" : "1.0",
         "merkle_root" : "merkle_root",
@@ -977,7 +1148,7 @@
           }
         }
       },
-      "description" : "For Chainpoint 1.x receipts only",
+      "description" : "Chainpoint 1.x only",
       "example" : {
         "target_hash" : "target_hash",
         "target_proof" : [ {
@@ -1004,12 +1175,16 @@
           "type" : "string"
         }
       },
-      "description" : "For Chainpoint 1.x receipts only",
+      "description" : "Chainpoint 1.x only",
       "example" : {
         "parent" : "parent",
         "left" : "left",
         "right" : "right"
       }
+    },
+    "otsReceipt" : {
+      "type" : "string",
+      "format" : "binary"
     },
     "signatureRequest" : {
       "type" : "object",
@@ -1036,17 +1211,21 @@
           "type" : "string",
           "description" : "Name of the signature request (doesn't need to be unique).\n"
         },
+        "public" : {
+          "type" : "boolean",
+          "description" : "`true` (or unset) if the signature anchors created in the scope of this signature request must be public (ie. discoverable by their `signedHash`).<br>\n`false` if they must be private (ie. not dicoverable).<br>\n**If this field is not set at creation time, the anchor is public by default.**\n"
+        },
         "suspended" : {
           "type" : "boolean",
           "description" : "`true` if the signature request is suspended, or `false` (or unset) if not.<br>\nWhen suspended, no more signature can be registered before the request is resumed.\n"
         },
         "hashToSign" : {
           "type" : "string",
-          "description" : "SHA256 hash (ie. the fingerprint) of the original data to sign.\n"
+          "description" : "SHA256 hash (ie. the fingerprint) of the original data to sign.\nThe value must be provided as an hexadecimal lowercase string.\n"
         },
         "anchors" : {
           "type" : "array",
-          "description" : "List of signature anchors created for this signature request.<br>\nThis property is only available to the owner of the signature request.\n",
+          "description" : "List of signature anchors created in teh scope of this signature request<br>\nA signature anchor is created each time a new signature is registered.<br>\nThis property is only available to the owner of the signature request.\n",
           "items" : {
             "$ref" : "#/definitions/anchor"
           }
@@ -1056,40 +1235,60 @@
           "format" : "int64",
           "description" : "Deadline of the signature request (in milliseconds since Unix epoch).<br>\nWhen not set, null or 0, no deadline is applied.<br>\nIf set, signatures registered after the deadline are refused.\n"
         },
+        "identityURL" : {
+          "type" : "string",
+          "description" : "Web hook to use to verify the signee's identity.<br>\nIf set, it is used to verify signees' identity at signature registration time.\n"
+        },
         "maxSignatures" : {
           "type" : "integer",
           "format" : "int32",
-          "description" : "Maximum number of signatures to accept for this signature request.<br>\nWhen not set, null or 0, no maximum is applied.<br>\nIf set, signatures coming from signees not in this list are refused.<br>\nThis property and the `authorizedSignees` property are mutually exclusive.<br>\nThis property is only available to the owner of the signature request.\n"
+          "description" : "Maximum number of signatures to accept for this signature request.<br>\nWhen not set, null or 0, no maximum is applied.<br>\nThis property and the `authorizedSignees` property are mutually exclusive.<br>\nThis property is only available to the owner of the signature request.\n"
         },
         "authorizedSignees" : {
           "type" : "array",
-          "description" : "List of public keys of all signees authorized to register their signature for this signature request (no duplicate is authorized).<br>\n**Currently only Bitcoin addresses are supported.**<br>\nWhen not set or null, anybody can sign the signature request.<br>\nIf set, signatures from public keys not in this list are rejected.<br>\nThis property and the `maxSignatures` property are mutually exclusive.<br>\nThis property is only available to the owner of the signature request.\n",
+          "description" : "List of all signees authorized to register their signature for this signature request (no duplicate is authorized).<br>\nWhen not set or null, anybody can sign the signature request.<br>\nIf set, signatures registered by signees not in this list are rejected.<br>\nThis property and the `maxSignatures` property are mutually exclusive.<br>\nThis property is only available to the owner of the signature request.\n",
           "items" : {
             "$ref" : "#/definitions/authorizedSignee"
           }
         }
       },
       "example" : {
+        "public" : true,
         "created" : 0,
         "authorizedSignees" : [ {
-          "required" : true,
+          "commonName" : "John Doe",
+          "countryCallingCode" : "33",
+          "phone" : "0612345678",
+          "requiresOTP" : true,
+          "identityURL" : "identityURL",
+          "device" : "SERVER",
+          "email" : "john.doe@acme.com",
           "pubKey" : "pubKey"
         }, {
-          "required" : true,
+          "commonName" : "John Doe",
+          "countryCallingCode" : "33",
+          "phone" : "0612345678",
+          "requiresOTP" : true,
+          "identityURL" : "identityURL",
+          "device" : "SERVER",
+          "email" : "john.doe@acme.com",
           "pubKey" : "pubKey"
         } ],
         "name" : "name",
+        "identityURL" : "identityURL",
         "id" : "id",
         "lastModified" : 6,
         "hashToSign" : "hashToSign",
         "anchors" : [ {
           "metadata" : "{}",
+          "signedIssuerDomain" : "signedIssuerDomain",
           "signature" : "signature",
           "created" : 0,
           "notifyByEmail" : true,
           "identityURL" : "identityURL",
           "txId" : "txId",
           "confirmations" : 5,
+          "signedIdentity" : "signedIdentity",
           "tags" : [ "tags", "tags" ],
           "public" : true,
           "name" : "name",
@@ -1103,12 +1302,14 @@
           "timestamp" : 1
         }, {
           "metadata" : "{}",
+          "signedIssuerDomain" : "signedIssuerDomain",
           "signature" : "signature",
           "created" : 0,
           "notifyByEmail" : true,
           "identityURL" : "identityURL",
           "txId" : "txId",
           "confirmations" : 5,
+          "signedIdentity" : "signedIdentity",
           "tags" : [ "tags", "tags" ],
           "public" : true,
           "name" : "name",
@@ -1126,29 +1327,12 @@
         "suspended" : true
       }
     },
-    "authorizedSignee" : {
-      "type" : "object",
-      "properties" : {
-        "pubKey" : {
-          "type" : "string",
-          "description" : "The public key of the authorized signee."
-        },
-        "required" : {
-          "type" : "boolean",
-          "description" : "`true` if this signee's signature is mandatory.<br>\nThis property is informative, it is not used by the platform.\n"
-        }
-      },
-      "example" : {
-        "required" : true,
-        "pubKey" : "pubKey"
-      }
-    },
     "signatureRequests" : {
       "type" : "object",
       "properties" : {
         "content" : {
           "type" : "array",
-          "description" : "Array of signature requests matching the search criteria.",
+          "description" : "Array of signature requests matching the search criteria.\n",
           "items" : {
             "$ref" : "#/definitions/signatureRequest"
           }
@@ -1163,15 +1347,15 @@
         },
         "numberOfElements" : {
           "type" : "integer",
-          "description" : "Number of requests in the retrieved page."
+          "description" : "Number of requests in the retrieved page.\n"
         },
         "size" : {
           "type" : "integer",
-          "description" : "Number of requests per page."
+          "description" : "Number of requests per page.\n"
         },
         "number" : {
           "type" : "integer",
-          "description" : "Index of the retrieved page (from 0)."
+          "description" : "Index of the retrieved page (from 0).\n"
         }
       },
       "example" : {
@@ -1180,26 +1364,42 @@
         "numberOfElements" : 0,
         "size" : 6,
         "content" : [ {
+          "public" : true,
           "created" : 0,
           "authorizedSignees" : [ {
-            "required" : true,
+            "commonName" : "John Doe",
+            "countryCallingCode" : "33",
+            "phone" : "0612345678",
+            "requiresOTP" : true,
+            "identityURL" : "identityURL",
+            "device" : "SERVER",
+            "email" : "john.doe@acme.com",
             "pubKey" : "pubKey"
           }, {
-            "required" : true,
+            "commonName" : "John Doe",
+            "countryCallingCode" : "33",
+            "phone" : "0612345678",
+            "requiresOTP" : true,
+            "identityURL" : "identityURL",
+            "device" : "SERVER",
+            "email" : "john.doe@acme.com",
             "pubKey" : "pubKey"
           } ],
           "name" : "name",
+          "identityURL" : "identityURL",
           "id" : "id",
           "lastModified" : 6,
           "hashToSign" : "hashToSign",
           "anchors" : [ {
             "metadata" : "{}",
+            "signedIssuerDomain" : "signedIssuerDomain",
             "signature" : "signature",
             "created" : 0,
             "notifyByEmail" : true,
             "identityURL" : "identityURL",
             "txId" : "txId",
             "confirmations" : 5,
+            "signedIdentity" : "signedIdentity",
             "tags" : [ "tags", "tags" ],
             "public" : true,
             "name" : "name",
@@ -1213,12 +1413,14 @@
             "timestamp" : 1
           }, {
             "metadata" : "{}",
+            "signedIssuerDomain" : "signedIssuerDomain",
             "signature" : "signature",
             "created" : 0,
             "notifyByEmail" : true,
             "identityURL" : "identityURL",
             "txId" : "txId",
             "confirmations" : 5,
+            "signedIdentity" : "signedIdentity",
             "tags" : [ "tags", "tags" ],
             "public" : true,
             "name" : "name",
@@ -1235,26 +1437,42 @@
           "deadline" : 1,
           "suspended" : true
         }, {
+          "public" : true,
           "created" : 0,
           "authorizedSignees" : [ {
-            "required" : true,
+            "commonName" : "John Doe",
+            "countryCallingCode" : "33",
+            "phone" : "0612345678",
+            "requiresOTP" : true,
+            "identityURL" : "identityURL",
+            "device" : "SERVER",
+            "email" : "john.doe@acme.com",
             "pubKey" : "pubKey"
           }, {
-            "required" : true,
+            "commonName" : "John Doe",
+            "countryCallingCode" : "33",
+            "phone" : "0612345678",
+            "requiresOTP" : true,
+            "identityURL" : "identityURL",
+            "device" : "SERVER",
+            "email" : "john.doe@acme.com",
             "pubKey" : "pubKey"
           } ],
           "name" : "name",
+          "identityURL" : "identityURL",
           "id" : "id",
           "lastModified" : 6,
           "hashToSign" : "hashToSign",
           "anchors" : [ {
             "metadata" : "{}",
+            "signedIssuerDomain" : "signedIssuerDomain",
             "signature" : "signature",
             "created" : 0,
             "notifyByEmail" : true,
             "identityURL" : "identityURL",
             "txId" : "txId",
             "confirmations" : 5,
+            "signedIdentity" : "signedIdentity",
             "tags" : [ "tags", "tags" ],
             "public" : true,
             "name" : "name",
@@ -1268,12 +1486,14 @@
             "timestamp" : 1
           }, {
             "metadata" : "{}",
+            "signedIssuerDomain" : "signedIssuerDomain",
             "signature" : "signature",
             "created" : 0,
             "notifyByEmail" : true,
             "identityURL" : "identityURL",
             "txId" : "txId",
             "confirmations" : 5,
+            "signedIdentity" : "signedIdentity",
             "tags" : [ "tags", "tags" ],
             "public" : true,
             "name" : "name",
@@ -1293,29 +1513,107 @@
         "first" : true
       }
     },
+    "authorizedSignee" : {
+      "type" : "object",
+      "properties" : {
+        "pubKey" : {
+          "type" : "string",
+          "description" : "The public key the authorized signee must use to sign.<br>\n**Currently only Bitcoin addresses are supported.**<br>\nIf not set, the authorized signee can sign using any key.\n"
+        },
+        "device" : {
+          "type" : "string",
+          "description" : "The type of device the authorized signee should use to sign:<br>\n- SERVER: Woleet.ID Server or equivalent\n- MOBILE: Woleet.ID Mobile or equivalent\n- NANO: Ledger Nano S or equivalent\nIf set, the signature web application could only offer the corresponding signature mode.\n",
+          "enum" : [ "SERVER", "MOBILE", "NANO" ]
+        },
+        "email" : {
+          "type" : "string",
+          "example" : "john.doe@acme.com",
+          "description" : "The email of the authorized signee.<br>\nIf set, an email is sent by the platform to the authorized signee, and `commonName` must also be set.<br>\nIf set, `pubKey` is not mandatory, to allow the authorized signee to sign using any key.\n"
+        },
+        "countryCallingCode" : {
+          "type" : "string",
+          "example" : "33",
+          "description" : "The country calling code of the authorized signee.\n"
+        },
+        "phone" : {
+          "type" : "string",
+          "example" : "0612345678",
+          "description" : "The phone of the authorized signee (not including the country calling code).<br>\nThis phone must be able to receive a One Time Password by SMS.\n"
+        },
+        "requiresOTP" : {
+          "type" : "boolean",
+          "description" : "`true` if the signee must provide a One Time Password to sign.<br>\nIf `true`, `phone` must be set, since the One Time Password is sent by SMS.\n"
+        },
+        "commonName" : {
+          "type" : "string",
+          "example" : "John Doe",
+          "description" : "The full name of the authorized signee.\n"
+        },
+        "identityURL" : {
+          "type" : "string",
+          "description" : "Web hook to use to verify the signee's identity.<br>\nIf set, it is used to verify signee's identity at signature registration time.\n"
+        }
+      },
+      "example" : {
+        "commonName" : "John Doe",
+        "countryCallingCode" : "33",
+        "phone" : "0612345678",
+        "requiresOTP" : true,
+        "identityURL" : "identityURL",
+        "device" : "SERVER",
+        "email" : "john.doe@acme.com",
+        "pubKey" : "pubKey"
+      }
+    },
     "signatureRequestSign" : {
       "type" : "object",
+      "required" : [ "pubKey", "signature" ],
       "properties" : {
         "signature" : {
           "type" : "string",
-          "description" : "Signature of the `hashToSign` property of the signature request using the public key stored in the `pubKey` property.\n"
+          "description" : "Signature of the `hashToSign` property of the signature request using the public key `pubKey`, or, if any of `signedIdentity` or `signedIssuerDomain` is provided,\nsignature of SHA256(`hashToSign` + `signedIdentity` + `signedIssuerDomain`) using the public key `pubKey`.\n"
         },
         "pubKey" : {
           "type" : "string",
-          "description" : "Public key of the signee.\n"
+          "description" : "Public key used to sign.\n"
+        },
+        "signedIdentity" : {
+          "type" : "string",
+          "description" : "X500 Distinguished Name representing the signed identity.<br>\nIf set, the CN (common name) and EMAILADDRESS (email address) attributes must match the common name and email address of the authorized signee as set in the signature request.\n"
+        },
+        "signedIssuerDomain" : {
+          "type" : "string",
+          "description" : "Domain name of the identity issuer (ie. of the organization who verified the identity).<br>\nIf set, the domain name of the identity URL must be included in the `signedIssuerDomain` domain name.\n"
+        },
+        "identityURL" : {
+          "type" : "string",
+          "description" : "Web hook to use to verify the signee's identity.<br>\nIf set, it is used in place of the `identityURL` property of the authorized signee to create the signature anchor.\n"
+        },
+        "device" : {
+          "type" : "string",
+          "description" : "The type of device the authorized signee used to sign:<br>\n- SERVER: Woleet.ID Server or equivalent\n- MOBILE: Woleet.ID Mobile or equivalent\n- NANO: Ledger Nano S or equivalent\n",
+          "enum" : [ "SERVER", "MOBILE", "NANO" ]
+        },
+        "signeeId" : {
+          "type" : "string",
+          "description" : "Secret identifier of the signee (only required if `email` was set for this signee).\n"
+        },
+        "otp" : {
+          "type" : "string",
+          "description" : "One Time Password of the signee (only required if `requiresOTP` was set to `true` for thìs signee).\n"
         }
       }
     },
     "signatureRequestSignResult" : {
       "type" : "object",
       "properties" : {
-        "anchorid" : {
+        "anchorId" : {
           "type" : "string",
           "description" : "Identifier of the signature anchor created.\n"
         }
       },
       "example" : {
-        "anchorid" : "anchorid"
+        "anchorId" : "anchorId"
       }
     },
     "anchor" : {
@@ -1345,11 +1643,19 @@
         },
         "hash" : {
           "type" : "string",
-          "description" : "SHA256 hash (ie. the fingerprint) of the original data to anchor.<br>\n**This property must not be provided when creating a signature anchor: it is set at creation time to the SHA256 hash of the `signature` property provided (so the signature is what is actually anchored in this case).**\n"
+          "description" : "SHA256 hash (ie. the fingerprint) of the original data to anchor.<br>\nThe value must be provided as an hexadecimal lowercase string.<br>\n**This property must not be provided when creating a signature anchor: it is set at creation time to the SHA256 hash of the `signature` property provided (so the signature is what is actually anchored in this case).**\n"
         },
         "signedHash" : {
           "type" : "string",
-          "description" : "SHA256 hash (ie. the fingerprint) of the original data to sign.<br>\n**This property must not be provided when creating a data anchor.**\n"
+          "description" : "SHA256 hash (ie. the fingerprint) of the original signed data.<br>\nThe value must be provided as an hexadecimal lowercase string.<br>\n**This property must not be provided when creating a data anchor.**\n"
+        },
+        "signedIdentity" : {
+          "type" : "string",
+          "description" : "X500 Distinguished Name representing the signed identity.<br>\n**This property must not be provided when creating a data anchor.**\n"
+        },
+        "signedIssuerDomain" : {
+          "type" : "string",
+          "description" : "Domain name of the identity issuer (ie. of the organization who verified the identity).<br>\nIf set, the domain name of the identity URL must be included in the `signedIssuerDomain` domain name.\n**This property must not be provided when creating a data anchor.**\n"
         },
         "pubKey" : {
           "type" : "string",
@@ -1357,15 +1663,15 @@
         },
         "signature" : {
           "type" : "string",
-          "description" : "Signature of the `signedHash` property using the public key stored in the `pubKey` property.<br>\n**Only Bitcoin signatures are currently supported.**<br>\n**This property must not be provided when creating a data anchor.**\n"
+          "description" : "Signature of the `signedHash` property using the public key `pubKey`, or, if any of `signedIdentity` or `signedIssuerDomain` is provided,\nsignature of SHA256(`hashToSign` + `signedIdentity` + `signedIssuerDomain`) using the public key `pubKey`.<br>\n**Only Bitcoin signatures are currently supported.**<br>\n**This property must not be provided when creating a data anchor.**\n"
         },
         "identityURL" : {
           "type" : "string",
-          "description" : "Web hook to use to verify the signee's identity.<br>\nCalling this URL allows to verify that the owner of the URL (identified by the associated TLS certificate) also owns the public key used to produce the signature, by asking the URL to sign some random data.<br>\nThis URL must use an HTTPS scheme with a valid and non expired TLS certificate.<br>\nThis URL must implement the following GET operation:<br>\ninput:<br>\n- `pubKey`: the public key to be verified<br>\n- `leftData`: the left part of the random data to be signed (generated by the caller)<br>\noutput:<br>\n- `rightData`: the right part of the random data signed (generated by the callee)<br>\n- `signature`: the signature of the string `leftData` + `rightData` produced using the public key `pubKey`\n"
+          "description" : "Web hook of the identity server to use to verify the signee's identity.<br>\nThis URL allows to retrieve the identity associated to the public key `pubKey`.\nIt can also be used to verify that the identity server (itself identified by the TLS certificate of the URL) controls the key used to sign (ie. owns the private part of the key pair) by requesting it to sign some random data.<br>\nThis URL MUST use an HTTPS scheme with a valid and non expired TLS certificate.<br>\nThis URL MUST implement the following GET operation:<br>\nQuery parameters:<br>\n- `pubKey`: the public key to be verified - mandatory<br>\n- `leftData`: the left part of the data to be signed (generated randomly by the caller) - if set, the identity server MAY provide a `signature`<br>\nOutput:<br>\nA JSON object with:\n- `rightData`: the right part of the data signed (generated randomly by the identity server) - optional<br>\n- `signature`: the signature of the string `leftData` + `rightData` using the public key `pubKey` - optional<br>\n- `identity`: the X500 identity associated to the key claimed by the identity server - optional<br>\n- `key`: additional information about the key - optional<br>\nIf `identity` is not provided, `signature` and `rightData` MUST be provided: in such a case the identity of the signee can be extracted from the TLS certificate.\n"
         },
         "public" : {
           "type" : "boolean",
-          "description" : "`true` (or unset) if the anchor is public. `false` if the anchor is private.<br>\n**If this field is not set at creation time, the anchor is public by default.**\n"
+          "description" : "`true` (or unset) if the anchor is public (ie. discoverable by its `hash` or `signedHash`).<br>\n`false` if it must be private (ie. not discoverable).<br>\n**If this field is not set at creation time, the anchor is public by default.**\n"
         },
         "notifyByEmail" : {
           "type" : "boolean",
@@ -1385,24 +1691,24 @@
         },
         "callbackURL" : {
           "type" : "string",
-          "description" : "Web hook to be called by the platform whenever the anchor status change:\nthe platform does a POST request on this URL with the anchor as a JSON object in the request body.\nVerifying the authenticity of the callback can be done by checking the HMAC-SHA1 signature of the request body provided by Woleet in the `x-woleet-signature` header.\nFor more information see the <a target=\"_blank\" href=\"https://doc.woleet.io/v1.5.1/reference#verifying-callback-authenticity\">documentation</a>.\n"
+          "description" : "Web hook to be called by the platform whenever the anchor status change:<br>\nthe platform does a POST request on this URL with the anchor as a JSON object in the request body.<br>\nVerifying the authenticity of the callback can be done by checking the HMAC-SHA1 signature of the request body provided by Woleet in the `x-woleet-signature` header.<br>\nFor more information see the <a target=\"_blank\" href=\"https://doc.woleet.io/reference#using-callbacks\">documentation</a>.\n"
         },
         "status" : {
           "type" : "string",
-          "description" : "Status of the anchor:<br>\n- WAIT: waiting to be processed by the platform (the proof receipt is not yet available for download)<br>\n- NEW: waiting to be sent to the blockchain (the proof receipt is not yet available for download)<br>\n- SENT: sent to the blockchain (the proof receipt is available for download)<br>\n- CONFIRMED: confirmed at least 6 times by the blockchain (the proof receipt is available for download)<br>\n",
+          "description" : "Status of the anchor:<br>\n- WAIT: waiting to be processed by the platform (the proof receipt is not yet available for download)<br>\n- NEW: waiting to be sent to the blockchain (the proof receipt is not yet available for download)<br>\n- SENT: sent to the blockchain (the proof receipt can be downloaded)<br>\n- CONFIRMED: confirmed at least 6 times by the blockchain (the proof receipt can be verified)\n",
           "readOnly" : true,
           "enum" : [ "WAIT", "NEW", "SENT", "CONFIRMED" ]
         },
         "timestamp" : {
           "type" : "integer",
           "format" : "int64",
-          "description" : "Proven timestamp of the data.<br>\nThis is actually the time of the Bitcoin block into which the anchoring process occurred (in milliseconds since Unix epoch).<br>\nAny data whose SHA256 hash equals this anchor's hash is proven to be existent at that time and unmodified.<br>\nThis field is set when the first confirmation of the Bitcoin block occurs.<br>\n",
+          "description" : "Proven timestamp of the data (for a data anchor) or of the signature (for a signature anchor).<br>\nThis is actually the time of the Bitcoin block into which the anchoring process occurred (in milliseconds since Unix epoch).<br>\nAny data whose SHA256 hash equals this anchor's hash is proven to exist at that time and has not been modified since.<br>\nThis field is set when the first confirmation of the Bitcoin block occurs. Once set, the associated proof receipt can be verified (without having to wait for 6 confirmations).\n",
           "readOnly" : true
         },
         "confirmations" : {
           "type" : "integer",
           "format" : "int32",
-          "description" : "Number of confirmations of the Bitcoin block into which the anchoring process occurred.<br>\nThis field is set when the first confirmation of the Bitcoin block occurs, and removed when the block is confirmed.<br>\n",
+          "description" : "Number of confirmations of the Bitcoin block into which the anchoring process occurred.<br>\nThis field is set when the first confirmation of the Bitcoin block occurs, and removed once the block is confirmed at least 6 times.\n",
           "readOnly" : true
         },
         "txId" : {
@@ -1413,12 +1719,14 @@
       },
       "example" : {
         "metadata" : "{}",
+        "signedIssuerDomain" : "signedIssuerDomain",
         "signature" : "signature",
         "created" : 0,
         "notifyByEmail" : true,
         "identityURL" : "identityURL",
         "txId" : "txId",
         "confirmations" : 5,
+        "signedIdentity" : "signedIdentity",
         "tags" : [ "tags", "tags" ],
         "public" : true,
         "name" : "name",
@@ -1430,6 +1738,88 @@
         "pubKey" : "pubKey",
         "status" : "WAIT",
         "timestamp" : 1
+      }
+    },
+    "anchors" : {
+      "type" : "object",
+      "properties" : {
+        "content" : {
+          "type" : "array",
+          "description" : "Array of anchors matching the search criteria.",
+          "items" : {
+            "$ref" : "#/definitions/anchor"
+          }
+        },
+        "first" : {
+          "type" : "boolean",
+          "description" : "`true` if this is the first page.\n"
+        },
+        "last" : {
+          "type" : "boolean",
+          "description" : "`true` if this is the last page.\n"
+        },
+        "numberOfElements" : {
+          "type" : "integer",
+          "description" : "Number of anchors in the retrieved page."
+        },
+        "size" : {
+          "type" : "integer",
+          "description" : "Number of anchors per page."
+        },
+        "number" : {
+          "type" : "integer",
+          "description" : "Index of the retrieved page (from 0)."
+        }
+      },
+      "example" : {
+        "number" : 1,
+        "last" : true,
+        "numberOfElements" : 0,
+        "size" : 6,
+        "content" : [ {
+          "metadata" : "{}",
+          "signedIssuerDomain" : "signedIssuerDomain",
+          "signature" : "signature",
+          "created" : 0,
+          "notifyByEmail" : true,
+          "identityURL" : "identityURL",
+          "txId" : "txId",
+          "confirmations" : 5,
+          "signedIdentity" : "signedIdentity",
+          "tags" : [ "tags", "tags" ],
+          "public" : true,
+          "name" : "name",
+          "signedHash" : "signedHash",
+          "callbackURL" : "callbackURL",
+          "id" : "id",
+          "lastModified" : 6,
+          "hash" : "hash",
+          "pubKey" : "pubKey",
+          "status" : "WAIT",
+          "timestamp" : 1
+        }, {
+          "metadata" : "{}",
+          "signedIssuerDomain" : "signedIssuerDomain",
+          "signature" : "signature",
+          "created" : 0,
+          "notifyByEmail" : true,
+          "identityURL" : "identityURL",
+          "txId" : "txId",
+          "confirmations" : 5,
+          "signedIdentity" : "signedIdentity",
+          "tags" : [ "tags", "tags" ],
+          "public" : true,
+          "name" : "name",
+          "signedHash" : "signedHash",
+          "callbackURL" : "callbackURL",
+          "id" : "id",
+          "lastModified" : 6,
+          "hash" : "hash",
+          "pubKey" : "pubKey",
+          "status" : "WAIT",
+          "timestamp" : 1
+        } ],
+        "first" : true
       }
     },
     "anchorIds" : {
@@ -1482,91 +1872,13 @@
         "totalElements" : 6
       }
     },
-    "anchors" : {
-      "type" : "object",
-      "properties" : {
-        "content" : {
-          "type" : "array",
-          "description" : "Array of anchors matching the search criteria.",
-          "items" : {
-            "$ref" : "#/definitions/anchor"
-          }
-        },
-        "first" : {
-          "type" : "boolean",
-          "description" : "`true` if this is the first page.\n"
-        },
-        "last" : {
-          "type" : "boolean",
-          "description" : "`true` if this is the last page.\n"
-        },
-        "numberOfElements" : {
-          "type" : "integer",
-          "description" : "Number of anchors in the retrieved page."
-        },
-        "size" : {
-          "type" : "integer",
-          "description" : "Number of anchors per page."
-        },
-        "number" : {
-          "type" : "integer",
-          "description" : "Index of the retrieved page (from 0)."
-        }
-      },
-      "example" : {
-        "number" : 1,
-        "last" : true,
-        "numberOfElements" : 0,
-        "size" : 6,
-        "content" : [ {
-          "metadata" : "{}",
-          "signature" : "signature",
-          "created" : 0,
-          "notifyByEmail" : true,
-          "identityURL" : "identityURL",
-          "txId" : "txId",
-          "confirmations" : 5,
-          "tags" : [ "tags", "tags" ],
-          "public" : true,
-          "name" : "name",
-          "signedHash" : "signedHash",
-          "callbackURL" : "callbackURL",
-          "id" : "id",
-          "lastModified" : 6,
-          "hash" : "hash",
-          "pubKey" : "pubKey",
-          "status" : "WAIT",
-          "timestamp" : 1
-        }, {
-          "metadata" : "{}",
-          "signature" : "signature",
-          "created" : 0,
-          "notifyByEmail" : true,
-          "identityURL" : "identityURL",
-          "txId" : "txId",
-          "confirmations" : 5,
-          "tags" : [ "tags", "tags" ],
-          "public" : true,
-          "name" : "name",
-          "signedHash" : "signedHash",
-          "callbackURL" : "callbackURL",
-          "id" : "id",
-          "lastModified" : 6,
-          "hash" : "hash",
-          "pubKey" : "pubKey",
-          "status" : "WAIT",
-          "timestamp" : 1
-        } ],
-        "first" : true
-      }
-    },
     "receiptVerificationStatus" : {
       "type" : "object",
       "properties" : {
         "code" : {
           "type" : "string",
-          "description" : "Proof receipt verification status code:<br>\n- VERIFIED: the proof receipt is verified: the receipt format is valid, the associated Bitcoin transaction is present\nin the blockchain, and the receipt contains a valid cryptographic proof that its `targetHash` property is anchored into the transaction's `OP_RETURN` field.\nThe time of the Bitcoin block into which the anchoring process occurred is returned in the `timestamp` property.<br>\nAny data whose SHA256 hash matches the proof receipt's `targetHash` is proven to be existent at that time and unmodified.<br>\n- INVALID_PROOF: the receipt's `proof` property is not a valid Merkle proof<br>\n- TX_NOT_FOUND: the receipt's `anchors` property does not point to a valid Bitcoin transaction<br>\n- TX_MISMATCH_RECEIPT: the receipt's `merkleRoot` property does not match the transaction's `OP_RETURN` field<br>\n- INVALID_SIGNATURE: the receipt's `signature` property is not a valid signature\n",
-          "enum" : [ "VERIFIED", "INVALID_PROOF", "TX_NOT_FOUND", "TX_MISMATCH_RECEIPT", "INVALID_SIGNATURE" ]
+          "description" : "Proof receipt verification status code:<br>\n- VERIFIED: the proof receipt is verified<br>\nThe receipt format is valid, the transaction is present in the Bitcoin blockchain and confirmed at least once,\nthe receipt contains a valid Merkle proof linking its `targetHash` property to the transaction's `OP_RETURN` field.<br>\nThe creation time and the number of confirmation of the block containing the transaction is returned\nin the `timestamp` and `confirmations` properties.<br>\nAny data whose SHA256 hash matches the proof receipt's `targetHash` is proven to exist at that time and has not been modified since.<br>\n- TX_NOT_FOUND: the receipt's `anchors` property does not include a valid Bitcoin transaction<br>\n- TX_NOT_CONFIRMED: the transaction is not yet confirmed by the blockchain (ie. not yet included in a block)<br>\n- INVALID_PROOF: the receipt's `proof` property is not a valid Merkle proof<br>\n- TX_MISMATCH_RECEIPT: the receipt's `merkleRoot` property does not match the transaction's `OP_RETURN` field<br>\n- INVALID_SIGNATURE: the receipt's `signature` property is not a valid signature\n",
+          "enum" : [ "VERIFIED", "INVALID_PROOF", "TX_NOT_FOUND", "TX_NOT_CONFIRMED", "TX_MISMATCH_RECEIPT", "INVALID_SIGNATURE" ]
         },
         "text" : {
           "type" : "string",
@@ -1575,7 +1887,7 @@
         "timestamp" : {
           "type" : "integer",
           "format" : "int64",
-          "description" : "Proven timestamp of the data (for a data anchor) or of the signature (for a signature anchor).<br>\nThis is actually the time of the Bitcoin block into which the anchoring process occurred (in milliseconds since Unix epoch).<br>\nAny data whose SHA256 hash equals this proof receipt's target hash property is proven to be existent at that time and unmodified.\n"
+          "description" : "Proven timestamp of the data (for a data anchor) or of the signature (for a signature anchor).<br>\nThis is actually the time of the Bitcoin block into which the anchoring process occurred (in milliseconds since Unix epoch).<br>\nAny data whose SHA256 hash equals this proof receipt's target hash property is proven to exist at that time and has not been modified since.\n"
         },
         "confirmations" : {
           "type" : "integer",
@@ -1590,11 +1902,13 @@
         "code" : "VERIFIED",
         "identityVerificationStatus" : {
           "code" : "VERIFIED",
+          "signedIssuerDomain" : "signedIssuerDomain",
           "certificates" : [ {
             "subject" : {
               "ST" : "ST",
               "C" : "C",
               "OU" : "OU",
+              "EMAILADDRESS" : "EMAILADDRESS",
               "CN" : "CN",
               "L" : "L",
               "O" : "O"
@@ -1603,6 +1917,7 @@
               "ST" : "ST",
               "C" : "C",
               "OU" : "OU",
+              "EMAILADDRESS" : "EMAILADDRESS",
               "CN" : "CN",
               "L" : "L",
               "O" : "O"
@@ -1612,6 +1927,7 @@
               "ST" : "ST",
               "C" : "C",
               "OU" : "OU",
+              "EMAILADDRESS" : "EMAILADDRESS",
               "CN" : "CN",
               "L" : "L",
               "O" : "O"
@@ -1620,12 +1936,27 @@
               "ST" : "ST",
               "C" : "C",
               "OU" : "OU",
+              "EMAILADDRESS" : "EMAILADDRESS",
               "CN" : "CN",
               "L" : "L",
               "O" : "O"
             }
           } ],
-          "text" : "text"
+          "identity" : {
+            "commonName" : "Jim Smith",
+            "country" : "FR",
+            "organization" : "Woleet",
+            "locality" : "Rennes",
+            "organizationalUnit" : "Sales"
+          },
+          "text" : "text",
+          "signedIdentity" : {
+            "commonName" : "Jim Smith",
+            "country" : "FR",
+            "organization" : "Woleet",
+            "locality" : "Rennes",
+            "organizationalUnit" : "Sales"
+          }
         },
         "text" : "text",
         "confirmations" : 6,
@@ -1637,28 +1968,42 @@
       "properties" : {
         "code" : {
           "type" : "string",
-          "description" : "Identity verification status code:<br>\n- VERIFIED: the identity is verified: the identity URL succeeded to sign a secret using the proof receipt's `pubKey` public key<br>\n- HTTP_ERROR: the identity URL returned an HTTP error<br>\n- INVALID_SIGNATURE: the identity URL returned an invalid signature (and thus failed to prove the ownership of the proof receipt's `pubKey` public key)\n",
-          "enum" : [ "VERIFIED", "HTTP_ERROR", "INVALID_SIGNATURE" ]
+          "description" : "Identity verification status code:<br>\n- VERIFIED: the key is controlled by the identity server,<br>\nand/or the key is associated to an identity on the identity server,<br>\nand/or the identity is included in the anchored signature,<br>\nand/or the signed identity matches the one claimed by the identity server,<br>\n- IDENTITY_MISMATCH: the identity included in the anchored signature mismatch the identity claimed by the identity server<br>\n- INVALID_SIGNATURE: the identity URL returned an invalid signature (ie. the identity server failed to prove that it owns the private part of key pair)<br>\n- HTTP_ERROR: the identity URL returned an HTTP error\n",
+          "enum" : [ "VERIFIED", "HTTP_ERROR", "IDENTITY_MISMATCH", "INVALID_SIGNATURE" ]
         },
         "text" : {
           "type" : "string",
-          "description" : "Identity verification status text giving more insight about verification errors."
+          "description" : "Identity verification status text (gives more insights about the verification process)."
         },
         "certificates" : {
           "type" : "array",
-          "description" : "Array of X500 subject and issuer distinguished names of all X509 certificates of the identity URL.",
+          "description" : "Array of subjects and issuers of the certificates extracted from the identity URL's TLS certificate.",
           "items" : {
             "$ref" : "#/definitions/X509SubjectIssuer"
           }
+        },
+        "identity" : {
+          "description" : "X500 identity of the signee as claimed by the identity server.",
+          "$ref" : "#/definitions/identity"
+        },
+        "signedIdentity" : {
+          "description" : "X500 identity of the signee as included in the anchored signature (deserialized from the X500 Distinguished Name) .",
+          "$ref" : "#/definitions/identity"
+        },
+        "signedIssuerDomain" : {
+          "type" : "string",
+          "description" : "Domain name of the identity issuer (ie. of the organization who verified the identity)."
         }
       },
       "example" : {
         "code" : "VERIFIED",
+        "signedIssuerDomain" : "signedIssuerDomain",
         "certificates" : [ {
           "subject" : {
             "ST" : "ST",
             "C" : "C",
             "OU" : "OU",
+            "EMAILADDRESS" : "EMAILADDRESS",
             "CN" : "CN",
             "L" : "L",
             "O" : "O"
@@ -1667,6 +2012,7 @@
             "ST" : "ST",
             "C" : "C",
             "OU" : "OU",
+            "EMAILADDRESS" : "EMAILADDRESS",
             "CN" : "CN",
             "L" : "L",
             "O" : "O"
@@ -1676,6 +2022,7 @@
             "ST" : "ST",
             "C" : "C",
             "OU" : "OU",
+            "EMAILADDRESS" : "EMAILADDRESS",
             "CN" : "CN",
             "L" : "L",
             "O" : "O"
@@ -1684,12 +2031,27 @@
             "ST" : "ST",
             "C" : "C",
             "OU" : "OU",
+            "EMAILADDRESS" : "EMAILADDRESS",
             "CN" : "CN",
             "L" : "L",
             "O" : "O"
           }
         } ],
-        "text" : "text"
+        "identity" : {
+          "commonName" : "Jim Smith",
+          "country" : "FR",
+          "organization" : "Woleet",
+          "locality" : "Rennes",
+          "organizationalUnit" : "Sales"
+        },
+        "text" : "text",
+        "signedIdentity" : {
+          "commonName" : "Jim Smith",
+          "country" : "FR",
+          "organization" : "Woleet",
+          "locality" : "Rennes",
+          "organizationalUnit" : "Sales"
+        }
       }
     },
     "X509SubjectIssuer" : {
@@ -1707,6 +2069,7 @@
           "ST" : "ST",
           "C" : "C",
           "OU" : "OU",
+          "EMAILADDRESS" : "EMAILADDRESS",
           "CN" : "CN",
           "L" : "L",
           "O" : "O"
@@ -1715,6 +2078,7 @@
           "ST" : "ST",
           "C" : "C",
           "OU" : "OU",
+          "EMAILADDRESS" : "EMAILADDRESS",
           "CN" : "CN",
           "L" : "L",
           "O" : "O"
@@ -1726,7 +2090,7 @@
       "properties" : {
         "C" : {
           "type" : "string",
-          "description" : "Country/region"
+          "description" : "Country code"
         },
         "ST" : {
           "type" : "string",
@@ -1747,15 +2111,60 @@
         "CN" : {
           "type" : "string",
           "description" : "Common Name"
+        },
+        "EMAILADDRESS" : {
+          "type" : "string",
+          "description" : "Email address"
         }
       },
+      "description" : "X500 Distinguished Name.",
       "example" : {
         "ST" : "ST",
         "C" : "C",
         "OU" : "OU",
+        "EMAILADDRESS" : "EMAILADDRESS",
         "CN" : "CN",
         "L" : "L",
         "O" : "O"
+      }
+    },
+    "identity" : {
+      "type" : "object",
+      "required" : [ "commonName" ],
+      "properties" : {
+        "commonName" : {
+          "type" : "string",
+          "example" : "Jim Smith",
+          "description" : "commonName (CN) (2.5.4.3)"
+        },
+        "organization" : {
+          "type" : "string",
+          "example" : "Woleet",
+          "description" : "organizationName (O) (2.5.4.10)"
+        },
+        "organizationalUnit" : {
+          "type" : "string",
+          "example" : "Sales",
+          "description" : "organizationalUnitName (OU) (2.5.4.11)"
+        },
+        "locality" : {
+          "type" : "string",
+          "example" : "Rennes",
+          "description" : "localityName (L) (2.5.4.7)"
+        },
+        "country" : {
+          "type" : "string",
+          "example" : "FR",
+          "description" : "countryName (C) (2.5.4.6)"
+        }
+      },
+      "description" : "Signee's identity provided as a set of X.500 attributes (see https://www.ietf.org/rfc/rfc4519.txt).",
+      "example" : {
+        "commonName" : "Jim Smith",
+        "country" : "FR",
+        "organization" : "Woleet",
+        "locality" : "Rennes",
+        "organizationalUnit" : "Sales"
       }
     },
     "token" : {
@@ -1775,10 +2184,15 @@
       "properties" : {
         "credits" : {
           "type" : "integer",
-          "description" : "The remaining anchoring credits of the authenticated user's account."
+          "description" : "The remaining number of anchoring credits of the authenticated user's account."
+        },
+        "signCredits" : {
+          "type" : "integer",
+          "description" : "The remaining number of signature credits of the authenticated user's account."
         }
       },
       "example" : {
+        "signCredits" : 6,
         "credits" : 0
       }
     },
@@ -1825,7 +2239,7 @@
           "description" : "Object storing meta data about the user. Some property names are reserved, but properties are not limitted to the one listed here.\n",
           "additionalProperties" : {
             "type" : "object",
-            "description" : "Other info about the user.\n",
+            "description" : "Other information about the user.\n",
             "properties" : { }
           }
         },
@@ -1910,7 +2324,30 @@
         } ],
         "first" : true
       }
+    },
+    "callbackSecret" : {
+      "type" : "object",
+      "properties" : {
+        "secret" : {
+          "type" : "string",
+          "description" : "The secret used to sign the callback."
+        }
+      },
+      "example" : {
+        "secret" : "secret"
+      }
+    },
+    "tokens" : {
+      "type" : "object",
+      "properties" : {
+        "tokens" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
     }
   },
-  "x-samples-languages" : [ "curl", "node", "java", "python" ]
+  "x-samples-languages" : [ "curl", "javascript", "node", "java", "python", "php" ]
 }

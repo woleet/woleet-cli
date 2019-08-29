@@ -38,10 +38,7 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 		if commonInfos.runParameters.IDServerUnsecureSSL {
 			commonInfos.widsClient.DisableSSLVerification()
 		}
-		errIDServer := commonInfos.widsClient.CheckIDServerConnection()
-		if errIDServer != nil {
-			log.Fatalf("Unable to connect to Woleet.ID Server: %s\n", errIDServer)
-		}
+		checkWIDSConnectionPubKey(commonInfos)
 	}
 
 	commonInfos.splitPendingReceipt()
