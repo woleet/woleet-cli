@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
