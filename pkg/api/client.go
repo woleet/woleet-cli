@@ -4,14 +4,12 @@ import (
 	"crypto/tls"
 	"errors"
 	"io/ioutil"
-	"log"
-	gologger "log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"gopkg.in/resty.v1"
+	"github.com/go-resty/resty/v2"
 )
 
 var defaultAllowedCodesMap = map[int]struct{}{
@@ -34,21 +32,18 @@ func GetNewClient(baseURL string, token string) *Client {
 	client.RestyClient.SetRetryWaitTime(1 * time.Second)
 	client.RestyClient.SetRetryMaxWaitTime(3 * time.Second)
 	client.RestyClient.AddRetryCondition(
-		func(r *resty.Response) (bool, error) {
-			return r.StatusCode() == http.StatusTooManyRequests, nil
+		func(r *resty.Response, err error) bool {
+			return r.StatusCode() == http.StatusTooManyRequests
 		},
 	)
 	if !strings.EqualFold(os.Getenv("WCLI_RESTY_DEBUG"), "true") {
-		client.RestyClient.Log = gologger.New(ioutil.Discard, "RESTY - ", gologger.LstdFlags)
+		client.RestyClient.SetLogger(createRestyLogger(ioutil.Discard))
 	} else {
-		client.RestyClient.Log = gologger.New(os.Stdout, "RESTY - ", gologger.LstdFlags)
+		client.RestyClient.SetLogger(createRestyLogger(os.Stdout))
+
 		client.RestyClient.SetDebug(true)
 	}
 	return client
-}
-
-func (client *Client) SetCustomLogger(customLogger *log.Logger) {
-	client.RestyClient.Log = customLogger
 }
 
 func (client *Client) DisableSSLVerification() {

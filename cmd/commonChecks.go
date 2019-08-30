@@ -51,7 +51,6 @@ func checkDirectory(cmd *cobra.Command) string {
 }
 
 func checkInclude(cmd *cobra.Command) *regexp.Regexp {
-
 	if !viper.IsSet("app.include") || strings.EqualFold(viper.GetString("app.include"), "") {
 		return nil
 	}
