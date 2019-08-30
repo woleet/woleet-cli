@@ -65,30 +65,32 @@ func errHandlerExitOnError(err error, exitOnError bool) {
 }
 
 func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
-	userID, errUserID := commonInfos.widsClient.GetUserID(commonInfos.runParameters.IDServerPubKey)
-	if errUserID != nil {
-		log.Fatalf("Unable to request current userID on Woleet.ID Server: %s\n", errUserID)
+	user, errUser := commonInfos.widsClient.GetUser()
+	if errUser != nil {
+		log.Fatalf("Unable to request current userID on Woleet.ID Server: %s\n", errUser)
 	}
 
-	if strings.EqualFold(userID, "admin") {
-		userDISCO, errUserDisco := commonInfos.widsClient.GetUserDiscoFromPubkey(commonInfos.runParameters.IDServerPubKey)
-		if errUserDisco != nil {
-			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUserDisco)
+	if strings.EqualFold(user.Id, "admin") {
+		if strings.EqualFold(commonInfos.runParameters.IDServerPubKey, "") {
+			return
 		}
-		if userDISCO.Mode == idserver.USERMODEENUM_ESIGN {
+		user, errUser = commonInfos.widsClient.GetUserDiscoFromPubkey(commonInfos.runParameters.IDServerPubKey)
+		if errUser != nil {
+			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUser)
+		}
+		if user.Mode == idserver.USERMODEENUM_ESIGN {
 			log.Fatalln("You can't sign with a user configured for e-signature with an admin token")
 		}
-		userID = userDISCO.Id
 	}
 
-	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(userID)
+	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(user.Id)
 
 	if errPubKeys != nil {
 		log.Fatalf("Unable to get current userID public keys on this Woleet.ID Server: %s\n", errPubKeys)
 	}
 
 	for _, pubKey := range *pubKeys {
-		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) {
+		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) || strings.EqualFold(pubKey.Id, user.DefaultKeyId) {
 			if pubKey.Status != idserver.KEYSTATUSENUM_ACTIVE {
 				log.Fatalf("The specified pulblic key is not active")
 			}

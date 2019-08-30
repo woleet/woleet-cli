@@ -4,7 +4,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
-func (client *Client) GetUserID(pubKey string) (string, error) {
+func (client *Client) GetUser() (*idserver.UserDisco, error) {
 	resp, _ := client.RestyClient.
 		R().
 		SetResult(&idserver.UserDisco{}).
@@ -24,9 +24,9 @@ func (client *Client) GetUserID(pubKey string) (string, error) {
 			SetResult(&idserver.UserDisco{}).
 			Get(client.BaseURL + "/discover/config")
 		errConfig = restyErrHandlerAllowedCodes(respConfig, errConfig, allowedCodesMap)
-		return "admin", errConfig
+		return &idserver.UserDisco{Id: "admin"}, errConfig
 	}
-	return userRet.Id, err
+	return userRet, err
 }
 
 func (client *Client) ListKeysFromUserID(userID string) (*[]idserver.KeyGet, error) {
