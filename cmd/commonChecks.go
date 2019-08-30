@@ -85,5 +85,5 @@ func checkWidPubKey(cmd *cobra.Command) string {
 	if !viper.IsSet("sign.widsPubKey") {
 		return ""
 	}
-	return viper.GetString("sign.widsToken")
+	return viper.GetString("sign.widsPubKey")
 }
