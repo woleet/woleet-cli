@@ -32,3 +32,10 @@ var widsUnsecureSSL bool
 var exportDirectory string
 var exportLimitDate string
 var exportExitOnError bool
+
+// S3
+var s3Bucket string
+var s3Endpoint string
+var s3AccessKeyID string
+var s3SecretAccessKey string
+var s3NoSSL bool

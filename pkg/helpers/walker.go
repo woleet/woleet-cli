@@ -14,9 +14,10 @@ const SuffixAnchorPending string = ".anchor-pending.json"
 const SuffixAnchorReceipt string = ".anchor-receipt.json"
 const SuffixSignaturePending string = ".signature-pending.json"
 const SuffixSignatureReceipt string = ".signature-receipt.json"
+const AllSuffixRegexp = SuffixAnchorPending + "|" + SuffixAnchorReceipt + "|" + SuffixSignaturePending + "|" + SuffixSignatureReceipt
 
-var regexpAnchorIDFromName = regexp.MustCompile("(^.*)-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixAnchorPending+"|"+SuffixAnchorReceipt+"|"+SuffixSignaturePending+"|"+SuffixSignatureReceipt, ".", "\\.", -1) + ")$")
-var regexNameSuffixReceipt = regexp.MustCompile("^.*" + "(" + SuffixAnchorPending + "|" + SuffixAnchorReceipt + "|" + SuffixSignaturePending + "|" + SuffixSignatureReceipt + ")$")
+var regexpAnchorIDFromName = regexp.MustCompile("(^.*)-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(AllSuffixRegexp, ".", "\\.", -1) + ")$")
+var regexNameSuffixReceipt = regexp.MustCompile("^.*" + "(" + AllSuffixRegexp + ")$")
 
 type RegexExtracted struct {
 	Filename         string

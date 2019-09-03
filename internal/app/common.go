@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/minio/minio-go/v6"
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/models/idserver"
@@ -23,13 +24,17 @@ type RunParameters struct {
 	Strict              bool
 	Prune               bool
 	IDServerUnsecureSSL bool
+	IsFS                bool
+	IsS3                bool
 	Directory           string
+	S3Bucket            string
 	BaseURL             string
 	Token               string
 	IDServerSignURL     string
 	IDServerToken       string
 	IDServerPubKey      string
 	Include             *regexp.Regexp
+	S3Client            *minio.Client
 }
 
 type commonInfos struct {
