@@ -24,6 +24,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 		if runParameters.IsS3 {
 			runParameters.S3Client = checkS3(cmd)
+			runParameters.S3Bucket = viper.GetString("s3.bucket")
 		}
 
 		runParameters.Include = checkInclude(cmd)
@@ -50,7 +51,7 @@ func init() {
 	anchorCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to anchor (required)")
 	anchorCmd.Flags().StringVarP(&include, "include", "i", "", "Only files taht match that regex will be anchored")
 	anchorCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "")
-	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3endpoint", "", "s3.amazonaws.com", "")
+	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", "")
 	anchorCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "")
 	anchorCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "")
 	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
@@ -64,7 +65,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 
 	viper.BindPFlag("app.directory", anchorCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("app.include", anchorCmd.Flags().Lookup("include"))
-	viper.BindPFlag("s3.bucket", anchorCmd.Flags().Lookup("s3SecretAccessKey"))
+	viper.BindPFlag("s3.bucket", anchorCmd.Flags().Lookup("s3Bucket"))
 	viper.BindPFlag("s3.endpoint", anchorCmd.Flags().Lookup("s3Endpoint"))
 	viper.BindPFlag("s3.accessKeyID", anchorCmd.Flags().Lookup("s3AccessKeyID"))
 	viper.BindPFlag("s3.secretAccessKey", anchorCmd.Flags().Lookup("s3SecretAccessKey"))

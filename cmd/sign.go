@@ -24,6 +24,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		}
 		if runParameters.IsS3 {
 			runParameters.S3Client = checkS3(cmd)
+			runParameters.S3Bucket = viper.GetString("s3.bucket")
 		}
 
 		runParameters.Include = checkInclude(cmd)
@@ -60,7 +61,7 @@ func init() {
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
 	signCmd.Flags().StringVarP(&include, "include", "i", "", "Only files that match that regex will be signed")
 	signCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "")
-	signCmd.Flags().StringVarP(&s3Endpoint, "s3endpoint", "", "s3.amazonaws.com", "")
+	signCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", "")
 	signCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "")
 	signCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "")
 	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:3002\" (required)")

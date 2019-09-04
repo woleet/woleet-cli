@@ -133,6 +133,8 @@ func checkS3(cmd *cobra.Command) *minio.Client {
 }
 
 func checkFolderType(cmd *cobra.Command, runParameters *app.RunParameters) {
+	runParameters.IsFS = false
+	runParameters.IsS3 = false
 	if viper.IsSet("app.directory") && !strings.EqualFold(viper.GetString("app.directory"), "") {
 		runParameters.IsFS = true
 	}
