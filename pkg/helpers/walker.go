@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/minio/minio-go/v6"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,17 +27,14 @@ type RegexExtracted struct {
 	Suffix           string
 }
 
-func checkFilename(fileInfo os.FileInfo, include *regexp.Regexp) bool {
-	if !fileInfo.Mode().IsRegular() {
-		return false
-	}
-	if strings.HasPrefix(fileInfo.Name(), ".") {
+func checkFilename(fileName string, include *regexp.Regexp) bool {
+	if strings.HasPrefix(fileName, ".") {
 		return false
 	}
 	if include != nil {
-		tempFileName := fileInfo.Name()
-		if regexNameSuffixReceipt.MatchString(fileInfo.Name()) {
-			anchorIDF, errAnchorIDF := GetAnchorIDFromName(fileInfo)
+		tempFileName := fileName
+		if regexNameSuffixReceipt.MatchString(fileName) {
+			anchorIDF, errAnchorIDF := GetAnchorIDFromName(fileName)
 			if errAnchorIDF != nil {
 				// Safeguard here, not the best way to handle issues
 				return false
@@ -50,8 +48,12 @@ func checkFilename(fileInfo os.FileInfo, include *regexp.Regexp) bool {
 	return true
 }
 
-func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]os.FileInfo, error) {
-	mapPathFileinfo := make(map[string]os.FileInfo)
+func checkDirectory(string directoryPath) bool {
+
+}
+
+func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]string, error) {
+	mapPathFileName := make(map[string]string)
 	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			if !recursive && !strings.EqualFold(filepath.Clean(directory), filepath.Clean(path)) {
@@ -67,71 +69,60 @@ func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, 
 				log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
 				return filepath.SkipDir
 			}
-		}
-		if checkFilename(info, include) {
-			mapPathFileinfo[path] = info
+		} else if info.Mode().IsRegular() && checkFilename(info.Name(), include) {
+			mapPathFileName[path] = info.Name()
 		}
 		return nil
 	})
-	return mapPathFileinfo, errWalk
+	return mapPathFileName, errWalk
 }
 
-func Separate(mapPathFileinfo map[string]os.FileInfo, signature bool) (map[string]os.FileInfo, map[string]os.FileInfo) {
-	pendingFiles := make(map[string]os.FileInfo)
-	receiptedFiles := make(map[string]os.FileInfo)
-	for path, fileinfo := range mapPathFileinfo {
-		if strings.HasSuffix(fileinfo.Name(), SuffixAnchorPending) {
-			if !signature {
-				pendingFiles[path] = fileinfo
+func ExploreS3(S3Client *minio.Client, bucket string, recursive bool, include *regexp.Regexp, log *logrus.Logger) map[string]string {
+	mapPathFileName := make(map[string]string)
+	doneCh := make(chan struct{})
+	defer close(doneCh)
+	objectCh := S3Client.ListObjects(bucket, "", true, doneCh)
+	for object := range objectCh {
+		if object.Err != nil {
+			log.Warnln(object.Err)
+		} else {
+			if !strings.Contains(object.Key, "/") && checkFilename(object.Key, include) {
+				mapPathFileName[object.Key] = object.Key
+			} else if !strings.HasSuffix(object.Key, "/") && checkFilename(extractFileNameFromPath(object.Key), include) {
+				mapPathFileName[extractFileNameFromPath(object.Key)] = object.Key
 			}
-			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixAnchorReceipt) {
-			if !signature {
-				receiptedFiles[path] = fileinfo
-			}
-			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignaturePending) {
-			if signature {
-				pendingFiles[path] = fileinfo
-			}
-			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignatureReceipt) {
-			if signature {
-				receiptedFiles[path] = fileinfo
-			}
-			delete(mapPathFileinfo, path)
 		}
 	}
-	return pendingFiles, receiptedFiles
+	return mapPathFileName
 }
 
-func SeparateAll(mapPathFileinfo map[string]os.FileInfo) (map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo, map[string]os.FileInfo) {
-	anchorPendingFiles := make(map[string]os.FileInfo)
-	anchorReceiptedFiles := make(map[string]os.FileInfo)
-	signaturePendingFiles := make(map[string]os.FileInfo)
-	signatureReceiptedFiles := make(map[string]os.FileInfo)
-	for path, fileinfo := range mapPathFileinfo {
-		if strings.HasSuffix(fileinfo.Name(), SuffixAnchorPending) {
-			anchorPendingFiles[path] = fileinfo
+func SeparateAll(mapPathFileinfo map[string]string) (map[string]string, map[string]string, map[string]string, map[string]string) {
+	anchorPendingFiles := make(map[string]string)
+	anchorReceiptedFiles := make(map[string]string)
+	signaturePendingFiles := make(map[string]string)
+	signatureReceiptedFiles := make(map[string]string)
+	for path, fineName := range mapPathFileinfo {
+		if strings.HasSuffix(fineName, SuffixAnchorPending) {
+			anchorPendingFiles[path] = fineName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixAnchorReceipt) {
-			anchorReceiptedFiles[path] = fileinfo
+		} else if strings.HasSuffix(fineName, SuffixAnchorReceipt) {
+			anchorReceiptedFiles[path] = fineName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignaturePending) {
-			signaturePendingFiles[path] = fileinfo
+		} else if strings.HasSuffix(fineName, SuffixSignaturePending) {
+			signaturePendingFiles[path] = fineName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileinfo.Name(), SuffixSignatureReceipt) {
-			signatureReceiptedFiles[path] = fileinfo
+		} else if strings.HasSuffix(fineName, SuffixSignatureReceipt) {
+			signatureReceiptedFiles[path] = fineName
 			delete(mapPathFileinfo, path)
 		}
 	}
 	return anchorPendingFiles, anchorReceiptedFiles, signaturePendingFiles, signatureReceiptedFiles
 }
 
-func GetAnchorIDFromName(fileInfo os.FileInfo) (*RegexExtracted, error) {
-	match := regexpAnchorIDFromName.FindStringSubmatch(fileInfo.Name())
+func GetAnchorIDFromName(fileName string) (*RegexExtracted, error) {
+	match := regexpAnchorIDFromName.FindStringSubmatch(fileName)
 	if len(match) != 4 {
-		err := errors.New("Unable to extract anchorID form the filename:" + fileInfo.Name())
+		err := errors.New("Unable to extract anchorID form the filename:" + fileName)
 		return nil, err
 	}
 	out := new(RegexExtracted)
@@ -140,4 +131,8 @@ func GetAnchorIDFromName(fileInfo os.FileInfo) (*RegexExtracted, error) {
 	out.AnchorID = match[2]
 	out.Suffix = match[3]
 	return out, nil
+}
+
+func extractFileNameFromPath(path string) string {
+
 }

@@ -40,21 +40,21 @@ type RunParameters struct {
 type commonInfos struct {
 	client          *api.Client
 	widsClient      *api.Client
-	mapPathFileinfo map[string]os.FileInfo
-	pending         map[string]os.FileInfo
-	pendingToDelete map[string]os.FileInfo
-	receipt         map[string]os.FileInfo
-	receiptToDelete map[string]os.FileInfo
+	mapPathFileName map[string]string
+	pending         map[string]string
+	pendingToDelete map[string]string
+	receipt         map[string]string
+	receiptToDelete map[string]string
 	runParameters   RunParameters
 }
 
 func initCommonInfos(runParameters *RunParameters) *commonInfos {
 	infos := new(commonInfos)
-	infos.mapPathFileinfo = make(map[string]os.FileInfo)
-	infos.pending = make(map[string]os.FileInfo)
-	infos.pendingToDelete = make(map[string]os.FileInfo)
-	infos.receipt = make(map[string]os.FileInfo)
-	infos.receiptToDelete = make(map[string]os.FileInfo)
+	infos.mapPathFileName = make(map[string]string)
+	infos.pending = make(map[string]string)
+	infos.pendingToDelete = make(map[string]string)
+	infos.receipt = make(map[string]string)
+	infos.receiptToDelete = make(map[string]string)
 	infos.runParameters = *runParameters
 	return infos
 }

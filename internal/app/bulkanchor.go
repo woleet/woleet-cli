@@ -20,16 +20,26 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	if runParameters.IsFS {
+		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	}
+
+	if runParameters.IsS3 {
+		commonInfos.mapPathFileName = helpers.ExploreS3(runParameters.S3Client, runParameters.S3Bucket, runParameters.Recursive, runParameters.Include, log)
+	}
+
+	log.Println(commonInfos.mapPathFileName)
+	os.Exit(0)
+
 	if err != nil {
 		log.Errorln(err)
 		os.Exit(1)
 	}
 
 	if !commonInfos.runParameters.Signature {
-		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)
 	} else {
-		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileName)
 	}
 
 	if runParameters.Signature {
@@ -72,8 +82,8 @@ func (commonInfos *commonInfos) splitPendingReceipt() {
 	}
 }
 
-func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pending bool, receipt bool) error {
-	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+func (commonInfos *commonInfos) sortFile(path string, fineName string, pending bool, receipt bool) error {
+	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fineName)
 	if erranchorNameInfo != nil {
 		return erranchorNameInfo
 	}
@@ -81,15 +91,15 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// Extracting the file's original path by the name of the pending/receipt
 	originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
 
-	_, exists := commonInfos.mapPathFileinfo[originalFilePath]
+	_, exists := commonInfos.mapPathFileName[originalFilePath]
 	if !exists {
 		if commonInfos.runParameters.Prune {
 			if pending {
-				commonInfos.pendingToDelete[path] = fileinfo
+				commonInfos.pendingToDelete[path] = fineName
 				delete(commonInfos.pending, path)
 			}
 			if receipt {
-				commonInfos.receiptToDelete[path] = fileinfo
+				commonInfos.receiptToDelete[path] = fineName
 				delete(commonInfos.receipt, path)
 			}
 		}
@@ -98,7 +108,7 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 
 	// If there is no strict mode, there is nothing to check and the file will not be reanchored
 	if !commonInfos.runParameters.Strict {
-		delete(commonInfos.mapPathFileinfo, originalFilePath)
+		delete(commonInfos.mapPathFileName, originalFilePath)
 		return nil
 	}
 
@@ -126,13 +136,13 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	if !commonInfos.runParameters.Signature {
 		if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
 			// File already anchored and valid
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	} else {
 		if strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, receiptUnmarshalled.Signature.PubKey) {
 			// File signed and signature is up-to-date with current PubKey anchored and valid
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	}
@@ -140,11 +150,11 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// If they are not and there is a prune flag, the old pending file will be marked for deletion
 	if commonInfos.runParameters.Prune {
 		if pending {
-			commonInfos.pendingToDelete[path] = fileinfo
+			commonInfos.pendingToDelete[path] = fineName
 			delete(commonInfos.pending, path)
 		}
 		if receipt {
-			commonInfos.receiptToDelete[path] = fileinfo
+			commonInfos.receiptToDelete[path] = fineName
 			delete(commonInfos.receipt, path)
 		}
 	}
@@ -153,7 +163,7 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 
 func (commonInfos *commonInfos) checkStandardFiles() {
 	// In this loop only the standard files are used (not receipt or pending files)
-	for path, fileinfo := range commonInfos.mapPathFileinfo {
+	for path, fileName := range commonInfos.mapPathFileName {
 		anchor := new(woleetapi.Anchor)
 		hash, errHash := helpers.HashFile(path)
 		if errHash != nil {
@@ -162,7 +172,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		}
 		tagsSlice := make([]string, 0)
 		var tags []string
-		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileinfo.Name())) {
+		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileName)) {
 			log.WithFields(logrus.Fields{
 				"path": path,
 			}).Errorln("Unable to extract tags form the path")
@@ -171,7 +181,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			}
 			continue
 		}
-		tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, commonInfos.runParameters.Directory), fileinfo.Name()), string(os.PathSeparator))
+		tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, commonInfos.runParameters.Directory), fileName), string(os.PathSeparator))
 		for i := range tags {
 			if !(strings.Contains(tags[i], " ") || strings.EqualFold(tags[i], "")) {
 				tagsSlice = append(tagsSlice, tags[i])
@@ -179,7 +189,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		}
 
 		if !commonInfos.runParameters.Signature {
-			anchor.Name = fileinfo.Name()
+			anchor.Name = fileName
 			anchor.Hash = hash
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
@@ -189,7 +199,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 				continue
 			}
-			anchor.Name = fileinfo.Name()
+			anchor.Name = fileName
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 			anchor.PubKey = signatureGet.PubKey
@@ -239,9 +249,9 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	}
 }
 
-func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
-	for path, fileinfo := range mapPending {
-		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
+	for path, fileName := range mapPending {
+		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileName)
 		if erranchorNameInfo != nil {
 			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
 			continue

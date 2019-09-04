@@ -13,15 +13,15 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 
 	commonInfos := initCommonInfos(runParameters)
 
-	commonInfos.mapPathFileinfo = make(map[string]os.FileInfo)
-	commonInfos.pending = make(map[string]os.FileInfo)
-	commonInfos.pendingToDelete = make(map[string]os.FileInfo)
-	commonInfos.receipt = make(map[string]os.FileInfo)
-	commonInfos.receiptToDelete = make(map[string]os.FileInfo)
+	commonInfos.mapPathFileName = make(map[string]string)
+	commonInfos.pending = make(map[string]string)
+	commonInfos.pendingToDelete = make(map[string]string)
+	commonInfos.receipt = make(map[string]string)
+	commonInfos.receiptToDelete = make(map[string]string)
 
 	log.SetOutput(ioutil.Discard)
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
 	log.SetOutput(os.Stdout)
 	if err != nil {
 		log.Errorln(err)
@@ -29,15 +29,15 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 	}
 
 	if !runParameters.Signature {
-		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)
 	} else {
-		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileName)
 	}
 
 	commonInfos.splitPendingReceipt()
 
 	fields := logrus.Fields{}
-	fields["files"] = len(commonInfos.mapPathFileinfo)
+	fields["files"] = len(commonInfos.mapPathFileName)
 	if commonInfos.runParameters.Prune {
 		fields["pendings"] = len(commonInfos.pending)
 		fields["pendingsToDelete"] = len(commonInfos.pendingToDelete)
