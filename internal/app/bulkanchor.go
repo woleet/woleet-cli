@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -120,14 +119,18 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 	// If the file does not exists anymore and the prune mode is set the file will be deleted
 	// if the prune mode is not set the file will be converted to a proper receipt
 
-	receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
+	receiptJSON, errReceiptJSON := commonInfos.readFile(path)
 	if errReceiptJSON != nil {
 		return errReceiptJSON
 	}
 
 	var receiptUnmarshalled woleetapi.Receipt
-	json.Unmarshal(receiptJSON, &receiptUnmarshalled)
-	hash, errHash := commonInfos.getHash(path)
+	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
+	if errUnmarshal != nil {
+		return errUnmarshal
+	}
+
+	hash, errHash := commonInfos.getHash(originalFilePath)
 	if errHash != nil {
 		return errHash
 	}
