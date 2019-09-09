@@ -48,25 +48,56 @@ func checkFilename(fileName string, include *regexp.Regexp) bool {
 	return true
 }
 
-func checkDirectory(string directoryPath) bool {
-
+func checkDirectory(path string, directory string, pathSeparator string, log *logrus.Logger) bool {
+	pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), pathSeparator, "", -1))
+	if strings.HasPrefix(directory, ".") {
+		return false
+	}
+	if pathlenght > 128 {
+		log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
+		return false
+	}
+	if strings.Contains(strings.TrimPrefix(path, directory), " ") {
+		log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
+		return false
+	}
+	return true
 }
 
-func ExploreDirectory(directory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]string, error) {
+func checkDirectoryS3(path string, log *logrus.Logger) bool {
+	isFile := false
+	if !strings.HasSuffix(path, "/") {
+		isFile = true
+		path = strings.TrimSuffix(path, extractFileNameFromPathS3(path))
+	}
+
+	dirArray := strings.Split(strings.TrimSuffix(path, "/"), "/")
+	for _, dir := range dirArray {
+		if strings.HasPrefix(dir, ".") {
+			return false
+		}
+	}
+
+	if len(strings.Replace(path, "/", "", -1)) > 128 {
+		if !isFile {
+			log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
+		}
+		return false
+	}
+	if strings.Contains(path, " ") {
+		if !isFile && strings.Contains(dirArray[len(dirArray)-1], " ") {
+			log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
+		}
+		return false
+	}
+	return true
+}
+
+func ExploreDirectory(baseDirectory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]string, error) {
 	mapPathFileName := make(map[string]string)
-	errWalk := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	errWalk := filepath.Walk(baseDirectory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
-			if !recursive && !strings.EqualFold(filepath.Clean(directory), filepath.Clean(path)) {
-				return filepath.SkipDir
-			}
-			pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), string(os.PathSeparator), "", -1))
-			if strings.HasPrefix(info.Name(), ".") {
-				return filepath.SkipDir
-			} else if pathlenght > 128 {
-				log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
-				return filepath.SkipDir
-			} else if strings.Contains(strings.TrimPrefix(path, directory), " ") {
-				log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
+			if (!recursive && !strings.EqualFold(filepath.Clean(baseDirectory), filepath.Clean(path))) || (!checkDirectory(path, info.Name(), string(os.PathSeparator), log)) {
 				return filepath.SkipDir
 			}
 		} else if info.Mode().IsRegular() && checkFilename(info.Name(), include) {
@@ -88,8 +119,10 @@ func ExploreS3(S3Client *minio.Client, bucket string, recursive bool, include *r
 		} else {
 			if !strings.Contains(object.Key, "/") && checkFilename(object.Key, include) {
 				mapPathFileName[object.Key] = object.Key
-			} else if !strings.HasSuffix(object.Key, "/") && checkFilename(extractFileNameFromPath(object.Key), include) {
-				mapPathFileName[extractFileNameFromPath(object.Key)] = object.Key
+			} else if strings.HasSuffix(object.Key, "/") {
+				checkDirectoryS3(object.Key, log)
+			} else if !strings.HasSuffix(object.Key, "/") && checkFilename(extractFileNameFromPathS3(object.Key), include) && checkDirectoryS3(object.Key, log) {
+				mapPathFileName[object.Key] = extractFileNameFromPathS3(object.Key)
 			}
 		}
 	}
@@ -133,6 +166,7 @@ func GetAnchorIDFromName(fileName string) (*RegexExtracted, error) {
 	return out, nil
 }
 
-func extractFileNameFromPath(path string) string {
-
+func extractFileNameFromPathS3(path string) string {
+	pathArray := strings.Split(path, "/")
+	return pathArray[len(pathArray)-1]
 }
