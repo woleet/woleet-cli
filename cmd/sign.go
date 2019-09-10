@@ -60,10 +60,11 @@ func init() {
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
 	signCmd.Flags().StringVarP(&include, "include", "i", "", "Only files that match that regex will be signed")
-	signCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "")
-	signCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", "")
-	signCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "")
-	signCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "")
+	signCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "bucket name that contains files to sign")
+	signCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+	don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
+	signCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "your AccessKeyID")
+	signCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "your SecretAccessKey")
 	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:3002\" (required)")
 	signCmd.Flags().StringVarP(&widsToken, "widsToken", "", "", "Woleet.ID Server API token (required)")
 	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
@@ -75,7 +76,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
 	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
 	signCmd.Flags().BoolVarP(&widsUnsecureSSL, "widsUnsecureSSL", "", false, "do not check Woleet.ID Server's SSL certificate validity (only for development)")
-	signCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "")
+	signCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "Use S3 without SSL (Strongly discouraged)")
 
 	viper.BindPFlag("app.directory", signCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("app.include", signCmd.Flags().Lookup("include"))

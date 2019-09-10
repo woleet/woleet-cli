@@ -49,11 +49,12 @@ func init() {
 	rootCmd.AddCommand(anchorCmd)
 
 	anchorCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to anchor (required)")
-	anchorCmd.Flags().StringVarP(&include, "include", "i", "", "Only files taht match that regex will be anchored")
-	anchorCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "")
-	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", "")
-	anchorCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "")
-	anchorCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "")
+	anchorCmd.Flags().StringVarP(&include, "include", "i", "", "only files taht match that regex will be anchored")
+	anchorCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "bucket name that contains files to anchor")
+	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
+	anchorCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "your AccessKeyID")
+	anchorCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "your SecretAccessKey")
 	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
 	anchorCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
@@ -61,7 +62,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	anchorCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
 	anchorCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to anchor without anchoring")
-	anchorCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "")
+	anchorCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "Use S3 without SSL (Strongly discouraged)")
 
 	viper.BindPFlag("app.directory", anchorCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("app.include", anchorCmd.Flags().Lookup("include"))
