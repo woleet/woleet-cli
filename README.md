@@ -85,33 +85,45 @@ export WCLI_CONFIG="DISABLED"
 ```
 Usage:
 woleet-cli anchor [flags]
-  -d, --directory string   source directory containing files to anchor (required)
-      --dryRun             print information about files to anchor without anchoring
-  -e, --exitOnError        exit with an error code if anything goes wrong
-  -h, --help               help for anchor
-  -i, --include string     Only files that match that regex will be anchored
-  -p, --private            create non discoverable proofs
-      --prune              delete receipts that are not along the original file,
-                           with --strict it checks the hash of the original file and deletes the receipt if they do not match
-  -r, --recursive          explore sub-folders recursively
-      --strict             re-anchor any file that has changed since last anchoring
+  -d, --directory string           source directory containing files to anchor (required)
+      --dryRun                     print information about files to anchor without anchoring
+  -e, --exitOnError                exit with an error code if anything goes wrong
+  -h, --help                       help for anchor
+  -i, --include string             only files taht match that regex will be anchored
+  -p, --private                    create non discoverable proofs
+      --prune                      delete receipts that are not along the original file,
+                                   with --strict it checks the hash of the original file and deletes the receipt if they do not match
+  -r, --recursive                  explore sub-folders recursively
+      --s3AccessKeyID string       your AccessKeyID
+      --s3Bucket string            bucket name that contains files to anchor
+      --s3Endpoint string          Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+                                   don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
+      --s3NoSSL                    Use S3 without SSL (Strongly discouraged)
+      --s3SecretAccessKey string   your SecretAccessKey
+      --strict                     re-anchor any file that has changed since last anchoring
 
 
 woleet-cli sign [flags]
-  -d, --directory string     source directory containing files to sign (required)
-      --dryRun               print information about files to sign without signing
-  -e, --exitOnError          exit with an error code if anything goes wrong
-  -h, --help                 help for sign
-  -i, --include string       Only files that match that regex will be signed
-  -p, --private              create non discoverable proofs
-      --prune                delete receipts that are not along the original file,
-                             with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
-  -r, --recursive            explore sub-folders recursively
-      --strict               re-sign any file that has changed since last signature or if the pubkey was changed
-      --widsPubKey string    public key (ie. bitcoin address) to use to sign
-      --widsSignURL string   Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
-      --widsToken string     Woleet.ID Server API token (required)
-      --widsUnsecureSSL      do not check Woleet.ID Server's SSL certificate validity (only for development)
+  -d, --directory string           source directory containing files to sign (required)
+      --dryRun                     print information about files to sign without signing
+  -e, --exitOnError                exit with an error code if anything goes wrong
+  -h, --help                       help for sign
+  -i, --include string             Only files that match that regex will be signed
+  -p, --private                    create non discoverable proofs
+      --prune                      delete receipts that are not along the original file,
+                                   with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
+  -r, --recursive                  explore sub-folders recursively
+      --s3AccessKeyID string       your AccessKeyID
+      --s3Bucket string            bucket name that contains files to sign
+      --s3Endpoint string          Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+                                  don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
+      --s3NoSSL                    Use S3 without SSL (Strongly discouraged)
+      --s3SecretAccessKey string   your SecretAccessKey
+      --strict                     re-sign any file that has changed since last signature or if the pubkey was changed
+      --widsPubKey string          public key (ie. bitcoin address) to use to sign
+      --widsSignURL string         Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
+      --widsToken string           Woleet.ID Server API token (required)
+      --widsUnsecureSSL            do not check Woleet.ID Server's SSL certificate validity (only for development)
 
 woleet-cli export [flags]
   -d, --directory string   directory where to store the proofs (required)
@@ -152,6 +164,12 @@ sign:
   widsToken: insert-your-idserver-token-here
   widsPubKey: insert-your-idserver-pubkey-here
   widsUnsecureSSL: false
+s3:
+  bucket: bucket-name
+  endpoint: storage.googleapis.com
+  accessKeyID: insert-your-accessKeyID-here
+  secretAccessKey: insert-your-secretAccessKey-here
+  noSSL: true
 export:
   directory: /home/folder/to/anchor
   limitDate: 2018-01-21
@@ -184,6 +202,13 @@ JSON:
     "widsPubKey": "insert-your-idserver-pubkey-here",
     "widsUnsecureSSL": false
   },
+  "s3": {
+    "bucket": "bucket-name",
+    "endpoint": "storage.googleapis.com",
+    "accessKeyID": "insert-your-accessKeyID-here",
+    "secretAccessKey": "insert-your-secretAccessKey-here",
+    "noSSL": true
+  },
   "export": {
     "directory": "/home/folder/to/anchor",
     "limitDate": "2018-01-21",
@@ -213,6 +238,11 @@ export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:3002"
 export WCLI_SIGN_WIDSTOKEN="insert-your-idserver-token-here"
 export WCLI_SIGN_WIDSPUBKEY="insert-your-idserver-pubkey-here"
 export WCLI_SIGN_WIDSUNSECURESSL="false"
+export S3_BUCKET="bucket-name"
+export S3_ENDPOINT="storage.googleapis.com"
+export S3_ACCESSKEYID="insert-your-accessKeyID-here"
+export S3_SECRETACCESSKEY="insert-your-secretAccessKey-here"
+export S3_NOSSL="true"
 export WCLI_EXPORT_DIRECTORY="/home/folder/to/anchor"
 export WCLI_EXPORT_LIMITDATE="2018-01-21"
 export WCLI_EXPORT_EXITONERROR="true"
@@ -249,12 +279,13 @@ go install
 ```bash
 # Clone this project in $GOPATH/src/github.com/woleet
 # get mandatory libraries:
-go get -u gopkg.in/resty.v1
+go get -u github.com/go-resty/resty/v2
 go get -u github.com/spf13/cobra
 go get -u github.com/spf13/viper
 go get -u github.com/mitchellh/go-homedir
 go get -u github.com/kennygrant/sanitize
 go get -u github.com/sirupsen/logrus
+go get -u github.com/minio/minio-go/v6
 # For windows only:
 go get -u github.com/inconshreveable/mousetrap
 
