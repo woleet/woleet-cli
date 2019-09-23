@@ -26,6 +26,15 @@ To sum up, this tool can be used to generate and maintain the set of timestamped
 
 Note: tags are added to the anchors according to the name of sub-folders  
 
+### S3 support
+
+When filling --s3AccessKeyID, --s3SecretAccessKey, --s3Bucket and --s3Endpoint you will not have to specify --directory.  
+
+In that configuration, woleet-cli will anchor/sign all files in the inputed bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
+Receipts and pending files will be stored along original files in the S3 bucket.  
+
+When using an S3-like directory, we advise to not use the --strict parameter as it will download all files at each run.  
+
 ### Limitations
 
 * All files and folders beginning by '.' or finished by '.(anchor|signature)-(receipt|pending).json' are ignored
