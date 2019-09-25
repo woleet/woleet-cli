@@ -49,9 +49,9 @@ func init() {
 	rootCmd.AddCommand(anchorCmd)
 
 	anchorCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to anchor (required)")
-	anchorCmd.Flags().StringVarP(&include, "include", "i", "", "only files taht match that regex will be anchored")
+	anchorCmd.Flags().StringVarP(&include, "include", "i", "", "anchor only files matching this regex")
 	anchorCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "bucket name that contains files to anchor")
-	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+	anchorCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `specify an alternative S3 endpoint: ex: storage.googleapis.com,
 don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
 	anchorCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "your AccessKeyID")
 	anchorCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "your SecretAccessKey")
@@ -62,7 +62,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	anchorCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
 	anchorCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to anchor without anchoring")
-	anchorCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "Use S3 without SSL (Strongly discouraged)")
+	anchorCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "use S3 without SSL (strongly discouraged)")
 
 	viper.BindPFlag("app.directory", anchorCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("app.include", anchorCmd.Flags().Lookup("include"))

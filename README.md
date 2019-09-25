@@ -97,17 +97,17 @@ woleet-cli anchor [flags]
   -d, --directory string           source directory containing files to anchor (required)
       --dryRun                     print information about files to anchor without anchoring
   -e, --exitOnError                exit with an error code if anything goes wrong
-  -h, --help                       help for anchor
-  -i, --include string             only files taht match that regex will be anchored
+  -h, --help                       display help for anchor command
+  -i, --include string             anchor only files matching this regex
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
                                    with --strict it checks the hash of the original file and deletes the receipt if they do not match
   -r, --recursive                  explore sub-folders recursively
       --s3AccessKeyID string       your AccessKeyID
       --s3Bucket string            bucket name that contains files to anchor
-      --s3Endpoint string          Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+      --s3Endpoint string          specify an alternative S3 endpoint: ex: storage.googleapis.com,
                                    don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
-      --s3NoSSL                    Use S3 without SSL (Strongly discouraged)
+      --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
       --strict                     re-anchor any file that has changed since last anchoring
 
@@ -116,7 +116,7 @@ woleet-cli sign [flags]
   -d, --directory string           source directory containing files to sign (required)
       --dryRun                     print information about files to sign without signing
   -e, --exitOnError                exit with an error code if anything goes wrong
-  -h, --help                       help for sign
+  -h, --help                       display help for sign command
   -i, --include string             Only files that match that regex will be signed
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
@@ -124,9 +124,9 @@ woleet-cli sign [flags]
   -r, --recursive                  explore sub-folders recursively
       --s3AccessKeyID string       your AccessKeyID
       --s3Bucket string            bucket name that contains files to sign
-      --s3Endpoint string          Specify an alternative S3 endpoint: ex: storage.googleapis.com,
-                                  don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
-      --s3NoSSL                    Use S3 without SSL (Strongly discouraged)
+      --s3Endpoint string          specify an alternative S3 endpoint: ex: storage.googleapis.com,
+                                   don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
+      --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
       --strict                     re-sign any file that has changed since last signature or if the pubkey was changed
       --widsPubKey string          public key (ie. bitcoin address) to use to sign
@@ -137,12 +137,12 @@ woleet-cli sign [flags]
 woleet-cli export [flags]
   -d, --directory string   directory where to store the proofs (required)
   -e, --exitOnError        exit with an error code if anything goes wrong
-  -h, --help               help for export
+  -h, --help               display help for export command
   -l, --limitDate string   get only proofs created after the provided date (format: yyyy-MM-dd)
 
 Global Flags:
   -c, --config string     config file (default is $HOME/.woleet-cli.yaml)
-  -h, --help              help for woleet-cli
+  -h, --help              display help for woleet-cli
       --json              use JSON as log output format
       --logLevel string   select log level info|warn|error|fatal (default "info")
   -t, --token string      Woleet API token (required)
