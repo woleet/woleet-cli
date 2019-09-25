@@ -17,7 +17,7 @@ The tool scans a folder recursively and anchors or sign all files found. It also
 
 Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
 
-If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the pubkey is check as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
+If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the public key is checked as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
 If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
 If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --include option which will limit the scope of this tool to the files taht matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
@@ -30,7 +30,7 @@ Note: tags are added to the anchors according to the name of sub-folders
 
 When filling --s3AccessKeyID, --s3SecretAccessKey, --s3Bucket and --s3Endpoint you will not have to specify --directory.  
 
-In that configuration, woleet-cli will anchor/sign all files in the inputed bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
+In that configuration, woleet-cli will anchor/sign all files in the input bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
 Receipts and pending files will be stored along original files in the S3 bucket.  
 
 When using an S3-like directory, we advise to not use the --strict parameter as it will download all files at each run.  
@@ -81,7 +81,7 @@ The tool behavior can be configured using command line arguments, environment va
 - config file
 - default value (if any)
 
-There is also a special environnement variable or config path to disable environnement configuration and configuration file:
+There is also a special environment variable or config path to disable environment configuration and configuration file:
 
 ```bash
 woleet-cli --config "DISABLED" ...
@@ -195,7 +195,7 @@ JSON:
   "api": {
     "url": "https://api.woleet.io/v1",
     "token": "insert-your-token-here",
-    "private": true,
+    "private": true
   },
   "app": {
     "directory": "/home/folder/to/anchor",
@@ -275,7 +275,7 @@ go get -u github.com/woleet/woleet-cli
 git clone git@github.com:woleet/woleet-cli.git
 
 # Generating the actual binary
-go build -o $<desired_path>/woleet-cli
+go build -o <desired_path>/woleet-cli
 
 # or
 
@@ -299,7 +299,7 @@ go get -u github.com/minio/minio-go/v6
 go get -u github.com/inconshreveable/mousetrap
 
 # Generating the actual binary
-go build -o $<desired_path>/woleet-cli
+go build -o <desired_path>/woleet-cli
 ```
 
 ### Generate models from OpenAPI/Swagger specifications
