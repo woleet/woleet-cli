@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -20,16 +19,23 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
 
 	var err error
-	commonInfos.mapPathFileinfo, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	if runParameters.IsFS {
+		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	}
+
+	if runParameters.IsS3 {
+		commonInfos.mapPathFileName = helpers.ExploreS3(runParameters.S3Client, runParameters.S3Bucket, runParameters.Recursive, runParameters.Include, log)
+	}
+
 	if err != nil {
 		log.Errorln(err)
 		os.Exit(1)
 	}
 
 	if !commonInfos.runParameters.Signature {
-		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)
 	} else {
-		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileinfo)
+		_, _, commonInfos.pending, commonInfos.receipt = helpers.SeparateAll(commonInfos.mapPathFileName)
 	}
 
 	if runParameters.Signature {
@@ -50,13 +56,19 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 			log.WithFields(logrus.Fields{
 				"file": path,
 			}).Infoln("Deleting old pending file")
-			os.Remove(path)
+			errRemove := commonInfos.removeFile(path)
+			if errRemove != nil {
+				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
+			}
 		}
 		for path := range commonInfos.receiptToDelete {
 			log.WithFields(logrus.Fields{
 				"file": path,
 			}).Infoln("Deleting old receipt file")
-			os.Remove(path)
+			errRemove := commonInfos.removeFile(path)
+			if errRemove != nil {
+				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
+			}
 		}
 	}
 	commonInfos.checkStandardFiles()
@@ -72,8 +84,8 @@ func (commonInfos *commonInfos) splitPendingReceipt() {
 	}
 }
 
-func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pending bool, receipt bool) error {
-	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+func (commonInfos *commonInfos) sortFile(path string, fileName string, pending bool, receipt bool) error {
+	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileName)
 	if erranchorNameInfo != nil {
 		return erranchorNameInfo
 	}
@@ -81,15 +93,15 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// Extracting the file's original path by the name of the pending/receipt
 	originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
 
-	_, exists := commonInfos.mapPathFileinfo[originalFilePath]
+	_, exists := commonInfos.mapPathFileName[originalFilePath]
 	if !exists {
 		if commonInfos.runParameters.Prune {
 			if pending {
-				commonInfos.pendingToDelete[path] = fileinfo
+				commonInfos.pendingToDelete[path] = fileName
 				delete(commonInfos.pending, path)
 			}
 			if receipt {
-				commonInfos.receiptToDelete[path] = fileinfo
+				commonInfos.receiptToDelete[path] = fileName
 				delete(commonInfos.receipt, path)
 			}
 		}
@@ -98,7 +110,7 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 
 	// If there is no strict mode, there is nothing to check and the file will not be reanchored
 	if !commonInfos.runParameters.Strict {
-		delete(commonInfos.mapPathFileinfo, originalFilePath)
+		delete(commonInfos.mapPathFileName, originalFilePath)
 		return nil
 	}
 
@@ -107,16 +119,20 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// If the file does not exists anymore and the prune mode is set the file will be deleted
 	// if the prune mode is not set the file will be converted to a proper receipt
 
-	receiptJSON, errReceiptJSON := ioutil.ReadFile(path)
+	receiptJSON, errReceiptJSON := commonInfos.readFile(path)
 	if errReceiptJSON != nil {
 		return errReceiptJSON
 	}
 
 	var receiptUnmarshalled woleetapi.Receipt
-	json.Unmarshal(receiptJSON, &receiptUnmarshalled)
-	hash, errhash := helpers.HashFile(originalFilePath)
-	if errhash != nil {
-		return errhash
+	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
+	if errUnmarshal != nil {
+		return errUnmarshal
+	}
+
+	hash, errHash := commonInfos.getHash(originalFilePath)
+	if errHash != nil {
+		return errHash
 	}
 
 	// In case of simple anchoring:
@@ -126,13 +142,13 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	if !commonInfos.runParameters.Signature {
 		if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
 			// File already anchored and valid
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	} else {
 		if strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, receiptUnmarshalled.Signature.PubKey) {
 			// File signed and signature is up-to-date with current PubKey anchored and valid
-			delete(commonInfos.mapPathFileinfo, originalFilePath)
+			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	}
@@ -140,11 +156,11 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 	// If they are not and there is a prune flag, the old pending file will be marked for deletion
 	if commonInfos.runParameters.Prune {
 		if pending {
-			commonInfos.pendingToDelete[path] = fileinfo
+			commonInfos.pendingToDelete[path] = fileName
 			delete(commonInfos.pending, path)
 		}
 		if receipt {
-			commonInfos.receiptToDelete[path] = fileinfo
+			commonInfos.receiptToDelete[path] = fileName
 			delete(commonInfos.receipt, path)
 		}
 	}
@@ -153,16 +169,18 @@ func (commonInfos *commonInfos) sortFile(path string, fileinfo os.FileInfo, pend
 
 func (commonInfos *commonInfos) checkStandardFiles() {
 	// In this loop only the standard files are used (not receipt or pending files)
-	for path, fileinfo := range commonInfos.mapPathFileinfo {
+	for path, fileName := range commonInfos.mapPathFileName {
 		anchor := new(woleetapi.Anchor)
-		hash, errHash := helpers.HashFile(path)
+
+		hash, errHash := commonInfos.getHash(path)
 		if errHash != nil {
 			errHandlerExitOnError(errHash, commonInfos.runParameters.ExitOnError)
 			continue
 		}
+
 		tagsSlice := make([]string, 0)
 		var tags []string
-		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileinfo.Name())) {
+		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileName)) {
 			log.WithFields(logrus.Fields{
 				"path": path,
 			}).Errorln("Unable to extract tags form the path")
@@ -171,7 +189,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			}
 			continue
 		}
-		tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, commonInfos.runParameters.Directory), fileinfo.Name()), string(os.PathSeparator))
+		tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, commonInfos.runParameters.Directory), fileName), string(os.PathSeparator))
 		for i := range tags {
 			if !(strings.Contains(tags[i], " ") || strings.EqualFold(tags[i], "")) {
 				tagsSlice = append(tagsSlice, tags[i])
@@ -179,7 +197,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		}
 
 		if !commonInfos.runParameters.Signature {
-			anchor.Name = fileinfo.Name()
+			anchor.Name = fileName
 			anchor.Hash = hash
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
@@ -189,7 +207,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 				continue
 			}
-			anchor.Name = fileinfo.Name()
+			anchor.Name = fileName
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 			anchor.PubKey = signatureGet.PubKey
@@ -223,9 +241,9 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	if commonInfos.runParameters.Signature {
 		currentSuffix = helpers.SuffixSignaturePending
 	}
-	errWriteFile := ioutil.WriteFile(path+"-"+anchorPost.Id+currentSuffix, pendingJSON, 0644)
-	if errWriteFile != nil {
-		errHandlerExitOnError(errWriteFile, commonInfos.runParameters.ExitOnError)
+	errWrite := commonInfos.writeFile(path+"-"+anchorPost.Id+currentSuffix, pendingJSON)
+	if errWrite != nil {
+		errHandlerExitOnError(errWrite, commonInfos.runParameters.ExitOnError)
 		return
 	}
 	if !commonInfos.runParameters.Signature {
@@ -239,9 +257,9 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	}
 }
 
-func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
-	for path, fileinfo := range mapPending {
-		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileinfo)
+func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
+	for path, fileName := range mapPending {
+		anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileName)
 		if erranchorNameInfo != nil {
 			errHandlerExitOnError(erranchorNameInfo, commonInfos.runParameters.ExitOnError)
 			continue
@@ -268,12 +286,18 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]os.FileInfo) {
 			currentSuffix = helpers.SuffixSignatureReceipt
 		}
 		receiptPath := strings.TrimSuffix(path, anchorNameInfo.Suffix) + currentSuffix
-		errGetReceipt := commonInfos.client.GetReceiptToFile(anchorNameInfo.AnchorID, receiptPath)
-		if errGetReceipt != nil {
-			errHandlerExitOnError(errGetReceipt, commonInfos.runParameters.ExitOnError)
+		receipt, errReceipt := commonInfos.client.GetReceipt(anchorNameInfo.AnchorID)
+		if errReceipt != nil {
+			errHandlerExitOnError(errReceipt, commonInfos.runParameters.ExitOnError)
 			continue
 		}
-		errRemove := os.Remove(path)
+		receiptJSON, errReceiptJSON := json.Marshal(receipt)
+		if errReceiptJSON != nil {
+			errHandlerExitOnError(errReceiptJSON, commonInfos.runParameters.ExitOnError)
+			return
+		}
+		commonInfos.writeFile(receiptPath, receiptJSON)
+		errRemove := commonInfos.removeFile(path)
 		if errRemove != nil {
 			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
 		}

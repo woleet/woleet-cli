@@ -18,7 +18,15 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		runParameters := new(app.RunParameters)
 		runParameters.Signature = true
 
-		runParameters.Directory = checkDirectory(cmd)
+		checkFolderType(cmd, runParameters)
+		if runParameters.IsFS {
+			runParameters.Directory = checkDirectory(cmd)
+		}
+		if runParameters.IsS3 {
+			runParameters.S3Client = checkS3(cmd)
+			runParameters.S3Bucket = viper.GetString("s3.bucket")
+		}
+
 		runParameters.Include = checkInclude(cmd)
 		runParameters.Token = checkToken(cmd)
 
@@ -52,6 +60,11 @@ func init() {
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
 	signCmd.Flags().StringVarP(&include, "include", "i", "", "Only files that match that regex will be signed")
+	signCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "bucket name that contains files to sign")
+	signCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `Specify an alternative S3 endpoint: ex: storage.googleapis.com,
+	don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
+	signCmd.Flags().StringVarP(&s3AccessKeyID, "s3AccessKeyID", "", "", "your AccessKeyID")
+	signCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "your SecretAccessKey")
 	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:3002\" (required)")
 	signCmd.Flags().StringVarP(&widsToken, "widsToken", "", "", "Woleet.ID Server API token (required)")
 	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
@@ -63,9 +76,14 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
 	signCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
 	signCmd.Flags().BoolVarP(&widsUnsecureSSL, "widsUnsecureSSL", "", false, "do not check Woleet.ID Server's SSL certificate validity (only for development)")
+	signCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "Use S3 without SSL (Strongly discouraged)")
 
 	viper.BindPFlag("app.directory", signCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("app.include", signCmd.Flags().Lookup("include"))
+	viper.BindPFlag("s3.bucket", signCmd.Flags().Lookup("s3Bucket"))
+	viper.BindPFlag("s3.endpoint", signCmd.Flags().Lookup("s3Endpoint"))
+	viper.BindPFlag("s3.accessKeyID", signCmd.Flags().Lookup("s3AccessKeyID"))
+	viper.BindPFlag("s3.secretAccessKey", signCmd.Flags().Lookup("s3SecretAccessKey"))
 	viper.BindPFlag("sign.widsSignURL", signCmd.Flags().Lookup("widsSignURL"))
 	viper.BindPFlag("sign.widsToken", signCmd.Flags().Lookup("widsToken"))
 	viper.BindPFlag("sign.widsPubKey", signCmd.Flags().Lookup("widsPubKey"))
@@ -76,8 +94,14 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("app.dryRun", signCmd.Flags().Lookup("dryRun"))
 	viper.BindPFlag("api.private", signCmd.Flags().Lookup("private"))
 	viper.BindPFlag("sign.widsUnsecureSSL", signCmd.Flags().Lookup("widsUnsecureSSL"))
+	viper.BindPFlag("s3.noSSL", signCmd.Flags().Lookup("s3NoSSL"))
 
 	viper.BindEnv("app.directory")
+	viper.BindEnv("app.include")
+	viper.BindEnv("s3.bucket")
+	viper.BindEnv("s3.endpoint")
+	viper.BindEnv("s3.accessKeyID")
+	viper.BindEnv("s3.secretAccessKey")
 	viper.BindEnv("sign.widsSignURL")
 	viper.BindEnv("sign.widsToken")
 	viper.BindEnv("sign.widsPubKey")
@@ -88,4 +112,5 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindEnv("app.dryRun")
 	viper.BindEnv("api.private")
 	viper.BindEnv("sign.widsUnsecureSSL")
+	viper.BindEnv("s3.noSSL")
 }
