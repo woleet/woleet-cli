@@ -33,7 +33,7 @@ type RunParameters struct {
 	IDServerSignURL     string
 	IDServerToken       string
 	IDServerPubKey      string
-	Include             *regexp.Regexp
+	Filter              *regexp.Regexp
 	S3Client            *minio.Client
 }
 

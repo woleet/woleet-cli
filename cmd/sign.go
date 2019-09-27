@@ -27,7 +27,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 			runParameters.S3Bucket = viper.GetString("s3.bucket")
 		}
 
-		runParameters.Include = checkInclude(cmd)
+		runParameters.Filter = checkFilter(cmd)
 		runParameters.Token = checkToken(cmd)
 
 		runParameters.BaseURL = viper.GetString("api.url")
@@ -59,7 +59,7 @@ func init() {
 	rootCmd.AddCommand(signCmd)
 
 	signCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	signCmd.Flags().StringVarP(&include, "include", "i", "", "sign only files matching this regex")
+	signCmd.Flags().StringVarP(&filter, "filter", "i", "", "sign only files matching this regex")
 	signCmd.Flags().StringVarP(&s3Bucket, "s3Bucket", "", "", "bucket name that contains files to sign")
 	signCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `specify an alternative S3 endpoint: ex: storage.googleapis.com,
 	don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
@@ -79,7 +79,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	signCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "use S3 without SSL (strongly discouraged)")
 
 	viper.BindPFlag("app.directory", signCmd.Flags().Lookup("directory"))
-	viper.BindPFlag("app.include", signCmd.Flags().Lookup("include"))
+	viper.BindPFlag("app.filter", signCmd.Flags().Lookup("filter"))
 	viper.BindPFlag("s3.bucket", signCmd.Flags().Lookup("s3Bucket"))
 	viper.BindPFlag("s3.endpoint", signCmd.Flags().Lookup("s3Endpoint"))
 	viper.BindPFlag("s3.accessKeyID", signCmd.Flags().Lookup("s3AccessKeyID"))
@@ -97,7 +97,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("s3.noSSL", signCmd.Flags().Lookup("s3NoSSL"))
 
 	viper.BindEnv("app.directory")
-	viper.BindEnv("app.include")
+	viper.BindEnv("app.filter")
 	viper.BindEnv("s3.bucket")
 	viper.BindEnv("s3.endpoint")
 	viper.BindEnv("s3.accessKeyID")

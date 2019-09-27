@@ -52,15 +52,15 @@ func checkDirectory(cmd *cobra.Command) string {
 	return absDirectory
 }
 
-func checkInclude(cmd *cobra.Command) *regexp.Regexp {
-	if !viper.IsSet("app.include") || strings.EqualFold(viper.GetString("app.include"), "") {
+func checkFilter(cmd *cobra.Command) *regexp.Regexp {
+	if !viper.IsSet("app.filter") || strings.EqualFold(viper.GetString("app.filter"), "") {
 		return nil
 	}
-	include, errInclude := regexp.Compile(viper.GetString("app.include"))
-	if errInclude != nil {
-		log.Fatalf("Unable parse the regexp specified by the --include: \n%s\n", errInclude)
+	filter, errFilter := regexp.Compile(viper.GetString("app.filter"))
+	if errFilter != nil {
+		log.Fatalf("Unable parse the regexp specified by the --filter: \n%s\n", errFilter)
 	}
-	return include
+	return filter
 }
 
 func checkWidSignURL(cmd *cobra.Command) string {

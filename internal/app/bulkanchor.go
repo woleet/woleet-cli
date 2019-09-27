@@ -20,11 +20,11 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 
 	var err error
 	if runParameters.IsFS {
-		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Filter, log)
 	}
 
 	if runParameters.IsS3 {
-		commonInfos.mapPathFileName = helpers.ExploreS3(runParameters.S3Client, runParameters.S3Bucket, runParameters.Recursive, runParameters.Include, log)
+		commonInfos.mapPathFileName = helpers.ExploreS3(runParameters.S3Client, runParameters.S3Bucket, runParameters.Recursive, runParameters.Filter, log)
 	}
 
 	if err != nil {

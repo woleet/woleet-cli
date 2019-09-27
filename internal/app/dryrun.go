@@ -21,7 +21,7 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 
 	log.SetOutput(ioutil.Discard)
 	var err error
-	commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Include, log)
+	commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Filter, log)
 	log.SetOutput(os.Stdout)
 	if err != nil {
 		log.Errorln(err)

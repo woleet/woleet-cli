@@ -20,7 +20,7 @@ Since anchoring is not a realtime operation, the tool is supposed to be run on a
 If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the public key is checked as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
 If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
-If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --include option which will limit the scope of this tool to the files taht matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
+If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --filter option which will limit the scope of this tool to the files taht matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
 
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
@@ -97,8 +97,8 @@ woleet-cli anchor [flags]
   -d, --directory string           source directory containing files to anchor (required)
       --dryRun                     print information about files to anchor without anchoring
   -e, --exitOnError                exit with an error code if anything goes wrong
+  -f, --filter string             anchor only files matching this regex
   -h, --help                       display help for anchor command
-  -i, --include string             anchor only files matching this regex
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
                                    with --strict it checks the hash of the original file and deletes the receipt if they do not match
@@ -116,8 +116,8 @@ woleet-cli sign [flags]
   -d, --directory string           source directory containing files to sign (required)
       --dryRun                     print information about files to sign without signing
   -e, --exitOnError                exit with an error code if anything goes wrong
+  -f, --filter string             Only files that match that regex will be signed
   -h, --help                       display help for sign command
-  -i, --include string             Only files that match that regex will be signed
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
                                    with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
@@ -162,7 +162,7 @@ api:
   private: true
 app:
   directory: /home/folder/to/anchor
-  include: '.*\.json'
+  filter: '.*\.json'
   strict: true
   prune: true
   exitOnError: true
@@ -199,6 +199,7 @@ JSON:
   },
   "app": {
     "directory": "/home/folder/to/anchor",
+    "filter": ".*\.json",
     "exitOnError": true,
     "strict": true,
     "prune": true,
@@ -238,6 +239,7 @@ export WCLI_API_URL="https://api.woleet.io/v1"
 export WCLI_API_TOKEN="insert-your-token-here"
 export WCLI_API_PRIVATE="true"
 export WCLI_APP_DIRECTORY="/home/folder/to/anchor"
+export WCLI_APP_FILTER='.*\.json'
 export WCLI_APP_EXITONERROR="true"
 export WCLI_APP_STRICT="true"
 export WCLI_APP_PRUNE="true"

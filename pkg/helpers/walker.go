@@ -27,11 +27,11 @@ type RegexExtracted struct {
 	Suffix           string
 }
 
-func checkFilename(fileName string, include *regexp.Regexp) bool {
+func checkFilename(fileName string, filter *regexp.Regexp) bool {
 	if strings.HasPrefix(fileName, ".") {
 		return false
 	}
-	if include != nil {
+	if filter != nil {
 		tempFileName := fileName
 		if regexNameSuffixReceipt.MatchString(fileName) {
 			anchorIDF, errAnchorIDF := GetAnchorIDFromName(fileName)
@@ -41,7 +41,7 @@ func checkFilename(fileName string, include *regexp.Regexp) bool {
 			}
 			tempFileName = anchorIDF.OriginalFilename
 		}
-		if !include.MatchString(tempFileName) {
+		if !filter.MatchString(tempFileName) {
 			return false
 		}
 	}
@@ -93,14 +93,14 @@ func checkDirectoryS3(path string, log *logrus.Logger) bool {
 	return true
 }
 
-func ExploreDirectory(baseDirectory string, recursive bool, include *regexp.Regexp, log *logrus.Logger) (map[string]string, error) {
+func ExploreDirectory(baseDirectory string, recursive bool, filter *regexp.Regexp, log *logrus.Logger) (map[string]string, error) {
 	mapPathFileName := make(map[string]string)
 	errWalk := filepath.Walk(baseDirectory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			if (!recursive && !strings.EqualFold(filepath.Clean(baseDirectory), filepath.Clean(path))) || (!checkDirectory(path, info.Name(), string(os.PathSeparator), log)) {
 				return filepath.SkipDir
 			}
-		} else if info.Mode().IsRegular() && checkFilename(info.Name(), include) {
+		} else if info.Mode().IsRegular() && checkFilename(info.Name(), filter) {
 			mapPathFileName[path] = info.Name()
 		}
 		return nil
@@ -108,7 +108,7 @@ func ExploreDirectory(baseDirectory string, recursive bool, include *regexp.Rege
 	return mapPathFileName, errWalk
 }
 
-func ExploreS3(S3Client *minio.Client, bucket string, recursive bool, include *regexp.Regexp, log *logrus.Logger) map[string]string {
+func ExploreS3(S3Client *minio.Client, bucket string, recursive bool, filter *regexp.Regexp, log *logrus.Logger) map[string]string {
 	mapPathFileName := make(map[string]string)
 	doneCh := make(chan struct{})
 	defer close(doneCh)
@@ -117,11 +117,11 @@ func ExploreS3(S3Client *minio.Client, bucket string, recursive bool, include *r
 		if object.Err != nil {
 			log.Warnln(object.Err)
 		} else {
-			if !strings.Contains(object.Key, "/") && checkFilename(object.Key, include) {
+			if !strings.Contains(object.Key, "/") && checkFilename(object.Key, filter) {
 				mapPathFileName[object.Key] = object.Key
 			} else if strings.HasSuffix(object.Key, "/") {
 				checkDirectoryS3(object.Key, log)
-			} else if !strings.HasSuffix(object.Key, "/") && checkFilename(extractFileNameFromPathS3(object.Key), include) && checkDirectoryS3(object.Key, log) {
+			} else if !strings.HasSuffix(object.Key, "/") && checkFilename(extractFileNameFromPathS3(object.Key), filter) && checkDirectoryS3(object.Key, log) {
 				mapPathFileName[object.Key] = extractFileNameFromPathS3(object.Key)
 			}
 		}
