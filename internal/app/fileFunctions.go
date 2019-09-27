@@ -7,10 +7,15 @@ import (
 	"os"
 
 	"github.com/minio/minio-go/v6"
+	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
 func (commonInfos *commonInfos) getHash(path string) (string, error) {
+	log.WithFields(logrus.Fields{
+		"file": path,
+	}).Infoln("Hashing file")
+
 	var hash string
 	var errHash error
 	if commonInfos.runParameters.IsFS {
