@@ -3,20 +3,13 @@
 set -e
 
 # Check usage
-if ! { [[ $1 =~ [0-9]\.[0-9]\.[0-9] ]] && { [ "$#" == "1" ] || { [ "$#" == "2" ] && [ "$2" == "--linux-static" ] ;} ;} ;}
+if ! { [ "$#" == "0" ] || { [ "$#" == "1" ] && { [ "$1" == "--linux-static*" ] || [ "$1" == "--linux-static-alpine" ] ;} ;} ;}
 then
-  echo "usage: $0 (release number) <--linux-static>"
-  echo "release number format: [0-9].[0-9].[0-9]"
+  echo "usage: $0 <--linux-static || --linux-static-alpine>"
   exit 1
 fi
 
-RELEASE_NUMBER=$1
-if [ "$#" == "2" ] && [ "$2" == "--linux-static" ]
-then
-  STATIC=true
-else
-  STATIC=false
-fi
+RELEASE_NUMBER=$(cat cmd/root.go | grep 'Version:' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' ) 
 
 platforms=( "linux/amd64" "darwin/amd64" "windows/amd64" )
 
@@ -28,9 +21,16 @@ do
     platform_split=( ${platform//\// } )
     GOOS="${platform_split[0]}"
     GOARCH="${platform_split[1]}"
-    if [ "$STATIC" == "true" ] && [ "$GOOS" == "linux" ]
+    if [ "$#" == "1" ] && [ "$GOOS" == "linux" ]
     then
-      GOOS="$GOOS" GOARCH="$GOARCH" CC=/usr/local/musl/bin/musl-gcc go build --ldflags '-linkmode external -extldflags "-static"' -o dist/woleet-cli
+      if [ "$1" == "--linux-static" ]
+      then
+        CC='/usr/local/musl/bin/musl-gcc'
+      elif [ "$1" == "--linux-static-alpine" ]
+      then
+        CC='/usr/bin/x86_64-alpine-linux-musl-gcc'
+      fi
+      GOOS="$GOOS" GOARCH="$GOARCH" CC="$CC" go build --ldflags '-linkmode external -extldflags "-static"' -o dist/woleet-cli
     else
       GOOS="$GOOS" GOARCH="$GOARCH" go build -o dist/woleet-cli
     fi
