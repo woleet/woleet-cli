@@ -9,7 +9,7 @@
  */
 
 package idserver
-// UserRoleEnum : User role.
+// UserRoleEnum User role.
 type UserRoleEnum string
 
 // List of UserRoleEnum

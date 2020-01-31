@@ -9,8 +9,7 @@
  */
 
 package woleetapi
-
-// Chainpoint 1.x only
+// ReceiptTargetProofNode Chainpoint 1.x only
 type ReceiptTargetProofNode struct {
 	Left string `json:"left,omitempty"`
 	Parent string `json:"parent,omitempty"`

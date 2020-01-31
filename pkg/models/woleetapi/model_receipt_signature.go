@@ -9,8 +9,7 @@
  */
 
 package woleetapi
-
-// For proof of signature receipts only. The anchored signature.
+// ReceiptSignature For proof of signature receipts only. The anchored signature.
 type ReceiptSignature struct {
 	// SHA256 hash (ie. the fingerprint) of the original signed data.
 	SignedHash string `json:"signedHash,omitempty"`

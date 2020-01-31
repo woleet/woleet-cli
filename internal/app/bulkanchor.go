@@ -1,6 +1,8 @@
 package app
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"strings"
@@ -45,6 +47,17 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 			commonInfos.widsClient.DisableSSLVerification()
 		}
 		checkWIDSConnectionPubKey(commonInfos)
+
+		user, errUser := commonInfos.widsClient.GetUser()
+		errHandlerExitOnError(errUser, commonInfos.runParameters.ExitOnError)
+		commonInfos.runParameters.SignedIdentity = buildSignedIdentityString(user)
+
+		if commonInfos.runParameters.SignedIdentity != "" {
+			commonInfos.widsClient.GetServerConfig()
+			config, errConfig := commonInfos.widsClient.GetServerConfig()
+			errHandlerExitOnError(errConfig, commonInfos.runParameters.ExitOnError)
+			commonInfos.runParameters.SignedIdentity = buildSignedIssuerDomainString(config)
+		}
 	}
 
 	commonInfos.splitPendingReceipt()
@@ -57,18 +70,14 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 				"file": path,
 			}).Infoln("Deleting old pending file")
 			errRemove := commonInfos.removeFile(path)
-			if errRemove != nil {
-				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
-			}
+			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
 		}
 		for path := range commonInfos.receiptToDelete {
 			log.WithFields(logrus.Fields{
 				"file": path,
 			}).Infoln("Deleting old receipt file")
 			errRemove := commonInfos.removeFile(path)
-			if errRemove != nil {
-				errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
-			}
+			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
 		}
 	}
 	commonInfos.checkStandardFiles()
@@ -202,7 +211,14 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 		} else {
-			signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey)
+			messageToSign := hash
+
+			if commonInfos.runParameters.SignedIdentity+commonInfos.runParameters.SignedIssuerDomain != "" {
+				signatureHash := sha256.Sum256([]byte(hash + commonInfos.runParameters.SignedIdentity + commonInfos.runParameters.SignedIssuerDomain))
+				messageToSign = hex.EncodeToString(signatureHash[:])
+			}
+
+			signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(messageToSign, commonInfos.runParameters.IDServerPubKey)
 			if errSignatureGet != nil {
 				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 				continue
@@ -214,6 +230,12 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			anchor.SignedHash = signatureGet.SignedHash
 			anchor.Signature = signatureGet.Signature
 			anchor.IdentityURL = signatureGet.IdentityURL
+			if commonInfos.runParameters.SignedIdentity != "" {
+				anchor.SignedIdentity = commonInfos.runParameters.SignedIdentity
+				if commonInfos.runParameters.SignedIssuerDomain != "" {
+					anchor.SignedIssuerDomain = commonInfos.runParameters.SignedIssuerDomain
+				}
+			}
 		}
 		commonInfos.postAnchorCreatePendingFile(anchor, path)
 	}

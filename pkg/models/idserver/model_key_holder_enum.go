@@ -9,7 +9,7 @@
  */
 
 package idserver
-// KeyHolderEnum : The entity who hold the private key.
+// KeyHolderEnum The entity who hold the private key.
 type KeyHolderEnum string
 
 // List of KeyHolderEnum

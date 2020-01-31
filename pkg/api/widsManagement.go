@@ -4,6 +4,17 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
+func (client *Client) GetServerConfig() (*idserver.ConfigDisco, error) {
+	resp, err := client.RestyClient.
+		R().
+		SetResult(&idserver.ConfigDisco{}).
+		Get(client.BaseURL + "/discover/config")
+
+	discoRet := resp.Result().(*idserver.ConfigDisco)
+	err = restyErrHandlerAllowedCodes(resp, err, defaultAllowedCodesMap)
+	return discoRet, err
+}
+
 func (client *Client) GetUser() (*idserver.UserDisco, error) {
 	resp, _ := client.RestyClient.
 		R().
@@ -21,9 +32,9 @@ func (client *Client) GetUser() (*idserver.UserDisco, error) {
 	if resp.StatusCode() == 204 || resp.StatusCode() == 404 {
 		respConfig, errConfig := client.RestyClient.
 			R().
-			SetResult(&idserver.UserDisco{}).
+			SetResult(&idserver.ConfigDisco{}).
 			Get(client.BaseURL + "/discover/config")
-		errConfig = restyErrHandlerAllowedCodes(respConfig, errConfig, allowedCodesMap)
+		errConfig = restyErrHandlerAllowedCodes(respConfig, errConfig, defaultAllowedCodesMap)
 		return &idserver.UserDisco{Id: "admin"}, errConfig
 	}
 	return userRet, err

@@ -9,7 +9,7 @@
  */
 
 package idserver
-
+// FullIdentity struct for FullIdentity
 type FullIdentity struct {
 	// Common name (CN) (2.5.4.3)
 	CommonName string `json:"commonName"`

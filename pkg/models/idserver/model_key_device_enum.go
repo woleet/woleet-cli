@@ -9,7 +9,7 @@
  */
 
 package idserver
-// KeyDeviceEnum : Key device.
+// KeyDeviceEnum Key device.
 type KeyDeviceEnum string
 
 // List of KeyDeviceEnum

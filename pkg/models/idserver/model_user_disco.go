@@ -9,7 +9,7 @@
  */
 
 package idserver
-
+// UserDisco struct for UserDisco
 type UserDisco struct {
 	// User identifier (allocated by the server).
 	Id string `json:"id,omitempty"`

@@ -9,8 +9,7 @@
  */
 
 package woleetapi
-
-// A Chainpoint 1.x or 2.x proof receipt
+// Receipt A Chainpoint 1.x or 2.x proof receipt
 type Receipt struct {
 	// Chainpoint 2.x only. Type of Chainpoint 2.x receipt.
 	Type string `json:"type,omitempty"`

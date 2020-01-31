@@ -9,7 +9,7 @@
  */
 
 package woleetapi
-
+// ReceiptAnchorsNode struct for ReceiptAnchorsNode
 type ReceiptAnchorsNode struct {
 	Type string `json:"type,omitempty"`
 	SourceId string `json:"sourceId,omitempty"`

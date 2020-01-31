@@ -9,7 +9,7 @@
  */
 
 package idserver
-// KeyStatusEnum : Key status (a `blocked` key cannot be used to sign).
+// KeyStatusEnum Key status (a `blocked` key cannot be used to sign).
 type KeyStatusEnum string
 
 // List of KeyStatusEnum

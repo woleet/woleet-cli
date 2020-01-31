@@ -9,7 +9,7 @@
  */
 
 package woleetapi
-
+// Anchors struct for Anchors
 type Anchors struct {
 	// Array of anchors matching the search criteria.
 	Content []Anchor `json:"content,omitempty"`

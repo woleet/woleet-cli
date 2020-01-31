@@ -9,7 +9,7 @@
  */
 
 package woleetapi
-
+// ReceiptProofNode struct for ReceiptProofNode
 type ReceiptProofNode struct {
 	Left string `json:"left,omitempty"`
 	Right string `json:"right,omitempty"`

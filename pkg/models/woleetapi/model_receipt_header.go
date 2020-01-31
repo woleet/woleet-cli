@@ -9,8 +9,7 @@
  */
 
 package woleetapi
-
-// Chainpoint 1.x only
+// ReceiptHeader Chainpoint 1.x only
 type ReceiptHeader struct {
 	ChainpointVersion string `json:"chainpoint_version,omitempty"`
 	HashType string `json:"hash_type,omitempty"`

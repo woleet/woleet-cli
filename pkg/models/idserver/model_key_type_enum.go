@@ -9,7 +9,7 @@
  */
 
 package idserver
-// KeyTypeEnum : Key type.
+// KeyTypeEnum Key type.
 type KeyTypeEnum string
 
 // List of KeyTypeEnum

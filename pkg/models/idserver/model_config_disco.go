@@ -9,7 +9,7 @@
  */
 
 package idserver
-
+// ConfigDisco struct for ConfigDisco
 type ConfigDisco struct {
 	// Public URL of the `/identity` endpoint (ie. the URL that anyone can use to get the identity associated with a public key). 
 	IdentityURL string `json:"identityURL,omitempty"`

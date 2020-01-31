@@ -9,7 +9,7 @@
  */
 
 package idserver
-
+// KeyGet struct for KeyGet
 type KeyGet struct {
 	// Key name.
 	Name string `json:"name"`

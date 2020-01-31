@@ -9,7 +9,7 @@
  */
 
 package idserver
-// UserStatusEnum : User status (a `blocked` user cannot sign).
+// UserStatusEnum User status (a `blocked` user cannot sign).
 type UserStatusEnum string
 
 // List of UserStatusEnum

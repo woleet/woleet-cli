@@ -9,7 +9,7 @@
  */
 
 package woleetapi
-
+// Anchor struct for Anchor
 type Anchor struct {
 	// Anchor identifier. It is allocated by the platform, and so must not be provided at creation time. 
 	Id string `json:"id,omitempty"`

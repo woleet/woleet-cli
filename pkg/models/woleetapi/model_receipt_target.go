@@ -9,8 +9,7 @@
  */
 
 package woleetapi
-
-// Chainpoint 1.x only
+// ReceiptTarget Chainpoint 1.x only
 type ReceiptTarget struct {
 	TargetHash string `json:"target_hash,omitempty"`
 	TargetProof []ReceiptTargetProofNode `json:"target_proof,omitempty"`

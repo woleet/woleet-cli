@@ -316,7 +316,7 @@ curl -s https://raw.githubusercontent.com/woleet/woleet.id-server/master/swagger
 
 
 # Update models
-JAVA_OPTS='-Dmodels -DmodelDocs=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && \
+JAVA_TOOL_OPTIONS='-Dmodels=anchor,anchors,receipt,receipt_proof_node,receipt_anchors_node,receipt_signature,receipt_header,receipt_target,receipt_target_proof_node -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && \
 ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
-JAVA_OPTS='-Dmodels -DmodelDocs=false' openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -p packageName=idserver -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && rm pkg/models/idserver/model_api_* pkg/models/idserver/model_server_* pkg/models/idserver/model_enrollment_*
+JAVA_TOOL_OPTIONS='-Dmodels=UserModeEnum,UserStatusEnum,UserRoleEnum,KeyStatusEnum,KeyTypeEnum,KeyHolderEnum,KeyDeviceEnum,SignatureResult,UserDisco,KeyGet,FullIdentity,ConfigDisco -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -p packageName=idserver -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool
 ```

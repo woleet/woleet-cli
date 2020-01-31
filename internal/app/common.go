@@ -33,6 +33,8 @@ type RunParameters struct {
 	IDServerSignURL     string
 	IDServerToken       string
 	IDServerPubKey      string
+	SignedIdentity      string
+	SignedIssuerDomain  string
 	Filter              *regexp.Regexp
 	S3Client            *minio.Client
 }
@@ -106,4 +108,35 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 		}
 	}
 	log.Fatalf("Unable to find specified publicKey on this Woleet.ID Server with provided token")
+}
+
+func buildSignedIdentityString(user *idserver.UserDisco) string {
+	signedIdentity := "CN=" + user.Identity.CommonName
+	if user.Identity.Organization != "" {
+		signedIdentity = signedIdentity + ",O=" + user.Identity.Organization
+	}
+	if user.Identity.OrganizationalUnit != "" {
+		signedIdentity = signedIdentity + ",OU=" + user.Identity.OrganizationalUnit
+	}
+	if user.Identity.Locality != "" {
+		signedIdentity = signedIdentity + ",L=" + user.Identity.Locality
+	}
+	if user.Identity.Country != "" {
+		signedIdentity = signedIdentity + ",C=" + user.Identity.Country
+	}
+	if user.Email != "" {
+		signedIdentity = signedIdentity + ",EMAILADDRESS=" + user.Email
+	}
+	return signedIdentity
+}
+
+func buildSignedIssuerDomainString(config *idserver.ConfigDisco) string {
+	domainParts := strings.Split(config.IdentityURL, ".")
+	if len(domainParts) == 0 {
+		return ""
+	} else if len(domainParts) == 1 {
+		return domainParts[0]
+	} else {
+		return domainParts[len(domainParts)-2] + "." + domainParts[len(domainParts)-1]
+	}
 }

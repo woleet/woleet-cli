@@ -9,7 +9,7 @@
  */
 
 package idserver
-
+// SignatureResult struct for SignatureResult
 type SignatureResult struct {
 	// Public key used to sign (must be the same as the `pubKey` parameter if provided).
 	PubKey string `json:"pubKey,omitempty"`

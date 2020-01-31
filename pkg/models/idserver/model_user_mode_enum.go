@@ -9,7 +9,7 @@
  */
 
 package idserver
-// UserModeEnum : User mode, esign the user is a real user, and his keys are used to create electronic signatures. seal the user represents an organization, and his keys are used to create server seals. 
+// UserModeEnum User mode, esign the user is a real user, and his keys are used to create electronic signatures. seal the user represents an organization, and his keys are used to create server seals. 
 type UserModeEnum string
 
 // List of UserModeEnum
