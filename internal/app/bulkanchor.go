@@ -227,7 +227,7 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 			anchor.PubKey = signatureGet.PubKey
-			anchor.SignedHash = signatureGet.SignedHash
+			anchor.SignedHash = hash
 			anchor.Signature = signatureGet.Signature
 			anchor.IdentityURL = signatureGet.IdentityURL
 			if commonInfos.runParameters.SignedIdentity != "" {
