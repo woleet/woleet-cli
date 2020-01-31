@@ -56,7 +56,7 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 			commonInfos.widsClient.GetServerConfig()
 			config, errConfig := commonInfos.widsClient.GetServerConfig()
 			errHandlerExitOnError(errConfig, commonInfos.runParameters.ExitOnError)
-			commonInfos.runParameters.SignedIdentity = buildSignedIssuerDomainString(config)
+			commonInfos.runParameters.SignedIssuerDomain = buildSignedIssuerDomainString(config)
 		}
 	}
 
