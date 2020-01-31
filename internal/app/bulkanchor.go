@@ -178,28 +178,9 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			continue
 		}
 
-		tagsSlice := make([]string, 0)
-		var tags []string
-		if !(strings.HasPrefix(path, commonInfos.runParameters.Directory) && strings.HasSuffix(path, fileName)) {
-			log.WithFields(logrus.Fields{
-				"path": path,
-			}).Errorln("Unable to extract tags form the path")
-			if commonInfos.runParameters.ExitOnError {
-				os.Exit(1)
-			}
-			continue
-		}
-		tags = strings.Split(strings.TrimSuffix(strings.TrimPrefix(path, commonInfos.runParameters.Directory), fileName), string(os.PathSeparator))
-		for i := range tags {
-			if !(strings.Contains(tags[i], " ") || strings.EqualFold(tags[i], "")) {
-				tagsSlice = append(tagsSlice, tags[i])
-			}
-		}
-
 		if !commonInfos.runParameters.Signature {
 			anchor.Name = fileName
 			anchor.Hash = hash
-			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 		} else {
 			signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey)
@@ -208,7 +189,6 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 				continue
 			}
 			anchor.Name = fileName
-			anchor.Tags = tagsSlice
 			anchor.Public = &commonInfos.runParameters.InvertPrivate
 			anchor.PubKey = signatureGet.PubKey
 			anchor.SignedHash = signatureGet.SignedHash
