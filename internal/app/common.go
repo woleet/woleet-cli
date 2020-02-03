@@ -132,9 +132,8 @@ func buildSignedIdentityString(user *idserver.UserDisco) string {
 }
 
 func buildSignedIssuerDomainString(config *idserver.ConfigDisco) string {
-
-	url, errUrl := url.Parse(config.IdentityURL)
-	if errUrl != nil {
+	url, errURL := url.Parse(config.IdentityURL)
+	if errURL != nil {
 		return ""
 	}
 	domainParts := strings.Split(url.Hostname(), ".")

@@ -3,7 +3,7 @@ package app
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
+	"github.com/clarketm/json"
 	"os"
 	"strings"
 
