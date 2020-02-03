@@ -57,10 +57,6 @@ func checkDirectory(path string, directory string, pathSeparator string, log *lo
 		log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
 		return false
 	}
-	if strings.Contains(strings.TrimPrefix(path, directory), " ") {
-		log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
-		return false
-	}
 	return true
 }
 
@@ -81,12 +77,6 @@ func checkDirectoryS3(path string, log *logrus.Logger) bool {
 	if len(strings.Replace(path, "/", "", -1)) > 128 {
 		if !isFile {
 			log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
-		}
-		return false
-	}
-	if strings.Contains(path, " ") {
-		if !isFile && strings.Contains(dirArray[len(dirArray)-1], " ") {
-			log.Warnf("The directory: %s will be ignored, as it's name contains a space\n", path)
 		}
 		return false
 	}
