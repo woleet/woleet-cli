@@ -17,6 +17,7 @@ var directory string
 var filter string
 var strict bool
 var prune bool
+var fixReceipts bool
 var exitOnError bool
 var private bool
 var recursive bool

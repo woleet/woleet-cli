@@ -24,6 +24,7 @@ type RunParameters struct {
 	InvertPrivate       bool
 	Strict              bool
 	Prune               bool
+	FixReceipts         bool
 	IDServerUnsecureSSL bool
 	IsFS                bool
 	IsS3                bool

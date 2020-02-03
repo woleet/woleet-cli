@@ -3,9 +3,10 @@ package app
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/clarketm/json"
 	"os"
 	"strings"
+
+	"github.com/clarketm/json"
 
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
@@ -94,6 +95,13 @@ func (commonInfos *commonInfos) splitPendingReceipt() {
 }
 
 func (commonInfos *commonInfos) sortFile(path string, fileName string, pending bool, receipt bool) error {
+	if receipt && commonInfos.runParameters.FixReceipts {
+		errFix := commonInfos.fixReceipt(path)
+		if errFix != nil {
+			return errFix
+		}
+	}
+
 	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileName)
 	if erranchorNameInfo != nil {
 		return erranchorNameInfo
@@ -308,4 +316,30 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 			"proofFile":    receiptPath,
 		}).Infoln("Proof retrieved")
 	}
+}
+
+func (commonInfos *commonInfos) fixReceipt(path string) error {
+	receiptJSON, errReceiptJSON := commonInfos.readFile(path)
+	if errReceiptJSON != nil {
+		return errReceiptJSON
+	}
+
+	var receiptUnmarshalled woleetapi.Receipt
+	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
+	if errUnmarshal != nil {
+		return errUnmarshal
+	}
+
+	//TODO Fix
+
+	receiptMarshall, errReceiptMarshall := json.Marshal(receiptUnmarshalled)
+	if errReceiptMarshall != nil {
+		return errReceiptMarshall
+	}
+
+	errWrite := commonInfos.writeFile(path, receiptMarshall)
+	if errWrite != nil {
+		return errWrite
+	}
+	return nil
 }

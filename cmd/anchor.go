@@ -35,6 +35,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 
 		runParameters.Strict = viper.GetBool("app.strict")
 		runParameters.Prune = viper.GetBool("app.prune")
+		runParameters.FixReceipts = viper.GetBool("app.fixReceipts")
 		runParameters.ExitOnError = viper.GetBool("app.exitOnError")
 		runParameters.Recursive = viper.GetBool("app.recursive")
 
@@ -58,6 +59,7 @@ don't specify the transport (https://), https will be used by default if you wan
 	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
 	anchorCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
+	anchorCmd.Flags().BoolVarP(&fixReceipts, "fix-receipts", "", false, "//TODO")
 	anchorCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	anchorCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
@@ -72,6 +74,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("s3.secretAccessKey", anchorCmd.Flags().Lookup("s3SecretAccessKey"))
 	viper.BindPFlag("app.strict", anchorCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", anchorCmd.Flags().Lookup("prune"))
+	viper.BindPFlag("app.fixReceipts", anchorCmd.Flags().Lookup("fixReceipts"))
 	viper.BindPFlag("app.exitOnError", anchorCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", anchorCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("api.private", anchorCmd.Flags().Lookup("private"))
@@ -86,6 +89,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindEnv("s3.secretAccessKey")
 	viper.BindEnv("app.strict")
 	viper.BindEnv("app.prune")
+	viper.BindEnv("app.fixReceipts")
 	viper.BindEnv("app.exitOnError")
 	viper.BindEnv("app.recursive")
 	viper.BindEnv("api.private")
