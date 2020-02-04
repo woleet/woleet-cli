@@ -1,13 +1,13 @@
 package app
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
 	"strings"
 
 	"github.com/clarketm/json"
-
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/helpers"
@@ -330,16 +330,20 @@ func (commonInfos *commonInfos) fixReceipt(path string) error {
 		return errUnmarshal
 	}
 
-	//TODO Fix
-
-	receiptMarshall, errReceiptMarshall := json.Marshal(receiptUnmarshalled)
-	if errReceiptMarshall != nil {
-		return errReceiptMarshall
+	receiptMarshalled, errReceiptMarshalled := json.Marshal(receiptUnmarshalled)
+	if errReceiptMarshalled != nil {
+		return errReceiptMarshalled
 	}
 
-	errWrite := commonInfos.writeFile(path, receiptMarshall)
-	if errWrite != nil {
-		return errWrite
+	if !bytes.Equal(receiptJSON, receiptMarshalled) {
+		log.WithFields(logrus.Fields{
+			"proofFile": path,
+		}).Infoln("Fixing receipt")
+
+		errWrite := commonInfos.writeFile(path, receiptMarshalled)
+		if errWrite != nil {
+			return errWrite
+		}
 	}
 	return nil
 }

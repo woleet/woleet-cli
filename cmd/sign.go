@@ -68,7 +68,7 @@ func init() {
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature or if the pubkey was changed")
 	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed`)
-	signCmd.Flags().BoolVarP(&fixReceipts, "fix-receipts", "", false, "//TODO")
+	signCmd.Flags().BoolVarP(&fixReceipts, "fixReceipts", "", false, "//TODO")
 	signCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
@@ -87,7 +87,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("sign.widsPubKey", signCmd.Flags().Lookup("widsPubKey"))
 	viper.BindPFlag("app.strict", signCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", signCmd.Flags().Lookup("prune"))
-	viper.BindPFlag("app.fixReceipts", signCmd.Flags().Lookup("fix-receipts"))
+	viper.BindPFlag("app.fixReceipts", signCmd.Flags().Lookup("fixReceipts"))
 	viper.BindPFlag("app.exitOnError", signCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", signCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("app.dryRun", signCmd.Flags().Lookup("dryRun"))
