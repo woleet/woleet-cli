@@ -87,7 +87,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("sign.widsPubKey", signCmd.Flags().Lookup("widsPubKey"))
 	viper.BindPFlag("app.strict", signCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", signCmd.Flags().Lookup("prune"))
-	viper.BindPFlag("app.fixReceipts", signCmd.Flags().Lookup("fixReceipts"))
+	viper.BindPFlag("app.fixReceipts", signCmd.Flags().Lookup("fix-receipts"))
 	viper.BindPFlag("app.exitOnError", signCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", signCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("app.dryRun", signCmd.Flags().Lookup("dryRun"))

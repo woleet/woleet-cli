@@ -74,7 +74,7 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("s3.secretAccessKey", anchorCmd.Flags().Lookup("s3SecretAccessKey"))
 	viper.BindPFlag("app.strict", anchorCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", anchorCmd.Flags().Lookup("prune"))
-	viper.BindPFlag("app.fixReceipts", anchorCmd.Flags().Lookup("fixReceipts"))
+	viper.BindPFlag("app.fixReceipts", anchorCmd.Flags().Lookup("fix-receipts"))
 	viper.BindPFlag("app.exitOnError", anchorCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", anchorCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("api.private", anchorCmd.Flags().Lookup("private"))
