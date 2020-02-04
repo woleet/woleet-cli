@@ -59,7 +59,7 @@ don't specify the transport (https://), https will be used by default if you wan
 	anchorCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-anchor any file that has changed since last anchoring")
 	anchorCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
-	anchorCmd.Flags().BoolVarP(&fixReceipts, "fixReceipts", "", false, "//TODO")
+	anchorCmd.Flags().BoolVarP(&fixReceipts, "fixReceipts", "", false, "Check the format and fix (if necessary) every existing receipts")
 	anchorCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	anchorCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	anchorCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")

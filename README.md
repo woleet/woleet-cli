@@ -98,6 +98,7 @@ woleet-cli anchor [flags]
       --dryRun                     print information about files to anchor without anchoring
   -e, --exitOnError                exit with an error code if anything goes wrong
   -f, --filter string             anchor only files matching this regex
+      --fixReceipts                Check the format and fix (if necessary) every existing receipts
   -h, --help                       display help for anchor command
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
@@ -117,6 +118,7 @@ woleet-cli sign [flags]
       --dryRun                     print information about files to sign without signing
   -e, --exitOnError                exit with an error code if anything goes wrong
   -f, --filter string             Only files that match that regex will be signed
+      --fixReceipts                Check the format and fix (if necessary) every existing receipts
   -h, --help                       display help for sign command
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
@@ -163,6 +165,7 @@ api:
 app:
   directory: /home/folder/to/anchor
   filter: '.*\.json'
+  fixReceipts: true
   strict: true
   prune: true
   exitOnError: true
@@ -200,6 +203,7 @@ JSON:
   "app": {
     "directory": "/home/folder/to/anchor",
     "filter": ".*\.json",
+    "fixReceipts": true,
     "exitOnError": true,
     "strict": true,
     "prune": true,
@@ -240,6 +244,7 @@ export WCLI_API_TOKEN="insert-your-token-here"
 export WCLI_API_PRIVATE="true"
 export WCLI_APP_DIRECTORY="/home/folder/to/anchor"
 export WCLI_APP_FILTER='.*\.json'
+export WCLI_APP_FIXRECEIPTS="true"
 export WCLI_APP_EXITONERROR="true"
 export WCLI_APP_STRICT="true"
 export WCLI_APP_PRUNE="true"

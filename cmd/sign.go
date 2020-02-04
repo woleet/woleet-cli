@@ -68,7 +68,7 @@ func init() {
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature or if the pubkey was changed")
 	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed`)
-	signCmd.Flags().BoolVarP(&fixReceipts, "fixReceipts", "", false, "//TODO")
+	signCmd.Flags().BoolVarP(&fixReceipts, "fixReceipts", "", false, "Check the format and fix (if necessary) every existing receipts")
 	signCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	signCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	signCmd.Flags().BoolVarP(&dryRun, "dryRun", "", false, "print information about files to sign without signing")
