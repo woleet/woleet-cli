@@ -24,8 +24,6 @@ If you want to anchor a subset of the files present in a folder or a subfolder, 
 
 To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
 
-Note: tags are added to the anchors according to the name of sub-folders  
-
 ### S3 support
 
 When filling --s3AccessKeyID, --s3SecretAccessKey, --s3Bucket and --s3Endpoint you will not have to specify --directory.  
@@ -39,7 +37,6 @@ When using an S3-like directory, we advise to not use the --strict parameter as 
 
 * All files and folders beginning by '.' or finished by '.(anchor|signature)-(receipt|pending).json' are ignored
 * Symlinks are not followed
-* Scanned sub-folders cannot have a space in their name
 * The maximum length of the subfolder path (without delimiters) is 128 characters
 
 ## Export
