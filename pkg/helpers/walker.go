@@ -87,7 +87,10 @@ func ExploreDirectory(baseDirectory string, recursive bool, filter *regexp.Regex
 	mapPathFileName := make(map[string]string)
 	errWalk := filepath.Walk(baseDirectory, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
-			if (!recursive && !strings.EqualFold(filepath.Clean(baseDirectory), filepath.Clean(path))) || (!checkDirectory(path, info.Name(), string(os.PathSeparator), log)) {
+			if strings.EqualFold(filepath.Clean(baseDirectory), filepath.Clean(path)) {
+			} else if !recursive {
+				return filepath.SkipDir
+			} else if !checkDirectory(path, info.Name(), string(os.PathSeparator), log) {
 				return filepath.SkipDir
 			}
 		} else if info.Mode().IsRegular() && checkFilename(info.Name(), filter) {
