@@ -45,7 +45,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 
 		runParameters.IDServerSignURL = checkWidSignURL(cmd)
 		runParameters.IDServerToken = checkWidToken(cmd)
-		runParameters.IDServerPubKey = checkWidPubKey(cmd)
+		runParameters.IDServerPubKey = viper.GetString("sign.widsPubKey")
 		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.widsUnsecureSSL")
 
 		os.Exit(app.BulkAnchor(runParameters, log))

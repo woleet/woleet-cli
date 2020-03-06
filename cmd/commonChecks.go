@@ -13,7 +13,7 @@ import (
 )
 
 func checkToken(cmd *cobra.Command) string {
-	if !viper.IsSet("api.token") || strings.EqualFold(viper.GetString("api.token"), "") {
+	if strings.EqualFold(viper.GetString("api.token"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
@@ -28,7 +28,7 @@ func checkExportDirectory(cmd *cobra.Command) string {
 }
 
 func checkDirectory(cmd *cobra.Command) string {
-	if !viper.IsSet("app.directory") || strings.EqualFold(viper.GetString("app.directory"), "") {
+	if strings.EqualFold(viper.GetString("app.directory"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
@@ -53,7 +53,7 @@ func checkDirectory(cmd *cobra.Command) string {
 }
 
 func checkFilter(cmd *cobra.Command) *regexp.Regexp {
-	if !viper.IsSet("app.filter") || strings.EqualFold(viper.GetString("app.filter"), "") {
+	if strings.EqualFold(viper.GetString("app.filter"), "") {
 		return nil
 	}
 	filter, errFilter := regexp.Compile(viper.GetString("app.filter"))
@@ -64,7 +64,7 @@ func checkFilter(cmd *cobra.Command) *regexp.Regexp {
 }
 
 func checkWidSignURL(cmd *cobra.Command) string {
-	if !viper.IsSet("sign.widsSignURL") || strings.EqualFold(viper.GetString("sign.widsSignURL"), "") {
+	if strings.EqualFold(viper.GetString("sign.widsSignURL"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
@@ -74,7 +74,7 @@ func checkWidSignURL(cmd *cobra.Command) string {
 }
 
 func checkWidToken(cmd *cobra.Command) string {
-	if !viper.IsSet("sign.widsToken") || strings.EqualFold(viper.GetString("sign.widsToken"), "") {
+	if strings.EqualFold(viper.GetString("sign.widsToken"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
@@ -83,36 +83,29 @@ func checkWidToken(cmd *cobra.Command) string {
 	return viper.GetString("sign.widsToken")
 }
 
-func checkWidPubKey(cmd *cobra.Command) string {
-	if !viper.IsSet("sign.widsPubKey") {
-		return ""
-	}
-	return viper.GetString("sign.widsPubKey")
-}
-
 func checkS3(cmd *cobra.Command) *minio.Client {
-	if !viper.IsSet("s3.bucket") || strings.EqualFold(viper.GetString("s3.bucket"), "") {
+	if strings.EqualFold(viper.GetString("s3.bucket"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a bucket for your S3 connection")
 	}
 
-	if !viper.IsSet("s3.endpoint") || strings.EqualFold(viper.GetString("s3.endpoint"), "") {
+	if strings.EqualFold(viper.GetString("s3.endpoint"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a endpoint for your S3 connection")
 	}
 
-	if !viper.IsSet("s3.accessKeyID") || strings.EqualFold(viper.GetString("s3.accessKeyID"), "") {
+	if strings.EqualFold(viper.GetString("s3.accessKeyID"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a accessKeyID for your S3 connection")
 	}
 
-	if !viper.IsSet("s3.secretAccessKey") || strings.EqualFold(viper.GetString("s3.secretAccessKey"), "") {
+	if strings.EqualFold(viper.GetString("s3.secretAccessKey"), "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
@@ -135,11 +128,11 @@ func checkS3(cmd *cobra.Command) *minio.Client {
 func checkFolderType(cmd *cobra.Command, runParameters *app.RunParameters) {
 	runParameters.IsFS = false
 	runParameters.IsS3 = false
-	if viper.IsSet("app.directory") && !strings.EqualFold(viper.GetString("app.directory"), "") {
+	if !strings.EqualFold(viper.GetString("app.directory"), "") {
 		runParameters.IsFS = true
 	}
 
-	if viper.IsSet("s3.bucket") && !strings.EqualFold(viper.GetString("s3.bucket"), "") {
+	if !strings.EqualFold(viper.GetString("s3.bucket"), "") {
 		runParameters.IsS3 = true
 	}
 
