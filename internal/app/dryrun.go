@@ -13,15 +13,17 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 
 	commonInfos := initCommonInfos(runParameters)
 
-	commonInfos.mapPathFileName = make(map[string]string)
-	commonInfos.pending = make(map[string]string)
-	commonInfos.pendingToDelete = make(map[string]string)
-	commonInfos.receipt = make(map[string]string)
-	commonInfos.receiptToDelete = make(map[string]string)
-
 	log.SetOutput(ioutil.Discard)
 	var err error
-	commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Filter, log)
+
+	if runParameters.IsFS {
+		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Filter, log)
+	}
+
+	if runParameters.IsS3 {
+		commonInfos.mapPathFileName = helpers.ExploreS3(runParameters.S3Client, runParameters.S3Bucket, runParameters.Recursive, runParameters.Filter, log)
+	}
+
 	log.SetOutput(os.Stdout)
 	if err != nil {
 		log.Errorln(err)
