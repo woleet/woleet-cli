@@ -4,13 +4,17 @@ import (
 	"github.com/woleet/woleet-cli/pkg/models/idserver"
 )
 
-func (client *Client) GetSignature(hashToSign string, pubKey string) (*idserver.SignatureResult, error) {
+func (client *Client) GetSignature(hashToSign string, pubKey string, integratedSignature bool) (*idserver.SignatureResult, error) {
 	queryMap := map[string]string{
 		"hashToSign": hashToSign,
 	}
 
 	if pubKey != "" {
 		queryMap["pubKey"] = pubKey
+	}
+
+	if integratedSignature {
+		queryMap["identityToSign"] = ""
 	}
 
 	resp, err := client.RestyClient.

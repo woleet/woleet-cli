@@ -28,6 +28,7 @@ type RunParameters struct {
 	IDServerUnsecureSSL bool
 	IsFS                bool
 	IsS3                bool
+	integratedSignature bool
 	Directory           string
 	S3Bucket            string
 	BaseURL             string

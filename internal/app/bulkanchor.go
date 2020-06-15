@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/clarketm/json"
+	"github.com/hashicorp/go-version"
 	"github.com/sirupsen/logrus"
 	"github.com/woleet/woleet-cli/pkg/api"
 	"github.com/woleet/woleet-cli/pkg/helpers"
@@ -49,15 +50,29 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 		}
 		checkWIDSConnectionPubKey(commonInfos)
 
-		user, errUser := commonInfos.widsClient.GetUser()
-		errHandlerExitOnError(errUser, commonInfos.runParameters.ExitOnError)
-		commonInfos.runParameters.SignedIdentity = buildSignedIdentityString(user)
+		runParameters.integratedSignature = false
+		config, errConfig := commonInfos.widsClient.GetServerConfig()
+		errHandlerExitOnError(errConfig, commonInfos.runParameters.ExitOnError)
 
-		if commonInfos.runParameters.SignedIdentity != "" {
-			commonInfos.widsClient.GetServerConfig()
-			config, errConfig := commonInfos.widsClient.GetServerConfig()
-			errHandlerExitOnError(errConfig, commonInfos.runParameters.ExitOnError)
-			commonInfos.runParameters.SignedIssuerDomain = buildSignedIssuerDomainString(config)
+		if errConfig == nil {
+			if config.APIVersion != "" {
+				serverVersion, errServerVersion := version.NewVersion(config.APIVersion)
+				lowestAPIVersion, _ := version.NewVersion("1.2.5")
+				if errServerVersion != nil {
+					if serverVersion.GreaterThanOrEqual(lowestAPIVersion) {
+						runParameters.integratedSignature = true
+					}
+				}
+			}
+		}
+
+		if !runParameters.integratedSignature {
+			user, errUser := commonInfos.widsClient.GetUser()
+			errHandlerExitOnError(errUser, commonInfos.runParameters.ExitOnError)
+			commonInfos.runParameters.SignedIdentity = buildSignedIdentityString(user)
+			if commonInfos.runParameters.SignedIdentity != "" && errConfig == nil {
+				commonInfos.runParameters.SignedIssuerDomain = buildSignedIssuerDomainString(config)
+			}
 		}
 	}
 
@@ -187,44 +202,57 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 func (commonInfos *commonInfos) checkStandardFiles() {
 	// In this loop only the standard files are used (not receipt or pending files)
 	for path, fileName := range commonInfos.mapPathFileName {
-		anchor := new(woleetapi.Anchor)
-
 		hash, errHash := commonInfos.getHash(path)
 		if errHash != nil {
 			errHandlerExitOnError(errHash, commonInfos.runParameters.ExitOnError)
 			continue
 		}
 
+		anchor := new(woleetapi.Anchor)
+		anchor.Name = fileName
+		anchor.Public = &commonInfos.runParameters.InvertPrivate
+
 		if !commonInfos.runParameters.Signature {
-			anchor.Name = fileName
 			anchor.Hash = hash
-			anchor.Public = &commonInfos.runParameters.InvertPrivate
 		} else {
-			messageToSign := hash
+			anchor.PubKey = commonInfos.runParameters.IDServerPubKey
 
-			if commonInfos.runParameters.SignedIdentity+commonInfos.runParameters.SignedIssuerDomain != "" {
-				signatureHash := sha256.Sum256([]byte(hash + commonInfos.runParameters.SignedIdentity + commonInfos.runParameters.SignedIssuerDomain))
-				messageToSign = hex.EncodeToString(signatureHash[:])
-			}
+			if commonInfos.runParameters.integratedSignature {
+				signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey, commonInfos.runParameters.integratedSignature)
+				if errSignatureGet != nil {
+					errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
+					continue
+				}
+				anchor.SignedHash = signatureGet.SignedHash
+				anchor.Signature = signatureGet.Signature
+				anchor.IdentityURL = signatureGet.IdentityURL
+				anchor.SignedIdentity = signatureGet.SignedIdentity
+				anchor.SignedIssuerDomain = signatureGet.SignedIssuerDomain
+			} else {
+				hashToSign := hash
 
-			signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(messageToSign, commonInfos.runParameters.IDServerPubKey)
-			if errSignatureGet != nil {
-				errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
-				continue
-			}
-			anchor.Name = fileName
-			anchor.Public = &commonInfos.runParameters.InvertPrivate
-			anchor.PubKey = signatureGet.PubKey
-			anchor.SignedHash = hash
-			anchor.Signature = signatureGet.Signature
-			anchor.IdentityURL = signatureGet.IdentityURL
-			if commonInfos.runParameters.SignedIdentity != "" {
-				anchor.SignedIdentity = commonInfos.runParameters.SignedIdentity
-				if commonInfos.runParameters.SignedIssuerDomain != "" {
-					anchor.SignedIssuerDomain = commonInfos.runParameters.SignedIssuerDomain
+				if commonInfos.runParameters.SignedIdentity+commonInfos.runParameters.SignedIssuerDomain != "" {
+					signatureHash := sha256.Sum256([]byte(hash + commonInfos.runParameters.SignedIdentity + commonInfos.runParameters.SignedIssuerDomain))
+					hashToSign = hex.EncodeToString(signatureHash[:])
+				}
+
+				signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hashToSign, commonInfos.runParameters.IDServerPubKey, commonInfos.runParameters.integratedSignature)
+				if errSignatureGet != nil {
+					errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
+					continue
+				}
+				anchor.SignedHash = hash
+				anchor.Signature = signatureGet.Signature
+				anchor.IdentityURL = signatureGet.IdentityURL
+				if commonInfos.runParameters.SignedIdentity != "" {
+					anchor.SignedIdentity = commonInfos.runParameters.SignedIdentity
+					if commonInfos.runParameters.SignedIssuerDomain != "" {
+						anchor.SignedIssuerDomain = commonInfos.runParameters.SignedIssuerDomain
+					}
 				}
 			}
 		}
+
 		commonInfos.postAnchorCreatePendingFile(anchor, path)
 	}
 }
