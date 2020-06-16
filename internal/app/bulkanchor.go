@@ -58,10 +58,8 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 			if config.APIVersion != "" {
 				serverVersion, errServerVersion := version.NewVersion(config.APIVersion)
 				lowestAPIVersion, _ := version.NewVersion("1.2.5")
-				if errServerVersion != nil {
-					if serverVersion.GreaterThanOrEqual(lowestAPIVersion) {
-						runParameters.integratedSignature = true
-					}
+				if errServerVersion == nil && serverVersion.GreaterThanOrEqual(lowestAPIVersion) {
+					runParameters.integratedSignature = true
 				}
 			}
 		}
@@ -216,7 +214,6 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			anchor.Hash = hash
 		} else {
 			anchor.PubKey = commonInfos.runParameters.IDServerPubKey
-
 			if commonInfos.runParameters.integratedSignature {
 				signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey, commonInfos.runParameters.integratedSignature)
 				if errSignatureGet != nil {

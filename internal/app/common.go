@@ -50,7 +50,7 @@ type commonInfos struct {
 	pendingToDelete map[string]string
 	receipt         map[string]string
 	receiptToDelete map[string]string
-	runParameters   RunParameters
+	runParameters   *RunParameters
 }
 
 func initCommonInfos(runParameters *RunParameters) *commonInfos {
@@ -60,7 +60,7 @@ func initCommonInfos(runParameters *RunParameters) *commonInfos {
 	infos.pendingToDelete = make(map[string]string)
 	infos.receipt = make(map[string]string)
 	infos.receiptToDelete = make(map[string]string)
-	infos.runParameters = *runParameters
+	infos.runParameters = runParameters
 	return infos
 }
 
