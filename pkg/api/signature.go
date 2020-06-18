@@ -14,7 +14,7 @@ func (client *Client) GetSignature(hashToSign string, pubKey string, integratedS
 	}
 
 	if integratedSignature {
-		queryMap["identityToSign"] = ""
+		queryMap["identityToSign"] = "ALL"
 	}
 
 	resp, err := client.RestyClient.

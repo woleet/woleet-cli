@@ -114,21 +114,22 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 }
 
 func buildSignedIdentityString(user *idserver.UserDisco) string {
-	signedIdentity := "CN=" + user.Identity.CommonName
+	replaceRegex := regexp.MustCompile(`([=",;+])`)
+	signedIdentity := "CN=" + replaceRegex.ReplaceAllString(user.Identity.CommonName, `\$1`)
 	if user.Identity.Organization != "" {
-		signedIdentity = signedIdentity + ",O=" + user.Identity.Organization
+		signedIdentity = signedIdentity + ",O=" + replaceRegex.ReplaceAllString(user.Identity.Organization, `\$1`)
 	}
 	if user.Identity.OrganizationalUnit != "" {
-		signedIdentity = signedIdentity + ",OU=" + user.Identity.OrganizationalUnit
+		signedIdentity = signedIdentity + ",OU=" + replaceRegex.ReplaceAllString(user.Identity.OrganizationalUnit, `\$1`)
 	}
 	if user.Identity.Locality != "" {
-		signedIdentity = signedIdentity + ",L=" + user.Identity.Locality
+		signedIdentity = signedIdentity + ",L=" + replaceRegex.ReplaceAllString(user.Identity.Locality, `\$1`)
 	}
 	if user.Identity.Country != "" {
-		signedIdentity = signedIdentity + ",C=" + user.Identity.Country
+		signedIdentity = signedIdentity + ",C=" + replaceRegex.ReplaceAllString(user.Identity.Country, `\$1`)
 	}
 	if user.Email != "" {
-		signedIdentity = signedIdentity + ",EMAILADDRESS=" + user.Email
+		signedIdentity = signedIdentity + ",EMAILADDRESS=" + replaceRegex.ReplaceAllString(user.Email, `\$1`)
 	}
 	return signedIdentity
 }
