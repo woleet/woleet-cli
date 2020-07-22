@@ -83,6 +83,16 @@ func checkWidToken(cmd *cobra.Command) string {
 	return viper.GetString("sign.widsToken")
 }
 
+func checkWidPubKey(cmd *cobra.Command) string {
+	if strings.EqualFold(viper.GetString("sign.widsPubKey"), "") {
+		if !viper.GetBool("log.json") {
+			cmd.Help()
+		}
+		log.Fatalln("Please set a widsPubKey")
+	}
+	return viper.GetString("sign.widsPubKey")
+}
+
 func checkS3(cmd *cobra.Command) *minio.Client {
 	if strings.EqualFold(viper.GetString("s3.bucket"), "") {
 		if !viper.GetBool("log.json") {

@@ -128,7 +128,7 @@ woleet-cli sign [flags]
       --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
       --strict                     re-sign any file that has changed since last signature or if the pubkey was changed
-      --widsPubKey string          public key (ie. bitcoin address) to use to sign
+      --widsPubKey string          public key (ie. bitcoin address) to use to sign (required)
       --widsSignURL string         Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
       --widsToken string           Woleet.ID Server API token (required)
       --widsUnsecureSSL            do not check Woleet.ID Server's SSL certificate validity (only for development)

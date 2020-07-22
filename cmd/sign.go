@@ -45,7 +45,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 
 		runParameters.IDServerSignURL = checkWidSignURL(cmd)
 		runParameters.IDServerToken = checkWidToken(cmd)
-		runParameters.IDServerPubKey = viper.GetString("sign.widsPubKey")
+		runParameters.IDServerPubKey = checkWidPubKey(cmd)
 		runParameters.IDServerUnsecureSSL = viper.GetBool("sign.widsUnsecureSSL")
 
 		os.Exit(app.BulkAnchor(runParameters, log))
@@ -64,7 +64,7 @@ func init() {
 	signCmd.Flags().StringVarP(&s3SecretAccessKey, "s3SecretAccessKey", "", "", "your SecretAccessKey")
 	signCmd.Flags().StringVarP(&widsSignURL, "widsSignURL", "", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:3002\" (required)")
 	signCmd.Flags().StringVarP(&widsToken, "widsToken", "", "", "Woleet.ID Server API token (required)")
-	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign")
+	signCmd.Flags().StringVarP(&widsPubKey, "widsPubKey", "", "", "public key (ie. bitcoin address) to use to sign (required)")
 	signCmd.Flags().BoolVarP(&strict, "strict", "", false, "re-sign any file that has changed since last signature or if the pubkey was changed")
 	signCmd.Flags().BoolVarP(&prune, "prune", "", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed`)
