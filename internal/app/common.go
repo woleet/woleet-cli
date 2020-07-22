@@ -86,7 +86,7 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUser)
 		}
 		if user.Mode == idserver.USERMODEENUM_ESIGN {
-			log.Fatalln("You can't sign with a user configured for e-signature with an admin token")
+			log.Fatalln("You can't sign for an user configured for e-signature with an admin token")
 		}
 	}
 
