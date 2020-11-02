@@ -1,10 +1,11 @@
 package app
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/clarketm/json"
@@ -108,16 +109,16 @@ func (commonInfos *commonInfos) splitPendingReceipt() {
 }
 
 func (commonInfos *commonInfos) sortFile(path string, fileName string, pending bool, receipt bool) error {
-	if receipt && commonInfos.runParameters.FixReceipts {
-		errFix := commonInfos.fixReceipt(path)
-		if errFix != nil {
-			return errFix
-		}
-	}
-
 	anchorNameInfo, erranchorNameInfo := helpers.GetAnchorIDFromName(fileName)
 	if erranchorNameInfo != nil {
 		return erranchorNameInfo
+	}
+
+	if receipt && commonInfos.runParameters.FixReceipts {
+		errFix := commonInfos.fixReceipt(path, anchorNameInfo.AnchorID)
+		if errFix != nil {
+			return errFix
+		}
 	}
 
 	// Extracting the file's original path by the name of the pending/receipt
@@ -154,7 +155,7 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 		return errReceiptJSON
 	}
 
-	var receiptUnmarshalled woleetapi.Receipt
+	var receiptUnmarshalled map[string]interface{}
 	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
 	if errUnmarshal != nil {
 		return errUnmarshal
@@ -170,13 +171,34 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 	// In case of signature:
 	//   If the signedhashs and pubkeys are equals, there is nothing to do
 	if !commonInfos.runParameters.Signature {
-		if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
+
+		targetHash, okTargetHash := receiptUnmarshalled["targetHash"].(string)
+		if !okTargetHash {
+			return fmt.Errorf("Unable to read targetHash from %q", path)
+		}
+
+		if strings.EqualFold(hash, targetHash) {
 			// File already anchored and valid
 			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	} else {
-		if strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, receiptUnmarshalled.Signature.PubKey) {
+		signatureMap, okSignatureMap := receiptUnmarshalled["signature"].(map[string]string)
+		if !okSignatureMap {
+			return fmt.Errorf("Unable to read signature object from %q", path)
+		}
+
+		signedHash, existsSignedHash := signatureMap["signedHash"]
+		if !existsSignedHash {
+			return fmt.Errorf("Unable to read signedHash from %q", path)
+		}
+
+		pubKey, existsPubKey := signatureMap["pubKey"]
+		if !existsPubKey {
+			return fmt.Errorf("Unable to read pubKey from %q", path)
+		}
+
+		if strings.EqualFold(hash, signedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, pubKey) {
 			// File signed and signature is up-to-date with current PubKey anchored and valid
 			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
@@ -260,12 +282,15 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 		errHandlerExitOnError(errAnchorPost, commonInfos.runParameters.ExitOnError)
 		return
 	}
-	pendingReceipt := new(woleetapi.Receipt)
+	pendingReceipt := make(map[string]interface{})
 	if !commonInfos.runParameters.Signature {
-		pendingReceipt.TargetHash = anchorPost.Hash
+		pendingReceipt["targetHash"] = anchorPost.Hash
 	} else {
-		pendingReceipt.Signature.SignedHash = anchorPost.SignedHash
-		pendingReceipt.Signature.PubKey = anchorPost.PubKey
+		signatureMap := make(map[string]string)
+		signatureMap["signedHash"] = anchorPost.SignedHash
+		signatureMap["pubKey"] = anchorPost.PubKey
+		pendingReceipt["signature"] = signatureMap
+
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
@@ -326,12 +351,7 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 			errHandlerExitOnError(errReceipt, commonInfos.runParameters.ExitOnError)
 			continue
 		}
-		receiptJSON, errReceiptJSON := json.Marshal(receipt)
-		if errReceiptJSON != nil {
-			errHandlerExitOnError(errReceiptJSON, commonInfos.runParameters.ExitOnError)
-			return
-		}
-		commonInfos.writeFile(receiptPath, receiptJSON)
+		commonInfos.writeFile(receiptPath, receipt)
 		errRemove := commonInfos.removeFile(path)
 		if errRemove != nil {
 			errHandlerExitOnError(errRemove, commonInfos.runParameters.ExitOnError)
@@ -343,29 +363,35 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 	}
 }
 
-func (commonInfos *commonInfos) fixReceipt(path string) error {
+func (commonInfos *commonInfos) fixReceipt(path string, anchorID string) error {
 	receiptJSON, errReceiptJSON := commonInfos.readFile(path)
 	if errReceiptJSON != nil {
 		return errReceiptJSON
 	}
 
-	var receiptUnmarshalled woleetapi.Receipt
-	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
+	var receiptJSONUnmarshalled map[string]interface{}
+	errUnmarshal := json.Unmarshal(receiptJSON, &receiptJSONUnmarshalled)
 	if errUnmarshal != nil {
 		return errUnmarshal
 	}
 
-	receiptMarshalled, errReceiptMarshalled := json.Marshal(receiptUnmarshalled)
-	if errReceiptMarshalled != nil {
-		return errReceiptMarshalled
+	receiptDownload, errReceiptDownload := commonInfos.client.GetReceipt(anchorID)
+	if errReceiptDownload != nil {
+		return errReceiptDownload
 	}
 
-	if !bytes.Equal(receiptJSON, receiptMarshalled) {
+	var receiptDownloadUnmarshalled map[string]interface{}
+	errUnmarshal = json.Unmarshal(receiptDownload, &receiptDownloadUnmarshalled)
+	if errUnmarshal != nil {
+		return errUnmarshal
+	}
+
+	if !reflect.DeepEqual(receiptJSONUnmarshalled, receiptDownloadUnmarshalled) {
 		log.WithFields(logrus.Fields{
 			"proofFile": path,
 		}).Infoln("Fixing receipt")
 
-		errWrite := commonInfos.writeFile(path, receiptMarshalled)
+		errWrite := commonInfos.writeFile(path, receiptDownload)
 		if errWrite != nil {
 			return errWrite
 		}

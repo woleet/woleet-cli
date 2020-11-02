@@ -73,10 +73,10 @@ sudo chmod +x /usr/local/bin/woleet-cli
 
 The tool behavior can be configured using command line arguments, environment variables or a configuration file. When several configuration means are used, the following priorities are applied:
 
-- command line arguments
-- environment variables
-- config file
-- default value (if any)
+* command line arguments
+* environment variables
+* config file
+* default value (if any)
 
 There is also a special environment variable or config path to disable environment configuration and configuration file:
 
@@ -318,7 +318,8 @@ curl -s https://raw.githubusercontent.com/woleet/woleet.id-server/master/swagger
 
 
 # Update models
-JAVA_TOOL_OPTIONS='-Dmodels=anchor,anchors,receipt,receipt_proof_node,receipt_anchors_node,receipt_signature,receipt_header,receipt_target,receipt_target_proof_node -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && \
+rm -rf pkg/models/woleetapi pkg/models/idserver && \
+JAVA_TOOL_OPTIONS='-Dmodels=anchor,anchors -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && \
 ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
 JAVA_TOOL_OPTIONS='-Dmodels=UserModeEnum,UserStatusEnum,UserRoleEnum,KeyStatusEnum,KeyTypeEnum,KeyHolderEnum,KeyDeviceEnum,SignatureResult,UserDisco,KeyGet,FullIdentity,ConfigDisco -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -p packageName=idserver -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool
 ```

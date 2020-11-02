@@ -17,6 +17,6 @@ type ConfigDisco struct {
 	SignatureURL string `json:"signatureURL,omitempty"`
 	// Public base URL of **API endpoints** (ie. the base URL that authorized users can use to call the server API). 
 	APIURL string `json:"APIURL,omitempty"`
-	// API version number of this wserver instance (extraced from the swagger file). 
+	// API version number of this Woleet.ID Server instance (extraced from the swagger file). 
 	APIVersion string `json:"APIVersion,omitempty"`
 }

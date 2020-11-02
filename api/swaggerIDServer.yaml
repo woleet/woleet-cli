@@ -95,7 +95,10 @@ paths:
         - OAuthTokenAuth: []
       responses:
         '200':
-          description: Successful operation.
+          description: >
+            Successful operation. The produced signature and its associated parameters are returned as a JSON object<br>
+            Note that if your are using the Woleet API and you want to anchor this signature,
+            you can simply add a `name` field to the returned JSON object, and provide it as is to the `POST /anchor` endpoint.
           content:
             application/json:
               schema:
@@ -239,7 +242,7 @@ paths:
               schema:
                 $ref: '#/components/responses/UserDisco'
         '204':
-          description: Successful operation. This case happend when this endpoint is called with an admin token.
+          description: Successful operation. This case occurs when this endpoint is called with an admin token.
         '401':
           description: Missing or invalid session cookie.
           content:
@@ -1131,15 +1134,15 @@ components:
           format: int64
           example: 1569542400000
           description: >
-            Key expiration date (Unix ms timestamp).
-            <br>Note that the field is not returned if the key has no expiration date.
+            Key expiration date (Unix ms timestamp).<br>
+            Note that the field is not returned if the key has no expiration date.
         revokedAt:
           type: integer
           format: int64
           example: 1569542400000
           description: >
-            Key revocation date (Unix ms timestamp).
-            <br>Note that the field is not returned if the key is not yet revoked.
+            Key revocation date (Unix ms timestamp).<br>
+            Note that the field is not returned if the key is not yet revoked.
     FullIdentity:
       allOf:
         - $ref: '#/components/schemas/Identity'
@@ -1396,7 +1399,7 @@ components:
       type: string
       example: "1.2.5"
       description: >
-        API version number of this wserver instance (extraced from the swagger file).
+        API version number of this Woleet.ID Server instance (extraced from the swagger file).
     ServerConfig:
       type: object
       properties:
@@ -1595,21 +1598,22 @@ components:
           type: string
           format: base64
           example: "IKnOvW2/BQqahssC2l9Icz7qiJQqesgu0HCKvW/L5xZLaMCLyg19ATDNJojMILdUijFOqiRzgk6ieDXi89DeB0Q="
-          description: Signature of `messageToSign` or `hashToSign` using the public key `pubKey`.
+          description: >
+            Signature of `messageToSign` or `hashToSign` using the public key `pubKey`, or signature of SHA256(`signedMessage` or `signedHash` + `signedIdentity` + `signedIssuerDomain`) if the identity of the signer and the domain of the identity issuer are included to the signed data.
         identityURL:
           $ref: '#/components/schemas/IdentityURL'
         signedIdentity:
           type: string
           example: "CN=SOMEONE,O=COMPANY,CN=SIGNATUREDEPARTEMENT,OU=Somewhere,EMAILADDRESS=user@example.host"
           description: >
-            X500 Distinguished Name representing the signed identity.<br>
-            Only sent if identityToSign is set.
+            X500 Distinguished Name representing the identity of the signer.<br>
+            Returned only if `identityToSign` is used.
         signedIssuerDomain:
           type: string
           example: "example.host"
           description: >
-            Domain name of the identity issuer (ie. of the organization who verified the identity).<br>
-            Only sent if identityToSign is set
+            Domain of the identity issuer (ie. of the organization who verified the identity).<br>
+            Returned only if `identityToSign` is used.
     IdentityResult:
       type: object
       properties:
@@ -1766,14 +1770,19 @@ components:
       name: identityToSign
       in: query
       description: >
-        Identity to add to the signature: if you add this query without paramters, all known informations on wids will be added to the signature.
-        You can also select the informations you want to add to the signature by providing a string with these X500 fields separated with ',':<br>
+        Identity to sign: when set, the identity of the signer and the domain of the identity issuer are included to the signed data.<br>
+        The identity of the signer is the X500 Distinguished Name built by the server from the identity associated to the key.<br>
+        The domain of the identity issuer is extracted from the server's identity URL.<br>
+        Both are included to the signed data: the signature produced is in this case is the signature of SHA256(hash or message to sign + identity of the signer + domain of the identity issuer).<br>
+        The identity of the signer and the domain of the identity issuer are returned respectively in the `signedIdentity` and the `signedIssuerDomain` fields of the signature result.<br>
+        You can specify the fields you want to include in the identity of the signer by providing a string containing the list of the X500 fields to include, separated with ',':<br>
           CN: Common name<br>
           O: Organization<br>
-          OU: Organization unit<br>
+          OU: Organizational unit<br>
           L: Locality<br>
           C: Country<br>
-          EMAILADDRESS: Email address
+          EMAILADDRESS: Email address<br>
+        If you want to include all fields, you can also provide ALL.
       required: false
       schema:
         type: string
