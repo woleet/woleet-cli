@@ -54,11 +54,11 @@ type commonInfos struct {
 }
 
 type minimalReceipt struct {
-	TargetHash string `json:"targetHash, omitempty"`
+	TargetHash string `json:"targetHash,omitempty"`
 	Signature  struct {
-		PubKey     string `json:"pubKey, omitempty"`
-		SignedHash string `json:"signedHash, omitempty"`
-	} `json:"signature, omitempty"`
+		PubKey     string `json:"pubKey,omitempty"`
+		SignedHash string `json:"signedHash,omitempty"`
+	} `json:"signature,omitempty"`
 }
 
 func initCommonInfos(runParameters *RunParameters) *commonInfos {

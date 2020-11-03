@@ -260,15 +260,12 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 		errHandlerExitOnError(errAnchorPost, commonInfos.runParameters.ExitOnError)
 		return
 	}
-	pendingReceipt := make(map[string]interface{})
+	pendingReceipt := new(minimalReceipt)
 	if !commonInfos.runParameters.Signature {
-		pendingReceipt["targetHash"] = anchorPost.Hash
+		pendingReceipt.TargetHash = anchorPost.Hash
 	} else {
-		signatureMap := make(map[string]string)
-		signatureMap["signedHash"] = anchorPost.SignedHash
-		signatureMap["pubKey"] = anchorPost.PubKey
-		pendingReceipt["signature"] = signatureMap
-
+		pendingReceipt.Signature.SignedHash = anchorPost.SignedHash
+		pendingReceipt.Signature.PubKey = anchorPost.PubKey
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
