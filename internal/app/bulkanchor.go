@@ -3,7 +3,6 @@ package app
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -155,7 +154,7 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 		return errReceiptJSON
 	}
 
-	var receiptUnmarshalled map[string]interface{}
+	var receiptUnmarshalled minimalReceipt
 	errUnmarshal := json.Unmarshal(receiptJSON, &receiptUnmarshalled)
 	if errUnmarshal != nil {
 		return errUnmarshal
@@ -171,34 +170,13 @@ func (commonInfos *commonInfos) sortFile(path string, fileName string, pending b
 	// In case of signature:
 	//   If the signedhashs and pubkeys are equals, there is nothing to do
 	if !commonInfos.runParameters.Signature {
-
-		targetHash, okTargetHash := receiptUnmarshalled["targetHash"].(string)
-		if !okTargetHash {
-			return fmt.Errorf("Unable to read targetHash from %q", path)
-		}
-
-		if strings.EqualFold(hash, targetHash) {
+		if strings.EqualFold(hash, receiptUnmarshalled.TargetHash) {
 			// File already anchored and valid
 			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
 		}
 	} else {
-		signatureMap, okSignatureMap := receiptUnmarshalled["signature"].(map[string]string)
-		if !okSignatureMap {
-			return fmt.Errorf("Unable to read signature object from %q", path)
-		}
-
-		signedHash, existsSignedHash := signatureMap["signedHash"]
-		if !existsSignedHash {
-			return fmt.Errorf("Unable to read signedHash from %q", path)
-		}
-
-		pubKey, existsPubKey := signatureMap["pubKey"]
-		if !existsPubKey {
-			return fmt.Errorf("Unable to read pubKey from %q", path)
-		}
-
-		if strings.EqualFold(hash, signedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, pubKey) {
+		if strings.EqualFold(hash, receiptUnmarshalled.Signature.SignedHash) && strings.EqualFold(commonInfos.runParameters.IDServerPubKey, receiptUnmarshalled.Signature.PubKey) {
 			// File signed and signature is up-to-date with current PubKey anchored and valid
 			delete(commonInfos.mapPathFileName, originalFilePath)
 			return nil
