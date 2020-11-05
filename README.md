@@ -69,7 +69,7 @@ sudo curl -L "$CLI_URL" | sudo tar -xz -C /usr/local/bin woleet-cli && \
 sudo chmod +x /usr/local/bin/woleet-cli
 ```
 
-## Configuration
+## Configure woleet-cli
 
 The tool behavior can be configured using command line arguments, environment variables or a configuration file. When several configuration means are used, the following priorities are applied:
 
@@ -263,47 +263,25 @@ export WCLI_LOG_JSON="true"
 export WCLI_LOG_LEVEL="info"
 ```
 
-## Build
-
-### Standard way
+## Build woleet-cli
 
 ```bash
-go get -u github.com/woleet/woleet-cli
+$ go get github.com/woleet/woleet-cli
 # After this step the created binary will be in your $GOBIN folder, traditionnaly $GOPATH/bin
 ```
 
-#### For go >= 1.11
-
 ```bash
 # Clone this project wherever you want
-git clone git@github.com:woleet/woleet-cli.git
+$ git clone git@github.com:woleet/woleet-cli.git
 
-# Generating the actual binary
-go build -o <desired_path>/woleet-cli
+# Generate the binary
+$ cd woleet-cli
+$ go build
 
 # or
 
-# The created binary will be in your $GOBIN folder
-go install
-```
-
-#### For go < 1.11
-
-```bash
-# Clone this project in $GOPATH/src/github.com/woleet
-# get mandatory libraries:
-go get -u github.com/go-resty/resty/v2
-go get -u github.com/spf13/cobra
-go get -u github.com/spf13/viper
-go get -u github.com/mitchellh/go-homedir
-go get -u github.com/kennygrant/sanitize
-go get -u github.com/sirupsen/logrus
-go get -u github.com/minio/minio-go/v6
-# For windows only:
-go get -u github.com/inconshreveable/mousetrap
-
-# Generating the actual binary
-go build -o <desired_path>/woleet-cli
+# Generate the binary and install it in your $GOBIN folder
+$ go install
 ```
 
 ### Generate models from OpenAPI/Swagger specifications
