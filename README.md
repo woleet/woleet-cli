@@ -1,4 +1,4 @@
-# Woleet command line interface
+# Woleet Command Line Interface
 
 woleet-cli is an open source command line tool on top of the Woleet API.
 The tool is written in Go and has been tested on Windows, macOS and Linux.
@@ -7,7 +7,7 @@ Currently, the tool only supports:
 
 * the `anchor` command, allowing to recursively anchor all files in a given directory
 * the `sign` command, allowing to recursively sign all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>)
-* the `export` command, allowing to download all your receipts in a given directory
+* the `export` command, allowing to download all your proof receipts in a given directory
 
 ## Anchor / Sign
 
@@ -29,7 +29,7 @@ To sum up, this tool can be used to generate and maintain the set of timestamped
 When filling --s3AccessKeyID, --s3SecretAccessKey, --s3Bucket and --s3Endpoint you will not have to specify --directory.  
 
 In that configuration, woleet-cli will anchor/sign all files in the input bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
-Receipts and pending files will be stored along original files in the S3 bucket.  
+Proof receipts and pending files will be stored along original files in the S3 bucket.  
 
 When using an S3-like directory, we advise to not use the --strict parameter as it will download all files at each run.  
 
@@ -43,7 +43,7 @@ When using an S3-like directory, we advise to not use the --strict parameter as 
 
 ### Functionalities
 
-The tool dumps all your receipts into a folder.  
+The tool dumps all your proof receipts into a folder.  
 You can specify a limit date to get all receipt created from this date.  
 
 ### Limitations
@@ -57,7 +57,7 @@ You can specify a limit date to get all receipt created from this date.
 
 The latest binaries can be found [here](https://github.com/woleet/woleet-cli/releases)
 
-Just download it, decompress it and execute it (add execution permissions if necessary)
+Just download it, decompress it and execute it (grant execution permissions if necessary)
 
 #### For Linux or MacOS
 
