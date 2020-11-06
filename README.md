@@ -265,10 +265,14 @@ export WCLI_LOG_LEVEL="info"
 
 ## Build woleet-cli
 
+### Clone and build in your $GOPATH folder
+
 ```bash
-$ go get github.com/woleet/woleet-cli
+$ GO111MODULE=on go get github.com/woleet/woleet-cli
 # After this step the created binary will be in your $GOBIN folder, traditionnaly $GOPATH/bin
 ```
+
+### Clone and build in any folder
 
 ```bash
 # Clone this project wherever you want
