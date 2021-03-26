@@ -49,12 +49,7 @@ func checkFilename(fileName string, filter *regexp.Regexp) bool {
 }
 
 func checkDirectory(path string, directory string, pathSeparator string, log *logrus.Logger) bool {
-	pathlenght := len(strings.Replace(strings.TrimPrefix(path, directory), pathSeparator, "", -1))
 	if strings.HasPrefix(directory, ".") {
-		return false
-	}
-	if pathlenght > 128 {
-		log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
 		return false
 	}
 	return true

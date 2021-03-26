@@ -37,7 +37,6 @@ When using an S3-like directory, we advise to not use the --strict parameter as 
 
 * All files and folders beginning by '.' or finished by '.(anchor|signature)-(receipt|pending).json' are ignored
 * Symlinks are not followed
-* The maximum length of the subfolder path (without delimiters) is 128 characters
 
 ## Export
 
