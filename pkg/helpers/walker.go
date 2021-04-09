@@ -56,9 +56,7 @@ func checkDirectory(path string, directory string, pathSeparator string, log *lo
 }
 
 func checkDirectoryS3(path string, log *logrus.Logger) bool {
-	isFile := false
 	if !strings.HasSuffix(path, "/") {
-		isFile = true
 		path = strings.TrimSuffix(path, extractFileNameFromPathS3(path))
 	}
 
@@ -69,12 +67,6 @@ func checkDirectoryS3(path string, log *logrus.Logger) bool {
 		}
 	}
 
-	if len(strings.Replace(path, "/", "", -1)) > 128 {
-		if !isFile {
-			log.Warnf("The directory: %s will be ignored, as it's path exceed 128 chars\n", path)
-		}
-		return false
-	}
 	return true
 }
 
