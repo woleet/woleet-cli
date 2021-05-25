@@ -206,6 +206,15 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 			continue
 		}
 
+		// If the file's hash matches the empty file one, it will be ignored as the Woleet API
+		//  does not allows this hash anymore
+		if strings.EqualFold(hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") {
+			log.WithFields(logrus.Fields{
+				"file": path,
+			}).Warnln("Hash of empty file detected, ignoring")
+			continue
+		}
+
 		anchor := new(woleetapi.Anchor)
 		anchor.Name = fileName
 		anchor.Public = &commonInfos.runParameters.InvertPrivate
