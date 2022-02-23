@@ -22,7 +22,7 @@ If the original file is no longer present and the option --prune is provided, th
 
 If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --filter option which will limit the scope of this tool to the files that matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
 
-To sum up, this tool can be used to generate and maintain the set of timestamped proofs of existence for all files in a given directory.
+To sum up, this tool can be used to generate and maintain the set of proofs of timestamp or proof of seal for all the files of a set of directories.
 
 ### S3 support
 

@@ -11,8 +11,8 @@ import (
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
 	Use:   "sign",
-	Short: "Recursively sign all files in a given directory and retrieve timestamped proofs of signature",
-	Long: `Recursively sign all files in a given directory and retrieve timestamped proofs of signature
+	Short: "Recursively sign all files in a given directory and retrieve proofs of seal or signature",
+	Long: `Recursively sign all files in a given directory and retrieve proofs of seal or signature
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runParameters := new(app.RunParameters)

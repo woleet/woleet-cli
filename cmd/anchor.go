@@ -11,8 +11,8 @@ import (
 // anchorCmd represents the anchor command
 var anchorCmd = &cobra.Command{
 	Use:   "anchor",
-	Short: "Recursively anchor all files in a given directory and retrieve timestamped proofs of existence",
-	Long: `Recursively anchor all files in a given directory and retrieve timestamped proofs of existence
+	Short: "Recursively anchor all files in a given directory and retrieve proofs of timestamp",
+	Long: `Recursively anchor all files in a given directory and retrieve proofs of timestamp
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runParameters := new(app.RunParameters)
