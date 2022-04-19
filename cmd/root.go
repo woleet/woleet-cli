@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 	Version: "0.5.3",
 	Short:   "Woleet command line interface",
 	Long: `woleet-cli is a command line interface allowing to interact with Woleet API (https://api.woleet.io). 
-For now, this tool only supports anchoring and signing all files of a given folder as well as exporting all your receipts on a folder`,
+For now, this tool only supports timestamping and signing all files of a given folder as well as exporting all your receipts on a folder`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log.SetOutput(os.Stdout)
 
@@ -52,33 +52,29 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.woleet-cli.yaml)")
+
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.woleet-cli.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&baseURL, "url", "u", "https://api.woleet.io/v1", "Woleet API URL")
 	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "Woleet API token (required)")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "logLevel", "", "info", "select log level info|warn|error|fatal")
-	rootCmd.PersistentFlags().BoolVarP(&json, "json", "", false, "use JSON as log output format")
+	rootCmd.PersistentFlags().BoolVarP(&jsonOut, "json", "", false, "use JSON as log output format")
 
 	viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.BindPFlag("api.token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("log.level", rootCmd.PersistentFlags().Lookup("logLevel"))
 	viper.BindPFlag("log.json", rootCmd.PersistentFlags().Lookup("json"))
-
-	viper.BindEnv("api.url")
-	viper.BindEnv("api.token")
-	viper.BindEnv("log.level")
-	viper.BindEnv("log.json")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
-	if (cfgFile == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
+	if (viper.GetString("config") == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
 		return
-	} else if cfgFile != "" {
+	} else if viper.GetString("config") != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
+		viper.SetConfigFile(viper.GetString("config"))
 	} else if os.Getenv("WCLI_CONFIG") != "" {
 		// Use config file from env
 		viper.SetConfigFile(os.Getenv("WCLI_CONFIG"))

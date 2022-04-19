@@ -10,7 +10,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, exitOnError bool, logInput *logrus.Logger) int {
+func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, renameReceipts bool, exitOnError bool, logInput *logrus.Logger) int {
 	log = logInput
 	client := api.GetNewClient(url, token)
 
@@ -25,33 +25,50 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 			end = true
 		}
 		for _, anchor := range anchors.Content {
-			if anchor.Created*1000000 < unixEpochLimit {
+			if anchor.GetCreated()*1000000 < unixEpochLimit {
 				end = true
 				continue
 			}
-			currentSuffix := helpers.SuffixAnchorReceipt
-			if anchor.Signature != "" {
-				currentSuffix = helpers.SuffixSignatureReceipt
+			currentSuffix := helpers.SuffixAnchorReceiptCurrent
+			legacySuffix := helpers.SuffixAnchorReceiptLegacy
+			if anchor.HasSignature() {
+				currentSuffix = helpers.SuffixSignatureReceiptCurrent
+				legacySuffix = helpers.SuffixSignatureReceiptLegacy
 			}
 
 			fields := logrus.Fields{}
 			fields["anchorID"] = anchor.Id
 			fields["anchor_Name"] = anchor.Name
-			fields["File_Name"] = sanitize.BaseName(anchor.Name) + "-" + anchor.Id + currentSuffix
+			fields["File_Name"] = sanitize.BaseName(anchor.GetName()) + "-" + anchor.GetId() + currentSuffix
 
-			receiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.Name) + "-" + anchor.Id + currentSuffix
-			if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
+			currentReceiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.GetName()) + "-" + anchor.GetId() + currentSuffix
+
+			if renameReceipts {
+				legacyReceiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.GetName()) + "-" + anchor.GetId() + legacySuffix
+				if _, err := os.Stat(legacyReceiptPath); !os.IsNotExist(err) {
+					if _, err := os.Stat(currentReceiptPath); !os.IsNotExist(err) {
+						log.WithFields(fields).Warnln("Renaming legacy file aborted, new file already present")
+						continue
+					}
+					err := os.Rename(legacyReceiptPath, currentReceiptPath)
+					if err != nil {
+						log.WithFields(fields).Warnln("Renaming legacy file failed")
+						continue
+					}
+				}
+			}
+			if _, err := os.Stat(currentReceiptPath); !os.IsNotExist(err) {
 				log.WithFields(fields).Infoln("Proof already on disk")
 				continue
 			}
-			if !strings.EqualFold(anchor.Status, "CONFIRMED") {
+			if !strings.EqualFold(anchor.GetStatus(), "CONFIRMED") {
 				log.WithFields(fields).Infoln("Proof not available yet")
 				continue
 			}
-			errGetReceipt := client.GetReceiptToFile(anchor.Id, receiptPath)
+			errGetReceipt := client.GetReceiptToFile(anchor.GetId(), currentReceiptPath)
 			if errGetReceipt != nil {
-				if _, err := os.Stat(receiptPath); !os.IsNotExist(err) {
-					errRemove := os.Remove(receiptPath)
+				if _, err := os.Stat(currentReceiptPath); !os.IsNotExist(err) {
+					errRemove := os.Remove(currentReceiptPath)
 					if errRemove != nil {
 						errHandlerExitOnError(errRemove, exitOnError)
 					}

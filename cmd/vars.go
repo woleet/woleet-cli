@@ -9,7 +9,7 @@ var cfgFile string
 var baseURL string
 var token string
 var logLevel string
-var json bool
+var jsonOut bool
 var log = logrus.New()
 
 // Anchor / Sign
@@ -22,6 +22,7 @@ var exitOnError bool
 var private bool
 var recursive bool
 var dryRun bool
+var renameReceipts bool
 
 // Sign
 var widsSignURL string
@@ -33,6 +34,7 @@ var widsUnsecureSSL bool
 var exportDirectory string
 var exportLimitDate string
 var exportExitOnError bool
+var exportRenameReceipts bool
 
 // S3
 var s3Bucket string

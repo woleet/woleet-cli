@@ -14,8 +14,8 @@ import (
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "Download all proofs for your anchors in a given directory",
-	Long: `Download all proofs for your anchors in a given directory
+	Short: "Download all proofs for your timestamps in a given directory",
+	Long: `Download all proofs for your timestamps in a given directory
 You can specify a date to only get proofs created after this date`,
 	Run: func(cmd *cobra.Command, args []string) {
 		absDirectory := checkExportDirectory(cmd)
@@ -53,7 +53,7 @@ You can specify a date to only get proofs created after this date`,
 			}
 			unixEpochLimit = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).UnixNano()
 		}
-		os.Exit(app.ExportReceipts(token, viper.GetString("api.url"), absDirectory, unixEpochLimit, viper.GetBool("export.exitonerror"), log))
+		os.Exit(app.ExportReceipts(token, viper.GetString("api.url"), absDirectory, unixEpochLimit, viper.GetBool("export.renameReceipts"), viper.GetBool("export.exitonerror"), log))
 	},
 }
 
@@ -63,12 +63,10 @@ func init() {
 	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where to store the proofs (required)")
 	exportCmd.Flags().StringVarP(&exportLimitDate, "limitDate", "l", "", "get only proofs created after the provided date (format: yyyy-MM-dd)")
 	exportCmd.Flags().BoolVarP(&exportExitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
+	exportCmd.Flags().BoolVar(&renameReceipts, "renameReceipts", false, "exit with an error code if anything goes wrong")
 
 	viper.BindPFlag("export.directory", exportCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("export.limitDate", exportCmd.Flags().Lookup("limitDate"))
 	viper.BindPFlag("export.exitOnError", exportCmd.Flags().Lookup("exitOnError"))
-
-	viper.BindEnv("export.directory")
-	viper.BindEnv("export.limitDate")
-	viper.BindEnv("export.exitOnError")
+	viper.BindPFlag("export.renameReceipts", exportCmd.Flags().Lookup("renameReceipts"))
 }

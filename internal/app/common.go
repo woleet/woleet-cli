@@ -25,6 +25,7 @@ type RunParameters struct {
 	Strict              bool
 	Prune               bool
 	FixReceipts         bool
+	RenameReceipts      bool
 	IDServerUnsecureSSL bool
 	IsFS                bool
 	IsS3                bool
@@ -88,27 +89,27 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 		log.Fatalf("Unable to request current userID on Woleet.ID Server: %s\n", errUser)
 	}
 
-	if strings.EqualFold(user.Id, "admin") {
+	if strings.EqualFold(user.GetId(), "admin") {
 		user, errUser = commonInfos.widsClient.GetUserDiscoFromPubkey(commonInfos.runParameters.IDServerPubKey)
 		if errUser != nil {
 			log.Fatalf("This public key does not exists on this Woleet.ID Server: %s\n", errUser)
 		}
-		if user.Mode == idserver.USERMODEENUM_ESIGN {
+		if user.GetMode() == idserver.USERMODEENUM_ESIGN {
 			log.Fatalln("You can't sign for an user configured for e-signature with an admin token")
 		}
 	}
 
-	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(user.Id)
+	pubKeys, errPubKeys := commonInfos.widsClient.ListKeysFromUserID(user.GetId())
 	if errPubKeys != nil {
 		log.Fatalf("Unable to get current userID public keys on this Woleet.ID Server: %s\n", errPubKeys)
 	}
 
 	for _, pubKey := range *pubKeys {
-		if strings.EqualFold(pubKey.PubKey, commonInfos.runParameters.IDServerPubKey) {
-			if pubKey.Status != idserver.KEYSTATUSENUM_ACTIVE {
+		if strings.EqualFold(pubKey.GetPubKey(), commonInfos.runParameters.IDServerPubKey) {
+			if pubKey.GetStatus() != idserver.KEYSTATUSENUM_ACTIVE {
 				log.Fatalf("The specified pulblic key is not active")
 			}
-			if pubKey.Device != idserver.KEYDEVICEENUM_SERVER {
+			if pubKey.GetDevice() != idserver.KEYDEVICEENUM_SERVER {
 				log.Fatalf("The specified public key is not owned by the server")
 			}
 			return
@@ -120,26 +121,29 @@ func checkWIDSConnectionPubKey(commonInfos *commonInfos) {
 func buildSignedIdentityString(user *idserver.UserDisco) string {
 	replaceRegex := regexp.MustCompile(`([=",;+])`)
 	signedIdentity := "CN=" + replaceRegex.ReplaceAllString(user.Identity.CommonName, `\$1`)
-	if user.Identity.Organization != "" {
-		signedIdentity = signedIdentity + ",O=" + replaceRegex.ReplaceAllString(user.Identity.Organization, `\$1`)
+	identity, hasIdentity := user.GetIdentityOk()
+	if hasIdentity {
+		if identity.HasOrganization() {
+			signedIdentity = signedIdentity + ",O=" + replaceRegex.ReplaceAllString(identity.GetOrganization(), `\$1`)
+		}
+		if identity.HasOrganizationalUnit() {
+			signedIdentity = signedIdentity + ",OU=" + replaceRegex.ReplaceAllString(identity.GetOrganizationalUnit(), `\$1`)
+		}
+		if identity.HasLocality() {
+			signedIdentity = signedIdentity + ",L=" + replaceRegex.ReplaceAllString(identity.GetLocality(), `\$1`)
+		}
+		if identity.HasCountry() {
+			signedIdentity = signedIdentity + ",C=" + replaceRegex.ReplaceAllString(identity.GetCountry(), `\$1`)
+		}
 	}
-	if user.Identity.OrganizationalUnit != "" {
-		signedIdentity = signedIdentity + ",OU=" + replaceRegex.ReplaceAllString(user.Identity.OrganizationalUnit, `\$1`)
-	}
-	if user.Identity.Locality != "" {
-		signedIdentity = signedIdentity + ",L=" + replaceRegex.ReplaceAllString(user.Identity.Locality, `\$1`)
-	}
-	if user.Identity.Country != "" {
-		signedIdentity = signedIdentity + ",C=" + replaceRegex.ReplaceAllString(user.Identity.Country, `\$1`)
-	}
-	if user.Email != "" {
-		signedIdentity = signedIdentity + ",EMAILADDRESS=" + replaceRegex.ReplaceAllString(user.Email, `\$1`)
+	if user.HasEmail() {
+		signedIdentity = signedIdentity + ",EMAILADDRESS=" + replaceRegex.ReplaceAllString(user.GetEmail(), `\$1`)
 	}
 	return signedIdentity
 }
 
 func buildSignedIssuerDomainString(config *idserver.ConfigDisco) string {
-	url, errURL := url.Parse(config.IdentityURL)
+	url, errURL := url.Parse(config.GetIdentityURL())
 	if errURL != nil {
 		return ""
 	}

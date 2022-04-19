@@ -36,6 +36,8 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 		os.Exit(1)
 	}
 
+	helpers.RenameLegacyReceipts(commonInfos.mapPathFileName, runParameters.Signature, false, log)
+
 	if !commonInfos.runParameters.Signature {
 		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)
 	} else {
@@ -55,8 +57,8 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 		errHandlerExitOnError(errConfig, commonInfos.runParameters.ExitOnError)
 
 		if errConfig == nil {
-			if config.APIVersion != "" {
-				serverVersion, errServerVersion := version.NewVersion(config.APIVersion)
+			if config.GetAPIVersion() != "" {
+				serverVersion, errServerVersion := version.NewVersion(config.GetAPIVersion())
 				lowestAPIVersion, _ := version.NewVersion("1.2.5")
 				if errServerVersion == nil && serverVersion.GreaterThanOrEqual(lowestAPIVersion) {
 					runParameters.integratedSignature = true
@@ -216,13 +218,13 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 		}
 
 		anchor := new(woleetapi.Anchor)
-		anchor.Name = fileName
-		anchor.Public = &commonInfos.runParameters.InvertPrivate
+		anchor.SetName(fileName)
+		anchor.SetPublic(commonInfos.runParameters.InvertPrivate)
 
 		if !commonInfos.runParameters.Signature {
-			anchor.Hash = hash
+			anchor.SetHash(hash)
 		} else {
-			anchor.PubKey = commonInfos.runParameters.IDServerPubKey
+			anchor.SetPubKey(commonInfos.runParameters.IDServerPubKey)
 			if commonInfos.runParameters.integratedSignature {
 				signatureGet, errSignatureGet := commonInfos.widsClient.GetSignature(hash, commonInfos.runParameters.IDServerPubKey, commonInfos.runParameters.integratedSignature)
 				if errSignatureGet != nil {
@@ -247,13 +249,14 @@ func (commonInfos *commonInfos) checkStandardFiles() {
 					errHandlerExitOnError(errSignatureGet, commonInfos.runParameters.ExitOnError)
 					continue
 				}
-				anchor.SignedHash = hash
+				anchor.SetSignedHash(hash)
+				anchor.SetSignature(signatureGet.GetSignature())
 				anchor.Signature = signatureGet.Signature
 				anchor.IdentityURL = signatureGet.IdentityURL
 				if commonInfos.runParameters.SignedIdentity != "" {
-					anchor.SignedIdentity = commonInfos.runParameters.SignedIdentity
+					anchor.SetSignedIdentity(commonInfos.runParameters.SignedIdentity)
 					if commonInfos.runParameters.SignedIssuerDomain != "" {
-						anchor.SignedIssuerDomain = commonInfos.runParameters.SignedIssuerDomain
+						anchor.SetSignedIssuerDomain(commonInfos.runParameters.SignedIssuerDomain)
 					}
 				}
 			}
@@ -271,21 +274,21 @@ func (commonInfos *commonInfos) postAnchorCreatePendingFile(anchor *woleetapi.An
 	}
 	pendingReceipt := new(minimalReceipt)
 	if !commonInfos.runParameters.Signature {
-		pendingReceipt.TargetHash = anchorPost.Hash
+		pendingReceipt.TargetHash = anchorPost.GetHash()
 	} else {
-		pendingReceipt.Signature.SignedHash = anchorPost.SignedHash
-		pendingReceipt.Signature.PubKey = anchorPost.PubKey
+		pendingReceipt.Signature.SignedHash = anchorPost.GetSignedHash()
+		pendingReceipt.Signature.PubKey = anchorPost.GetPubKey()
 	}
 	pendingJSON, errPendingJSON := json.Marshal(pendingReceipt)
 	if errPendingJSON != nil {
 		errHandlerExitOnError(errPendingJSON, commonInfos.runParameters.ExitOnError)
 		return
 	}
-	currentSuffix := helpers.SuffixAnchorPending
+	currentSuffix := helpers.SuffixAnchorPendingCurrent
 	if commonInfos.runParameters.Signature {
-		currentSuffix = helpers.SuffixSignaturePending
+		currentSuffix = helpers.SuffixSignaturePendingCurrent
 	}
-	errWrite := commonInfos.writeFile(path+"-"+anchorPost.Id+currentSuffix, pendingJSON)
+	errWrite := commonInfos.writeFile(path+"-"+anchorPost.GetId()+currentSuffix, pendingJSON)
 	if errWrite != nil {
 		errHandlerExitOnError(errWrite, commonInfos.runParameters.ExitOnError)
 		return
@@ -316,7 +319,7 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 		}
 
 		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
-		if !strings.EqualFold(anchorGet.Status, "CONFIRMED") {
+		if !strings.EqualFold(anchorGet.GetStatus(), "CONFIRMED") {
 			log.WithFields(logrus.Fields{
 				"anchorID":     anchorNameInfo.AnchorID,
 				"originalFile": originalFilePath,
@@ -325,9 +328,9 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 		}
 
 		// If the anchor is confirmed, we get its receipt and we deletes the old pending file
-		currentSuffix := helpers.SuffixAnchorReceipt
+		currentSuffix := helpers.SuffixAnchorReceiptCurrent
 		if commonInfos.runParameters.Signature {
-			currentSuffix = helpers.SuffixSignatureReceipt
+			currentSuffix = helpers.SuffixSignatureReceiptCurrent
 		}
 		receiptPath := strings.TrimSuffix(path, anchorNameInfo.Suffix) + currentSuffix
 		receipt, errReceipt := commonInfos.client.GetReceipt(anchorNameInfo.AnchorID)

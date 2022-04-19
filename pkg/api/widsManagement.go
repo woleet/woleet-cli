@@ -35,7 +35,9 @@ func (client *Client) GetUser() (*idserver.UserDisco, error) {
 			SetResult(&idserver.ConfigDisco{}).
 			Get(client.BaseURL + "/discover/config")
 		errConfig = restyErrHandlerAllowedCodes(respConfig, errConfig, defaultAllowedCodesMap)
-		return &idserver.UserDisco{Id: "admin"}, errConfig
+		userDisco := idserver.UserDisco{}
+		userDisco.SetId("admin")
+		return &userDisco, errConfig
 	}
 	return userRet, err
 }

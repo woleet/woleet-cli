@@ -64,33 +64,54 @@ func checkFilter(cmd *cobra.Command) *regexp.Regexp {
 }
 
 func checkWidSignURL(cmd *cobra.Command) string {
-	if strings.EqualFold(viper.GetString("sign.widsSignURL"), "") {
+	widsSignURL := ""
+	if viper.IsSet("sign.widsSignURL") {
+		widsSignURL = viper.GetString("sign.widsSignURL")
+	}
+	if viper.IsSet("seal.widsSignURL") {
+		widsSignURL = viper.GetString("seal.widsSignURL")
+	}
+	if strings.EqualFold(widsSignURL, "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a widsSignURL")
 	}
-	return viper.GetString("sign.widsSignURL")
+	return widsSignURL
 }
 
 func checkWidToken(cmd *cobra.Command) string {
-	if strings.EqualFold(viper.GetString("sign.widsToken"), "") {
+	widsToken := ""
+	if viper.IsSet("sign.widsToken") {
+		widsToken = viper.GetString("sign.widsToken")
+	}
+	if viper.IsSet("seal.widsToken") {
+		widsToken = viper.GetString("seal.widsToken")
+	}
+	if strings.EqualFold(widsToken, "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a widsToken")
 	}
-	return viper.GetString("sign.widsToken")
+	return widsToken
 }
 
 func checkWidPubKey(cmd *cobra.Command) string {
-	if strings.EqualFold(viper.GetString("sign.widsPubKey"), "") {
+	widsPubKey := ""
+	if viper.IsSet("sign.widsPubKey") {
+		widsPubKey = viper.GetString("sign.widsPubKey")
+	}
+	if viper.IsSet("seal.widsPubKey") {
+		widsPubKey = viper.GetString("seal.widsPubKey")
+	}
+	if strings.EqualFold(widsPubKey, "") {
 		if !viper.GetBool("log.json") {
 			cmd.Help()
 		}
 		log.Fatalln("Please set a widsPubKey")
 	}
-	return viper.GetString("sign.widsPubKey")
+	return widsPubKey
 }
 
 func checkS3(cmd *cobra.Command) *minio.Client {

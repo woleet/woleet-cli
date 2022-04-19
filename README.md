@@ -5,8 +5,8 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 
 Currently, the tool only supports:
 
-* the `anchor` command, allowing to recursively anchor all files in a given directory
-* the `sign` command, allowing to recursively sign all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>)
+* the `timestamp` command, allowing to recursively timestamp all files in a given directory (legacy anchor command)
+* the `seal` command, allowing to recursively seal all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>) (legacy sign command)
 * the `export` command, allowing to download all your proof receipts in a given directory
 
 ## Anchor / Sign
@@ -48,7 +48,7 @@ You can specify a limit date to get all receipt created from this date.
 ### Limitations
 
 * Each receipt will be named: 'anchor name'-'anchor ID'.(anchor|signature)-receipt.json
-* Exporting can be quite long, as each recepit is downloaded individually
+* Exporting can be quite long, as each receipt is downloaded individually
 
 ## Install woleet-cli
 
@@ -293,13 +293,12 @@ If this specification were to be changed, model classes can be updated using the
 
 ```bash
 # Update definition files
-curl -s https://api.woleet.io/swagger.json > api/swagger.json
+curl -s https://api.woleet.io/v1/openapi.json > api/swagger.json
 curl -s https://raw.githubusercontent.com/woleet/woleet.id-server/master/swagger.yaml > api/swaggerIDServer.yaml
 
 
 # Update models
 rm -rf pkg/models/woleetapi pkg/models/idserver && \
-JAVA_TOOL_OPTIONS='-Dmodels=anchor,anchors -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool && \
-ANCHOR_FILE=$(cat pkg/models/woleetapi/model_anchor.go) && echo "$ANCHOR_FILE" | sed 's/`json:"hash"`/`json:"hash,omitempty"`/' > pkg/models/woleetapi/model_anchor.go
-JAVA_TOOL_OPTIONS='-Dmodels=UserModeEnum,UserStatusEnum,UserRoleEnum,KeyStatusEnum,KeyTypeEnum,KeyHolderEnum,KeyDeviceEnum,SignatureResult,UserDisco,KeyGet,FullIdentity,ConfigDisco -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -p packageName=idserver -p enumClassPrefix=true -p generateAliasAsModel=false --type-mappings boolean=*bool
+JAVA_TOOL_OPTIONS='-Dmodels=anchor,anchors -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swagger.json -g go -o pkg/models/woleetapi -p packageName=woleetapi -p enumClassPrefix=true -p generateAliasAsModel=false && \
+JAVA_TOOL_OPTIONS='-Dmodels=UserModeEnum,UserStatusEnum,UserRoleEnum,KeyStatusEnum,KeyTypeEnum,KeyHolderEnum,KeyDeviceEnum,SignatureResult,UserDisco,KeyGet,FullIdentity,ConfigDisco -DmodelDocs=false -DmodelTests=false' openapi-generator generate -i api/swaggerIDServer.yaml -g go -o pkg/models/idserver -p packageName=idserver -p enumClassPrefix=true -p generateAliasAsModel=false
 ```
