@@ -22,7 +22,6 @@ var exitOnError bool
 var private bool
 var recursive bool
 var dryRun bool
-var renameReceipts bool
 
 // Sign
 var widsSignURL string
@@ -34,7 +33,7 @@ var widsUnsecureSSL bool
 var exportDirectory string
 var exportLimitDate string
 var exportExitOnError bool
-var exportRenameReceipts bool
+var exportFixReceipts bool
 
 // S3
 var s3Bucket string

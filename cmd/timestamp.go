@@ -37,7 +37,6 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		runParameters.Strict = viper.GetBool("app.strict")
 		runParameters.Prune = viper.GetBool("app.prune")
 		runParameters.FixReceipts = viper.GetBool("app.fixReceipts")
-		runParameters.RenameReceipts = viper.GetBool("app.renameReceipts")
 		runParameters.ExitOnError = viper.GetBool("app.exitOnError")
 		runParameters.Recursive = viper.GetBool("app.recursive")
 
@@ -61,8 +60,8 @@ don't specify the transport (https://), https will be used by default if you wan
 	timestampCmd.Flags().BoolVar(&strict, "strict", false, "re-anchor any file that has changed since last anchoring")
 	timestampCmd.Flags().BoolVar(&prune, "prune", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match`)
-	timestampCmd.Flags().BoolVar(&fixReceipts, "fixReceipts", false, "Check the format and fix (if necessary) every existing receipts")
-	timestampCmd.Flags().BoolVar(&renameReceipts, "renameReceipts", false, "Rename legacy receipts ending by anchor-receipt.json to timestamp-receipt.json")
+	timestampCmd.Flags().BoolVar(&fixReceipts, "fixReceipts", false, `Check the format and fix (if necessary) every existing receipts,
+	also rename legacy receipts ending by signature-receipt.json to seal-receipt.json`)
 	timestampCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	timestampCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	timestampCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
@@ -78,7 +77,6 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("app.strict", timestampCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", timestampCmd.Flags().Lookup("prune"))
 	viper.BindPFlag("app.fixReceipts", timestampCmd.Flags().Lookup("fixReceipts"))
-	viper.BindPFlag("app.renameReceipts", timestampCmd.Flags().Lookup("renameReceipts"))
 	viper.BindPFlag("app.exitOnError", timestampCmd.Flags().Lookup("exitOnError"))
 	viper.BindPFlag("app.recursive", timestampCmd.Flags().Lookup("recursive"))
 	viper.BindPFlag("api.private", timestampCmd.Flags().Lookup("private"))

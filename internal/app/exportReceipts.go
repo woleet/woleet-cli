@@ -10,7 +10,7 @@ import (
 	"github.com/woleet/woleet-cli/pkg/helpers"
 )
 
-func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, renameReceipts bool, exitOnError bool, logInput *logrus.Logger) int {
+func ExportReceipts(token string, url string, exportDirectory string, unixEpochLimit int64, fixReceipts bool, exitOnError bool, logInput *logrus.Logger) int {
 	log = logInput
 	client := api.GetNewClient(url, token)
 
@@ -43,7 +43,7 @@ func ExportReceipts(token string, url string, exportDirectory string, unixEpochL
 
 			currentReceiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.GetName()) + "-" + anchor.GetId() + currentSuffix
 
-			if renameReceipts {
+			if fixReceipts {
 				legacyReceiptPath := exportDirectory + string(os.PathSeparator) + sanitize.BaseName(anchor.GetName()) + "-" + anchor.GetId() + legacySuffix
 				if _, err := os.Stat(legacyReceiptPath); !os.IsNotExist(err) {
 					if _, err := os.Stat(currentReceiptPath); !os.IsNotExist(err) {

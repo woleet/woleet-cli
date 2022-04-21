@@ -11,21 +11,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//TODO
-const SuffixAnchorPendingCurrent string = ".anchor-pending.json"
+const SuffixAnchorPendingCurrent string = ".timestamp-pending.json"
 const SuffixAnchorPendingLegacy string = ".anchor-pending.json"
-const SuffixAnchorReceiptCurrent string = ".anchor-receipt.json"
+const SuffixAnchorReceiptCurrent string = ".timestamp-receipt.json"
 const SuffixAnchorReceiptLegacy string = ".anchor-receipt.json"
-const SuffixSignaturePendingCurrent string = ".signature-pending.json"
+const SuffixSignaturePendingCurrent string = ".seal-pending.json"
 const SuffixSignaturePendingLegacy string = ".signature-pending.json"
-const SuffixSignatureReceiptCurrent string = ".signature-receipt.json"
+const SuffixSignatureReceiptCurrent string = ".seal-receipt.json"
 const SuffixSignatureReceiptLegacy string = ".signature-receipt.json"
 
 const SuffixRegexpCurrent = SuffixAnchorPendingCurrent + "|" + SuffixAnchorReceiptCurrent + "|" + SuffixSignaturePendingCurrent + "|" + SuffixSignatureReceiptCurrent
 const SuffixRegexpLegacy = SuffixAnchorPendingLegacy + "|" + SuffixAnchorReceiptLegacy + "|" + SuffixSignaturePendingLegacy + "|" + SuffixSignatureReceiptLegacy
+const SuffixRegexpAll = SuffixRegexpCurrent + "|" + SuffixRegexpLegacy
 
-var regexpAnchorIDFromName = regexp.MustCompile("(^.*)-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixRegexpCurrent, ".", "\\.", -1) + ")$")
-var regexNameSuffixReceipt = regexp.MustCompile("^.*" + "(" + SuffixRegexpCurrent + "|" + SuffixRegexpLegacy + ")$")
+var regexHasSuffixAnchorPending = regexp.MustCompile("(" + SuffixAnchorPendingCurrent + "|" + SuffixAnchorPendingLegacy + ")$")
+var regexHasSuffixAnchorReceipt = regexp.MustCompile("(" + SuffixAnchorReceiptCurrent + "|" + SuffixAnchorReceiptLegacy + ")$")
+var regexHasSuffixSignaturePending = regexp.MustCompile("(" + SuffixSignaturePendingCurrent + "|" + SuffixSignaturePendingLegacy + ")$")
+var regexHasSuffixSignatureReceipt = regexp.MustCompile("(" + SuffixSignatureReceiptCurrent + "|" + SuffixSignatureReceiptLegacy + ")$")
+
+var regexpAnchorIDFromName = regexp.MustCompile("(^.*)-(?P<anchor_id>[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})(" + strings.Replace(SuffixRegexpAll, ".", "\\.", -1) + ")$")
+var regexNameSuffixReceipt = regexp.MustCompile("^.*" + "(" + SuffixRegexpAll + ")$")
 
 type RegexExtracted struct {
 	Filename         string
@@ -55,7 +60,7 @@ func checkFilename(fileName string, filter *regexp.Regexp) bool {
 	return true
 }
 
-func checkDirectory(path string, directory string, pathSeparator string, log *logrus.Logger) bool {
+func checkDirectory(path string, directory string) bool {
 	if strings.HasPrefix(directory, ".") {
 		return false
 	}
@@ -84,7 +89,7 @@ func ExploreDirectory(baseDirectory string, recursive bool, filter *regexp.Regex
 			if strings.EqualFold(filepath.Clean(baseDirectory), filepath.Clean(path)) {
 			} else if !recursive {
 				return filepath.SkipDir
-			} else if !checkDirectory(path, info.Name(), string(os.PathSeparator), log) {
+			} else if !checkDirectory(path, info.Name()) {
 				return filepath.SkipDir
 			}
 		} else if info.Mode().IsRegular() && checkFilename(info.Name(), filter) {
@@ -122,16 +127,16 @@ func SeparateAll(mapPathFileinfo map[string]string) (map[string]string, map[stri
 	signaturePendingFiles := make(map[string]string)
 	signatureReceiptedFiles := make(map[string]string)
 	for path, fileName := range mapPathFileinfo {
-		if strings.HasSuffix(fileName, SuffixAnchorPendingCurrent) {
+		if regexHasSuffixAnchorPending.MatchString(fileName) {
 			anchorPendingFiles[path] = fileName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileName, SuffixAnchorReceiptCurrent) {
+		} else if regexHasSuffixAnchorReceipt.MatchString(fileName) {
 			anchorReceiptedFiles[path] = fileName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileName, SuffixSignaturePendingCurrent) {
+		} else if regexHasSuffixSignaturePending.MatchString(fileName) {
 			signaturePendingFiles[path] = fileName
 			delete(mapPathFileinfo, path)
-		} else if strings.HasSuffix(fileName, SuffixSignatureReceiptCurrent) {
+		} else if regexHasSuffixSignatureReceipt.MatchString(fileName) {
 			signatureReceiptedFiles[path] = fileName
 			delete(mapPathFileinfo, path)
 		}
@@ -177,8 +182,8 @@ func RenameLegacyReceipts(mapPathFileinfo map[string]string, signature bool, dry
 		}
 
 		if newPath != "" && newFileName != "" {
-			delete(mapPathFileinfo, path)
 			if !dryRun {
+				delete(mapPathFileinfo, path)
 				err := os.Rename(path, newPath)
 				if err != nil {
 					log.WithFields(logrus.Fields{
@@ -187,13 +192,13 @@ func RenameLegacyReceipts(mapPathFileinfo map[string]string, signature bool, dry
 						"Error":        err,
 					}).Warnln("Unable to rename the file")
 				}
+				mapPathFileinfo[newPath] = newFileName
 			} else {
 				log.WithFields(logrus.Fields{
 					"OriginalFile": path,
 					"NewFile":      newPath,
 				}).Infoln("Faking file renaming (dryRun mode)")
 			}
-			mapPathFileinfo[newPath] = newFileName
 		}
 	}
 }

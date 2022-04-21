@@ -39,7 +39,6 @@ Proofs being created asynchronously, you need to run the command at least twice 
 		runParameters.Strict = viper.GetBool("app.strict")
 		runParameters.Prune = viper.GetBool("app.prune")
 		runParameters.FixReceipts = viper.GetBool("app.fixReceipts")
-		runParameters.RenameReceipts = viper.GetBool("app.renameReceipts")
 		runParameters.ExitOnError = viper.GetBool("app.exitOnError")
 		runParameters.Recursive = viper.GetBool("app.recursive")
 
@@ -84,8 +83,8 @@ func init() {
 	sealCmd.Flags().BoolVar(&strict, "strict", false, "re-sign any file that has changed since last signature or if the pubkey was changed")
 	sealCmd.Flags().BoolVar(&prune, "prune", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed`)
-	sealCmd.Flags().BoolVar(&fixReceipts, "fixReceipts", false, "Check the format and fix (if necessary) every existing receipts")
-	sealCmd.Flags().BoolVar(&renameReceipts, "renameReceipts", false, "Rename legacy receipts ending by signature-receipt.json to seal-receipt.json")
+	sealCmd.Flags().BoolVar(&fixReceipts, "fixReceipts", false, `Check the format and fix (if necessary) every existing receipts,
+ also rename legacy receipts ending by signature-receipt.json to seal-receipt.json`)
 	sealCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	sealCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
 	sealCmd.Flags().BoolVar(&dryRun, "dryRun", false, "print information about files to sign without signing")
@@ -111,7 +110,6 @@ with --strict it checks the hash of the original file and deletes the receipt if
 	viper.BindPFlag("app.strict", sealCmd.Flags().Lookup("strict"))
 	viper.BindPFlag("app.prune", sealCmd.Flags().Lookup("prune"))
 	viper.BindPFlag("app.fixReceipts", sealCmd.Flags().Lookup("fixReceipts"))
-	viper.BindPFlag("app.renameReceipts", sealCmd.Flags().Lookup("renameReceipts"))
 	viper.BindPFlag("app.dryRun", sealCmd.Flags().Lookup("dryRun"))
 	viper.BindPFlag("sign.widsUnsecureSSL", sealCmd.Flags().Lookup("widsUnsecureSSL"))
 	viper.BindPFlag("seal.widsUnsecureSSL", sealCmd.Flags().Lookup("widsUnsecureSSL"))

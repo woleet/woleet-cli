@@ -25,7 +25,6 @@ type RunParameters struct {
 	Strict              bool
 	Prune               bool
 	FixReceipts         bool
-	RenameReceipts      bool
 	IDServerUnsecureSSL bool
 	IsFS                bool
 	IsS3                bool
@@ -70,6 +69,7 @@ func initCommonInfos(runParameters *RunParameters) *commonInfos {
 	infos.receipt = make(map[string]string)
 	infos.receiptToDelete = make(map[string]string)
 	infos.runParameters = runParameters
+	infos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
 	return infos
 }
 

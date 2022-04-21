@@ -30,7 +30,9 @@ func DryRun(runParameters *RunParameters, logInput *logrus.Logger) int {
 		os.Exit(1)
 	}
 
-	helpers.RenameLegacyReceipts(commonInfos.mapPathFileName, runParameters.Signature, true, log)
+	if runParameters.FixReceipts {
+		helpers.RenameLegacyReceipts(commonInfos.mapPathFileName, runParameters.Signature, true, log)
+	}
 
 	if !runParameters.Signature {
 		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)

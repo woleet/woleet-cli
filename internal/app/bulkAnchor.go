@@ -20,8 +20,6 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 
 	log = logInput
 
-	commonInfos.client = api.GetNewClient(runParameters.BaseURL, runParameters.Token)
-
 	var err error
 	if runParameters.IsFS {
 		commonInfos.mapPathFileName, err = helpers.ExploreDirectory(runParameters.Directory, runParameters.Recursive, runParameters.Filter, log)
@@ -36,8 +34,9 @@ func BulkAnchor(runParameters *RunParameters, logInput *logrus.Logger) int {
 		os.Exit(1)
 	}
 
-	helpers.RenameLegacyReceipts(commonInfos.mapPathFileName, runParameters.Signature, false, log)
-
+	if runParameters.FixReceipts {
+		helpers.RenameLegacyReceipts(commonInfos.mapPathFileName, runParameters.Signature, false, log)
+	}
 	if !commonInfos.runParameters.Signature {
 		commonInfos.pending, commonInfos.receipt, _, _ = helpers.SeparateAll(commonInfos.mapPathFileName)
 	} else {
