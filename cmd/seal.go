@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -57,12 +55,7 @@ Proofs being created asynchronously, you need to run the command at least twice 
 			runParameters.IDServerUnsecureSSL = viper.GetBool("seal.widsUnsecureSSL")
 		}
 
-		//TODO
-		params, _ := json.MarshalIndent(runParameters, "", " ")
-		fmt.Printf("%s\n", string(params))
-		os.Exit(0)
-
-		//os.Exit(app.BulkAnchor(runParameters, log))
+		os.Exit(app.BulkAnchor(runParameters, log))
 
 	},
 }
