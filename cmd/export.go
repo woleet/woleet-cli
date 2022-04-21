@@ -63,7 +63,7 @@ func init() {
 	exportCmd.Flags().StringVarP(&exportDirectory, "directory", "d", "", "directory where to store the proofs (required)")
 	exportCmd.Flags().StringVarP(&exportLimitDate, "limitDate", "l", "", "get only proofs created after the provided date (format: yyyy-MM-dd)")
 	exportCmd.Flags().BoolVarP(&exportExitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
-	exportCmd.Flags().BoolVar(&exportFixReceipts, "fixReceipts", false, "Rename legacy receipts ending by signature-receipt.json to seal-receipt.json")
+	exportCmd.Flags().BoolVar(&exportFixReceipts, "fixReceipts", false, "Rename legacy receipts ending by anchor/signature-receipt.json to timestamp/seal-receipt.json")
 
 	viper.BindPFlag("export.directory", exportCmd.Flags().Lookup("directory"))
 	viper.BindPFlag("export.limitDate", exportCmd.Flags().Lookup("limitDate"))

@@ -12,7 +12,7 @@ var logLevel string
 var jsonOut bool
 var log = logrus.New()
 
-// Anchor / Sign
+// Timetamp / Seal
 var directory string
 var filter string
 var strict bool

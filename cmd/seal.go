@@ -10,12 +10,12 @@ import (
 	"github.com/woleet/woleet-cli/internal/app"
 )
 
-// sealCmd represents the sign command
+// sealCmd represents the sign/sign command
 var sealCmd = &cobra.Command{
 	Use:     "seal",
 	Aliases: []string{"sign"},
-	Short:   "Recursively seal all files in a given directory and retrieve proofs of seal or signature",
-	Long: `Recursively sign all files in a given directory and retrieve proofs of seal or signature
+	Short:   "Recursively seal all files in a given directory and retrieve proofs of seal",
+	Long: `Recursively sign all files in a given directory and retrieve proofs of seal
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runParameters := new(app.RunParameters)
@@ -70,24 +70,24 @@ Proofs being created asynchronously, you need to run the command at least twice 
 func init() {
 	rootCmd.AddCommand(sealCmd)
 
-	sealCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to sign (required)")
-	sealCmd.Flags().StringVarP(&filter, "filter", "i", "", "sign only files matching this regex")
-	sealCmd.Flags().StringVar(&s3Bucket, "s3Bucket", "", "bucket name that contains files to sign")
+	sealCmd.Flags().StringVarP(&directory, "directory", "d", "", "source directory containing files to seal (required)")
+	sealCmd.Flags().StringVarP(&filter, "filter", "i", "", "seal only files matching this regex")
+	sealCmd.Flags().StringVar(&s3Bucket, "s3Bucket", "", "bucket name that contains files to seal")
 	sealCmd.Flags().StringVarP(&s3Endpoint, "s3Endpoint", "", "s3.amazonaws.com", `specify an alternative S3 endpoint: ex: storage.googleapis.com,
 	don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param`)
 	sealCmd.Flags().StringVar(&s3AccessKeyID, "s3AccessKeyID", "", "your AccessKeyID")
 	sealCmd.Flags().StringVar(&s3SecretAccessKey, "s3SecretAccessKey", "", "your SecretAccessKey")
 	sealCmd.Flags().StringVar(&widsSignURL, "widsSignURL", "", "Woleet.ID Server sign URL ex: \"https://idserver.com:3002\" (required)")
 	sealCmd.Flags().StringVar(&widsToken, "widsToken", "", "Woleet.ID Server API token (required)")
-	sealCmd.Flags().StringVar(&widsPubKey, "widsPubKey", "", "public key (ie. bitcoin address) to use to sign (required)")
-	sealCmd.Flags().BoolVar(&strict, "strict", false, "re-sign any file that has changed since last signature or if the pubkey was changed")
+	sealCmd.Flags().StringVar(&widsPubKey, "widsPubKey", "", "public key (ie. bitcoin address) to use to seal (required)")
+	sealCmd.Flags().BoolVar(&strict, "strict", false, "re-seal any file that has changed since last sealing or if the pubkey was changed")
 	sealCmd.Flags().BoolVar(&prune, "prune", false, `delete receipts that are not along the original file,
 with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed`)
 	sealCmd.Flags().BoolVar(&fixReceipts, "fixReceipts", false, `Check the format and fix (if necessary) every existing receipts,
  also rename legacy receipts ending by signature-receipt.json to seal-receipt.json`)
 	sealCmd.Flags().BoolVarP(&exitOnError, "exitOnError", "e", false, "exit with an error code if anything goes wrong")
 	sealCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "explore sub-folders recursively")
-	sealCmd.Flags().BoolVar(&dryRun, "dryRun", false, "print information about files to sign without signing")
+	sealCmd.Flags().BoolVar(&dryRun, "dryRun", false, "print information about files to seal without sealing")
 	sealCmd.Flags().BoolVarP(&private, "private", "p", false, "create non discoverable proofs")
 	sealCmd.Flags().BoolVar(&widsUnsecureSSL, "widsUnsecureSSL", false, "do not check Woleet.ID Server's SSL certificate validity (only for development)")
 	sealCmd.Flags().BoolVarP(&s3NoSSL, "s3NoSSL", "", false, "use S3 without SSL (strongly discouraged)")

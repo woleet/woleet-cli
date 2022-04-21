@@ -9,18 +9,18 @@ Currently, the tool only supports:
 * the `seal` command, allowing to recursively seal all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>) (legacy sign command)
 * the `export` command, allowing to download all your proof receipts in a given directory
 
-## Anchor / Sign
+## Timestamp / Seal
 
 ### Functionalities
 
-The tool scans a folder recursively and anchors or sign all files found. It also gathers proof receipts and stores them beside anchored or signed files (in a Chainpoint file named 'filename'-'anchorID'.(anchor|signature)-receipt.json).
+The tool scans a folder recursively and timestamps or seal all files found. It also gathers proof receipts and stores them beside timestamped or sealed files (in a Chainpoint file named 'filename'-'proofID'.(timestamp|seal)-receipt.json).
 
-Since anchoring is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already anchored are not re-anchored.
+Since timestamping is not a realtime operation, the tool is supposed to be run on a regular basis (or at least a second time when all proof receipts are ready to download). Obviously, the files that were already timestamp are not re-timestamped.
 
-If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when signing the public key is checked as well. If they differ, the file is re-anchored and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
+If the option --strict is provided, for each file that already have a proof receipt, the tool checks that the hash of the file still matches the hash in the receipt (to detect file changes), in addition when sealing the public key is checked as well. If they differ, the file is re-timestamped and the old receipt is kept, except if --prune is set in that case the old receipt is deleted.  
 If the original file is no longer present and the option --prune is provided, the old receipt/pending file will be deleted.
 
-If you want to anchor a subset of the files present in a folder or a subfolder, you can use the --filter option which will limit the scope of this tool to the files that matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
+If you want to timestamp a subset of the files present in a folder or a subfolder, you can use the --filter option which will limit the scope of this tool to the files that matches the provided regex, you can test the regex here: <https://regex-golang.appspot.com/assets/html/index.html>, for example.
 
 To sum up, this tool can be used to generate and maintain the set of proofs of timestamp or proof of seal for all the files of a set of directories.
 
@@ -28,14 +28,14 @@ To sum up, this tool can be used to generate and maintain the set of proofs of t
 
 When filling --s3AccessKeyID, --s3SecretAccessKey, --s3Bucket and --s3Endpoint you will not have to specify --directory.  
 
-In that configuration, woleet-cli will anchor/sign all files in the input bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
+In that configuration, woleet-cli will timestamp/seal all files in the input bucket (regex still works), that process can be long because files will be downloaded to calculate their hashes.  
 Proof receipts and pending files will be stored along original files in the S3 bucket.  
 
 When using an S3-like directory, we advise to not use the --strict parameter as it will download all files at each run.  
 
 ### Limitations
 
-* All files and folders beginning by '.' or finished by '.(anchor|signature)-(receipt|pending).json' are ignored
+* All files and folders beginning by '.' or finished by '.(timestamp|seal)-(receipt|pending).json' are ignored
 * Symlinks are not followed
 
 ## Export
@@ -47,7 +47,7 @@ You can specify a limit date to get all receipt created from this date.
 
 ### Limitations
 
-* Each receipt will be named: 'anchor name'-'anchor ID'.(anchor|signature)-receipt.json
+* Each receipt will be named: 'timestamp name'-'proofID'.(timestamp|seal)-receipt.json
 * Exporting can be quite long, as each receipt is downloaded individually
 
 ## Install woleet-cli
@@ -89,53 +89,70 @@ export WCLI_CONFIG="DISABLED"
 
 ```
 Usage:
-woleet-cli anchor [flags]
-  -d, --directory string           source directory containing files to anchor (required)
-      --dryRun                     print information about files to anchor without anchoring
+  woleet-cli timestamp [flags]
+
+Aliases:
+  timestamp, anchor
+
+Flags:
+  -d, --directory string           source directory containing files to timestamp (required)
+      --dryRun                     print information about files to timetamp without timetamping
   -e, --exitOnError                exit with an error code if anything goes wrong
-  -f, --filter string             anchor only files matching this regex
-      --fixReceipts                Check the format and fix (if necessary) every existing receipts
-  -h, --help                       display help for anchor command
+  -f, --filter string              timestamp only files matching this regex
+      --fixReceipts                Check the format and fix (if necessary) every existing receipts,
+                                        also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
+  -h, --help                       help for timestamp
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
                                    with --strict it checks the hash of the original file and deletes the receipt if they do not match
   -r, --recursive                  explore sub-folders recursively
       --s3AccessKeyID string       your AccessKeyID
-      --s3Bucket string            bucket name that contains files to anchor
+      --s3Bucket string            bucket name that contains files to timestamp
       --s3Endpoint string          specify an alternative S3 endpoint: ex: storage.googleapis.com,
                                    don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
       --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
-      --strict                     re-anchor any file that has changed since last anchoring
+      --strict                     re-timetamp any file that has changed since last timetamping
 
 
-woleet-cli sign [flags]
-  -d, --directory string           source directory containing files to sign (required)
-      --dryRun                     print information about files to sign without signing
+Usage:
+  woleet-cli seal [flags]
+
+Aliases:
+  seal, sign
+
+Flags:
+  -d, --directory string           source directory containing files to seal (required)
+      --dryRun                     print information about files to seal without sealing
   -e, --exitOnError                exit with an error code if anything goes wrong
-  -f, --filter string             Only files that match that regex will be signed
-      --fixReceipts                Check the format and fix (if necessary) every existing receipts
-  -h, --help                       display help for sign command
+  -i, --filter string              seal only files matching this regex
+      --fixReceipts                Check the format and fix (if necessary) every existing receipts,
+                                    also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
+  -h, --help                       help for seal
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
                                    with --strict it checks the hash of the original file and deletes the receipt if they do not match or if the pubkey has changed
   -r, --recursive                  explore sub-folders recursively
       --s3AccessKeyID string       your AccessKeyID
-      --s3Bucket string            bucket name that contains files to sign
+      --s3Bucket string            bucket name that contains files to seal
       --s3Endpoint string          specify an alternative S3 endpoint: ex: storage.googleapis.com,
-                                   don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
+                                        don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
       --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
-      --strict                     re-sign any file that has changed since last signature or if the pubkey was changed
-      --widsPubKey string          public key (ie. bitcoin address) to use to sign (required)
+      --strict                     re-seal any file that has changed since last sealing or if the pubkey was changed
+      --widsPubKey string          public key (ie. bitcoin address) to use to seal (required)
       --widsSignURL string         Woleet.ID Server sign URL ex: "https://idserver.com:3002" (required)
       --widsToken string           Woleet.ID Server API token (required)
       --widsUnsecureSSL            do not check Woleet.ID Server's SSL certificate validity (only for development)
 
-woleet-cli export [flags]
+Usage:
+  woleet-cli export [flags]
+
+Flags:
   -d, --directory string   directory where to store the proofs (required)
   -e, --exitOnError        exit with an error code if anything goes wrong
-  -h, --help               display help for export command
+      --fixReceipts        Rename legacy receipts ending by anchor/signature-receipt.json to timestamp/seal-receipt.json
+  -h, --help               help for export
   -l, --limitDate string   get only proofs created after the provided date (format: yyyy-MM-dd)
 
 Global Flags:
@@ -159,7 +176,7 @@ api:
   token: insert-your-token-here
   private: true
 app:
-  directory: /home/folder/to/anchor
+  directory: /home/folder/to/proof
   filter: '.*\.json'
   fixReceipts: true
   strict: true
@@ -167,7 +184,7 @@ app:
   exitOnError: true
   recursive: true
   dryRun: false
-sign:
+seal:
   widsSignURL: https://idserver.com:3002
   widsToken: insert-your-idserver-token-here
   widsPubKey: insert-your-idserver-pubkey-here
@@ -179,7 +196,7 @@ s3:
   secretAccessKey: insert-your-secretAccessKey-here
   noSSL: true
 export:
-  directory: /home/folder/to/anchor
+  directory: /home/folder/to/proof
   limitDate: 2018-01-21
   exitOnError: true
 log:
@@ -197,7 +214,7 @@ JSON:
     "private": true
   },
   "app": {
-    "directory": "/home/folder/to/anchor",
+    "directory": "/home/folder/to/proof",
     "filter": ".*\.json",
     "fixReceipts": true,
     "exitOnError": true,
@@ -206,7 +223,7 @@ JSON:
     "recursive": true,
     "dryRun": true
   },
-  "sign": {
+  "seal": {
     "widsSignURL": "https://idserver.com:3002",
     "widsToken": "insert-your-idserver-token-here",
     "widsPubKey": "insert-your-idserver-pubkey-here",
@@ -220,7 +237,7 @@ JSON:
     "noSSL": true
   },
   "export": {
-    "directory": "/home/folder/to/anchor",
+    "directory": "/home/folder/to/proof",
     "limitDate": "2018-01-21",
     "exitOnError": true
   },
@@ -238,7 +255,7 @@ export WCLI_CONFIG="$HOME/.woleet-cli.json"
 export WCLI_API_URL="https://api.woleet.io/v1"
 export WCLI_API_TOKEN="insert-your-token-here"
 export WCLI_API_PRIVATE="true"
-export WCLI_APP_DIRECTORY="/home/folder/to/anchor"
+export WCLI_APP_DIRECTORY="/home/folder/to/proof"
 export WCLI_APP_FILTER='.*\.json'
 export WCLI_APP_FIXRECEIPTS="true"
 export WCLI_APP_EXITONERROR="true"
@@ -246,16 +263,16 @@ export WCLI_APP_STRICT="true"
 export WCLI_APP_PRUNE="true"
 export WCLI_APP_RECURSIVE="true"
 export WCLI_APP_DRYRUN="true"
-export WCLI_SIGN_WIDSSIGNURL="https://idserver.com:3002"
-export WCLI_SIGN_WIDSTOKEN="insert-your-idserver-token-here"
-export WCLI_SIGN_WIDSPUBKEY="insert-your-idserver-pubkey-here"
-export WCLI_SIGN_WIDSUNSECURESSL="false"
+export WCLI_SEAL_WIDSSIGNURL="https://idserver.com:3002"
+export WCLI_SEAL_WIDSTOKEN="insert-your-idserver-token-here"
+export WCLI_SEAL_WIDSPUBKEY="insert-your-idserver-pubkey-here"
+export WCLI_SEAL_WIDSUNSECURESSL="false"
 export S3_BUCKET="bucket-name"
 export S3_ENDPOINT="storage.googleapis.com"
 export S3_ACCESSKEYID="insert-your-accessKeyID-here"
 export S3_SECRETACCESSKEY="insert-your-secretAccessKey-here"
 export S3_NOSSL="true"
-export WCLI_EXPORT_DIRECTORY="/home/folder/to/anchor"
+export WCLI_EXPORT_DIRECTORY="/home/folder/to/proof"
 export WCLI_EXPORT_LIMITDATE="2018-01-21"
 export WCLI_EXPORT_EXITONERROR="true"
 export WCLI_LOG_JSON="true"
