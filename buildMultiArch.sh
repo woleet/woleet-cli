@@ -30,9 +30,9 @@ do
       then
         CC='/usr/bin/x86_64-alpine-linux-musl-gcc'
       fi
-      GOOS="$GOOS" GOARCH="$GOARCH" CC="$CC" go build --ldflags '-linkmode external -extldflags "-static"' -o dist/woleet-cli
+      GOOS="$GOOS" GOARCH="$GOARCH" CC="$CC" go build -buildvcs=false --ldflags '-linkmode external -extldflags "-static"' -o dist/woleet-cli
     else
-      GOOS="$GOOS" GOARCH="$GOARCH" go build -o dist/woleet-cli
+      GOOS="$GOOS" GOARCH="$GOARCH" go build -buildvcs=false -o dist/woleet-cli
     fi
     cd dist || exit
     if [ "$GOOS" != "windows" ]
