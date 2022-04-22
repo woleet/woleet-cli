@@ -143,7 +143,7 @@ func checkS3(cmd *cobra.Command) *minio.Client {
 		log.Fatalln("Please set a secretAccessKey for your S3 connection")
 	}
 
-	minioClient, errMinioClient := minio.New(viper.GetString("s3.endpoint"), viper.GetString("s3.accessKeyID"), viper.GetString("s3.secretAccessKey"), viper.GetBool("s3.noSSL"))
+	minioClient, errMinioClient := minio.New(viper.GetString("s3.endpoint"), viper.GetString("s3.accessKeyID"), viper.GetString("s3.secretAccessKey"), !viper.GetBool("s3.noSSL"))
 	if errMinioClient != nil {
 		log.Fatalln(errMinioClient)
 	}

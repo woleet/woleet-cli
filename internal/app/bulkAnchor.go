@@ -320,7 +320,7 @@ func (commonInfos *commonInfos) getReceipts(mapPending map[string]string) {
 		originalFilePath := strings.TrimSuffix(path, "-"+anchorNameInfo.AnchorID+anchorNameInfo.Suffix)
 		if !strings.EqualFold(anchorGet.GetStatus(), "CONFIRMED") {
 			log.WithFields(logrus.Fields{
-				"anchorID":     anchorNameInfo.AnchorID,
+				"proofID":      anchorNameInfo.AnchorID,
 				"originalFile": originalFilePath,
 			}).Infoln("Proof not available yet")
 			continue
