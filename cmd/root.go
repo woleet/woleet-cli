@@ -69,10 +69,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
-	fmt.Println(cfgFile)
-
-	if (cfgFile == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
+	if (strings.EqualFold(cfgFile, "disabled")) || (strings.EqualFold(os.Getenv("WCLI_CONFIG"), "disabled")) {
 		return
 	} else if cfgFile != "" {
 		// Use config file from the flag.
