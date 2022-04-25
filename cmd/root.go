@@ -70,11 +70,13 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
-	if (viper.GetString("config") == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
+	fmt.Println(cfgFile)
+
+	if (cfgFile == "DISABLED") || (os.Getenv("WCLI_CONFIG") == "DISABLED") {
 		return
-	} else if viper.GetString("config") != "" {
+	} else if cfgFile != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(viper.GetString("config"))
+		viper.SetConfigFile(cfgFile)
 	} else if os.Getenv("WCLI_CONFIG") != "" {
 		// Use config file from env
 		viper.SetConfigFile(os.Getenv("WCLI_CONFIG"))
