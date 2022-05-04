@@ -13,7 +13,7 @@ var sealCmd = &cobra.Command{
 	Use:     "seal",
 	Aliases: []string{"sign"},
 	Short:   "Recursively seal all files in a given directory and retrieve proofs of seal",
-	Long: `Recursively sign all files in a given directory and retrieve proofs of seal
+	Long: `Recursively seal all files in a given directory and retrieve proofs of seal
 Proofs being created asynchronously, you need to run the command at least twice with enough internal to retrieve the proofs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runParameters := new(app.RunParameters)

@@ -16,8 +16,8 @@ var rootCmd = &cobra.Command{
 	Use:     "woleet-cli",
 	Version: "0.5.4",
 	Short:   "Woleet command line interface",
-	Long: `woleet-cli is a command line interface allowing to interact with Woleet API (https://api.woleet.io). 
-For now, this tool only supports timestamping and signing all files of a given folder as well as exporting all your receipts on a folder`,
+	Long: `woleet-cli is a command line interface allowing to interact with the Woleet API (https://api.woleet.io) and the Woleet.ID Server API (https://app.swaggerhub.com/apis/Woleet/WoleetIDServerAPI).
+For now, this tool only supports timestamping and sealing the files of a given folder as well as exporting all created proof receipts to a remote.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log.SetOutput(os.Stdout)
 

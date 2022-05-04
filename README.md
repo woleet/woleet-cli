@@ -5,8 +5,8 @@ The tool is written in Go and has been tested on Windows, macOS and Linux.
 
 Currently, the tool only supports:
 
-* the `timestamp` command, allowing to recursively timestamp all files in a given directory (legacy anchor command)
-* the `seal` command, allowing to recursively seal all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>) (legacy sign command)
+* the `timestamp` command, allowing to recursively timestamp all files in a given directory (legacy `anchor` command)
+* the `seal` command, allowing to recursively seal all files in a given directory (using Woleet.ID Server: <https://github.com/woleet/woleet.id-server>) (legacy `sign` command)
 * the `export` command, allowing to download all your proof receipts in a given directory
 
 ## Timestamp / Seal
@@ -100,7 +100,7 @@ Flags:
   -e, --exitOnError                exit with an error code if anything goes wrong
   -f, --filter string              timestamp only files matching this regex
       --fixReceipts                Check the format and fix (if necessary) every existing receipts,
-                                        also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
+                                   also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
   -h, --help                       help for timestamp
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
@@ -127,7 +127,7 @@ Flags:
   -e, --exitOnError                exit with an error code if anything goes wrong
   -i, --filter string              seal only files matching this regex
       --fixReceipts                Check the format and fix (if necessary) every existing receipts,
-                                    also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
+                                   also rename legacy receipts ending by signature-receipt.json to seal-receipt.json
   -h, --help                       help for seal
   -p, --private                    create non discoverable proofs
       --prune                      delete receipts that are not along the original file,
@@ -136,7 +136,7 @@ Flags:
       --s3AccessKeyID string       your AccessKeyID
       --s3Bucket string            bucket name that contains files to seal
       --s3Endpoint string          specify an alternative S3 endpoint: ex: storage.googleapis.com,
-                                        don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
+                                   don't specify the transport (https://), https will be used by default if you want to use http see --s3NoSSL param (default "s3.amazonaws.com")
       --s3NoSSL                    use S3 without SSL (strongly discouraged)
       --s3SecretAccessKey string   your SecretAccessKey
       --strict                     re-seal any file that has changed since last sealing or if the pubkey was changed
