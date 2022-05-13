@@ -14,7 +14,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "woleet-cli",
-	Version: "0.5.4",
+	Version: "0.6.0",
 	Short:   "Woleet command line interface",
 	Long: `woleet-cli is a command line interface allowing to interact with the Woleet API (https://api.woleet.io) and the Woleet.ID Server API (https://app.swaggerhub.com/apis/Woleet/WoleetIDServerAPI).
 For now, this tool only supports timestamping and sealing the files of a given folder as well as exporting all created proof receipts to a remote.`,
